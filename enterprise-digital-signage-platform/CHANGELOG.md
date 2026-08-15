@@ -45,6 +45,28 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.8] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-008 Monitoring & Alerting)
+
+### Added
+- **Monitoring checker (REQ-008)** — อัปเกรดจาก heartbeat checker เดิม (SQL update เปล่าๆ):
+  - `server.ts` — ตรวจทุก 30 วิ: จอที่ heartbeat เก่ากว่า `MONITOR_OFFLINE_MINUTES` (default 5, ตั้งได้ใน .env) → เปลี่ยนเป็น offline + บันทึก telemetry `screen_offline` + broadcast `SCREEN_OFFLINE` + **Slack/Teams webhook** (ถ้าตั้ง `SLACK_ALERT_WEBHOOK_URL`)
+  - จอกลับมาออนไลน์ (heartbeat สด) → เคลียร์ alert + telemetry `screen_online` + webhook + broadcast `SCREEN_ONLINE`
+  - `GET /api/monitoring/status` — สถานะรายจอ (lastHeartbeat / offlineForMinutes / isStale / alertActive / alertSince) + summary (online/offline/alerting) + รายการ alerts
+- **UI monitoring:** `ScreensManager.tsx` — poll `refreshScreens()` ทุก 60 วิ + banner แดงแจ้งจอไม่ตอบสนอง (รายชื่อ + ปุ่มรีเฟรช) + heartbeat indicator บนการ์ดทุกจอ (❤️ Xm — เขียว=สด, แดง=stale)
+- `useSignageStore.ts` — `refreshScreens()` action
+
+### Fixed
+- **Route หลัง SPA fallback:** `/api/monitoring/status` ถูกวางหลัง `app.get('*')` → ไม่เคย match — ย้ายก่อน catch-all (บันทึกไว้ในคอมเมนต์กันกลับไปทำซ้ำ)
+
+### Verified
+- typecheck 0 error, build ผ่าน, smoke test 9/9 (โครงสร้าง endpoint, ตรวจจับ offline → alert+screen_offline, recovery → เคลียร์+screen_online, 401 ไม่มี token) + ยืนยัน UI (banner + indicator)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ตั้ง `SLACK_ALERT_WEBHOOK_URL` + `MONITOR_OFFLINE_MINUTES` ใน .env ของ prod (ถ้าต้องการ alert ผ่าน Slack/Teams)
+
+---
+
 ## [0.2.7] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-011 Campaigns ฝั่ง server)
 
 ### Added

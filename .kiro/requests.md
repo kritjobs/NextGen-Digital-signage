@@ -18,7 +18,7 @@
 - ~~**REQ-005 — Proof of Play เข้าระบบจริง**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง
 - ~~**REQ-006 — 6-Level Priority Resolver ให้ครบ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — ระบบ priority เต็มรูปแบบ 6 ระดับ
 - **REQ-007 — Scheduled DB backup อัตโนมัติ** — pg_dump ผ่าน Task Scheduler + เก็บ 7 วัน
-- **REQ-008 — Monitoring/alerting** — แจ้งเตือนเมื่อจอ offline / เซิร์ฟเวอร์ตาย
+- ~~**REQ-008 — Monitoring/alerting**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — แจ้งเตือนเมื่อจอ offline
 - **REQ-009 — Automated tests** — integration test ของ security guard + pair/heartbeat
 - **REQ-010 — Audit log admin** — บันทึกการกระทำของ admin (login, trigger emergency, แก้ playlist ฯลฯ)
 
@@ -48,6 +48,17 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-008 — Monitoring & Alerting ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**ตรวจ heartbeat จอ + แจ้งเตือนเมื่อ offline เกิน threshold**
+
+- **`server.ts`:** ตรวจทุก 30 วิ (แทน checker เดิมที่แค่ SQL update): จอ heartbeat เก่ากว่า `MONITOR_OFFLINE_MINUTES` (default 5, ตั้งใน .env) → เปลี่ยน offline + บันทึก telemetry `screen_offline` + broadcast `SCREEN_OFFLINE` + **webhook Slack/Teams** (ถ้าตั้ง `SLACK_ALERT_WEBHOOK_URL`); จอกลับมา → `screen_online` + แจ้งกลับ + เคลียร์ alert
+- **`GET /api/monitoring/status`** — สถานะรายจอ (lastHeartbeat, offlineForMinutes, isStale, alertActive, alertSince) + summary + รายการ alerts (⚠️ ต้องมาก่อน SPA fallback)
+- **`useSignageStore.ts`:** `refreshScreens()` — poll สถานะจอจาก server
+- **`ScreensManager.tsx`:** poll ทุก 60 วิ + **banner แดง** "X จอไม่ตอบสนอง" (รายชื่อ + ปุ่มรีเฟรช) + **heartbeat indicator** บนการ์ดทุกจอ (❤️ Xm สีเขียว = สด / สีแดง = stale)
+- เทส: typecheck 0 error, build ผ่าน, **smoke test 9/9** (โครงสร้าง endpoint, ตรวจจับ offline → alert + screen_offline, recovery → เคลียร์ + screen_online, 401 ไม่มี token) + ยืนยัน UI ใน preview (banner + indicator)
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
 
 ### REQ-011 — Campaigns ฝั่ง server ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

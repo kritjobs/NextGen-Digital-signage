@@ -74,6 +74,9 @@ interface SignageStoreState {
   updateScreen: (id: string, partial: Partial<DigitalScreen>) => void;
   deleteScreen: (id: string) => void;
 
+  // REQ-008: รีเฟรชสถานะจอจาก server (monitoring poll)
+  refreshScreens: () => Promise<void>;
+
   addMediaItem: (media: MediaItem) => void;
   deleteMediaItem: (id: string) => void;
 
@@ -492,6 +495,13 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
   deleteScreen: (id) => {
     set((state) => ({ screens: state.screens.filter((s) => s.id !== id) }));
     screenApi.delete(id).catch(console.error);
+  },
+  // REQ-008: monitoring poll — ดึงสถานะจอล่าสุดจาก server โดยไม่รบกวน state อื่น
+  refreshScreens: async () => {
+    try {
+      const res = await screenApi.getAll();
+      set({ screens: res.data.map(mapScreen) });
+    } catch { /* เงียบ — poll ครั้งถัดไปลองใหม่ */ }
   },
 
   // ─── CRUD: Media ──────────────────────────────────────────

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Monitor, 
   Grid, 
@@ -32,6 +32,7 @@ export const ScreensManager: React.FC = () => {
     addScreen, 
     updateScreen, 
     deleteScreen, 
+    refreshScreens,
     sendCommandToScreen,
     setPlayerScreenId,
     setViewMode,
@@ -42,6 +43,25 @@ export const ScreensManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
+
+  // REQ-008: monitoring poll — รีเฟรชสถานะจอจาก server ทุก 60 วิ
+  useEffect(() => {
+    void refreshScreens();
+    const timer = setInterval(() => { void refreshScreens(); }, 60_000);
+    return () => clearInterval(timer);
+  }, [refreshScreens]);
+
+  // REQ-008: heartbeat helpers — อัปล่าสุด/ระยะเวลา offline
+  const heartbeatInfo = useMemo(() => {
+    const now = Date.now();
+    return (scr: DigitalScreen) => {
+      if (!scr.lastHeartbeat) return { label: 'no heartbeat', minutes: null, stale: false };
+      const t = new Date(scr.lastHeartbeat).getTime();
+      const minutes = Math.max(0, Math.floor((now - t) / 60_000));
+      return { label: minutes < 1 ? '❤️ just now' : `❤️ ${minutes}m`, minutes, stale: minutes >= 5 };
+    };
+  }, []);
+  const offlineScreens = screens.filter((s) => s.status === 'offline' && heartbeatInfo(s).stale);
   
   // Modal for adding a new screen
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -148,6 +168,20 @@ export const ScreensManager: React.FC = () => {
   return (
     <div className="space-y-6">
       
+      {/* REQ-008: Monitoring Alert Banner — จอ offline เกิน 5 นาที */}
+      {offlineScreens.length > 0 && (
+        <div className="flex items-center gap-3 bg-rose-950/40 border border-rose-700/40 rounded-2xl px-4 py-3">
+          <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0" />
+          <div className="flex-1">
+            <p className="text-xs font-bold text-rose-300">⚠️ {offlineScreens.length} จอไม่ตอบสนอง (offline &gt; 5 นาที)</p>
+            <p className="text-[11px] text-rose-400/80 mt-0.5 truncate">{offlineScreens.map((s) => s.name).join(', ')}</p>
+          </div>
+          <button onClick={() => void refreshScreens()} className="px-3 py-1.5 rounded-lg bg-rose-800/50 hover:bg-rose-700/50 text-rose-200 text-[10px] font-bold shrink-0">
+            <RefreshCw className="h-3 w-3 inline mr-1" />รีเฟรช
+          </button>
+        </div>
+      )}
+
       {/* Top Action Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
         <div>
@@ -354,6 +388,10 @@ export const ScreensManager: React.FC = () => {
 
                     <span className="px-2 py-0.5 rounded bg-black/70 backdrop-blur text-[10px] font-mono font-bold text-slate-300">
                       {scr.pairingCode}
+                    </span>
+                    {/* REQ-008: heartbeat indicator */}
+                    <span className={`px-2 py-0.5 rounded bg-black/70 backdrop-blur text-[9px] font-mono ${heartbeatInfo(scr).stale ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      {heartbeatInfo(scr).label}
                     </span>
                   </div>
 

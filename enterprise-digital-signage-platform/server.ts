@@ -14,7 +14,7 @@ import {
   playlists, playlistItems, schedules, campaigns,
   emergencyAlerts, telemetryLogs, proofOfPlayLogs, layoutVersions,
 } from './src/db/schema.js';
-import { eq, desc, sql, and } from 'drizzle-orm';
+import { eq, desc, asc, sql, and } from 'drizzle-orm';
 import { priorityLevelOf, priorityRankOf } from './src/types/signage.js';
 import { createServer as createViteServer } from 'vite';
 
@@ -1542,6 +1542,52 @@ async function startServer() {
   });
 
   // ─── Static / Vite ─────────────────────────────────────
+  // GET /api/monitoring/status — สถานะ monitoring รายจอ (heartbeat, ระยะเวลา offline, alert)
+  // ⚠️ ต้องมาก่อน SPA fallback (app.get('*')) — ไม่งั้น route ไม่เคย match
+  app.get('/api/monitoring/status',
+    authenticate as any, requirePermission('read:analytics') as any,
+    async (_req, res, next) => {
+      try {
+        const now = new Date();
+        const threshold = new Date(now.getTime() - MONITOR_OFFLINE_MINUTES * 60 * 1000);
+        const all = await db.select().from(screens).orderBy(asc(screens.name));
+        const list = all.map((s) => {
+          const hb = s.lastHeartbeat;
+          const offlineMinutes = hb ? Math.max(0, Math.floor((now.getTime() - hb.getTime()) / 60_000)) : null;
+          const state = monitorState.get(s.id);
+          return {
+            id: s.id,
+            name: s.name,
+            group: s.group ?? '',
+            status: s.status,
+            lastHeartbeat: hb?.toISOString() ?? null,
+            offlineForMinutes: offlineMinutes,
+            isStale: !!hb && hb < threshold,
+            alertActive: state?.alertActive ?? false,
+            alertSince: state?.alertedAt?.toISOString() ?? null,
+          };
+        });
+        const offline = list.filter((s) => s.isStale);
+        const online = list.filter((s) => !s.isStale);
+        res.json({
+          summary: {
+            total: list.length,
+            online: online.length,
+            offline: offline.length,
+            alerting: list.filter((s) => s.alertActive).length,
+            offlineThresholdMinutes: MONITOR_OFFLINE_MINUTES,
+            checkedAt: now.toISOString(),
+          },
+          screens: list,
+          alerts: offline.map((s) => ({
+            screenId: s.id, name: s.name, group: s.group,
+            offlineForMinutes: s.offlineForMinutes,
+            since: s.alertSince,
+          })),
+        });
+      } catch (e) { next(e); }
+    });
+
   if (!IS_PROD) {
     const vite = await createViteServer({
       server: { middlewareMode: true, hmr: process.env.DISABLE_HMR !== 'true' },
@@ -1563,23 +1609,79 @@ async function startServer() {
     });
   }
 
-  // ─── Heartbeat Timeout Checker ──────────────────────────
-  // Every 60 seconds, check all screens — if lastHeartbeat > 2 min ago → mark offline
-  setInterval(async () => {
+  // ─── REQ-008: Monitoring & Alerting ──────────────────────
+  // ทุก 30 วิ: ตรวจ heartbeat ของทุกจอ — จอที่เงียบเกิน threshold → เปลี่ยนเป็น offline
+  // + บันทึกเหตุการณ์ (telemetry) + แจ้งเตือน (webhook ถ้าตั้ง SLACK_ALERT_WEBHOOK_URL) + broadcast
+  const MONITOR_OFFLINE_MINUTES = Math.max(1, Number(process.env.MONITOR_OFFLINE_MINUTES || 5));
+  const monitorState = new Map<string, { alertActive: boolean; alertedAt: Date }>();
+
+  async function fireMonitorAlert(kind: 'offline' | 'online', s: { id: string; name: string; group: string | null }) {
+    const url = process.env.SLACK_ALERT_WEBHOOK_URL;
+    if (!url) return;
     try {
-      const twoMinAgo = new Date(Date.now() - 2 * 60 * 1000);
-      await db.update(screens)
-        .set({ status: 'offline' })
-        .where(
-          and(
-            sql`${screens.status} IN ('online', 'syncing', 'app_inactive')`,
-            sql`${screens.lastHeartbeat} < ${twoMinAgo}`
-          )
-        );
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `🖥️ *Signage Monitor*: ${s.name} (${s.id}) — ${kind === 'offline' ? '🔴 OFFLINE' : '🟢 back ONLINE'}`,
+          attachments: [{
+            color: kind === 'offline' ? '#ef4444' : '#22c55e',
+            fields: [
+              { title: 'Screen', value: s.name, short: true },
+              { title: 'Group', value: s.group || '—', short: true },
+              { title: 'ID', value: s.id, short: true },
+            ],
+          }],
+        }),
+      });
     } catch (e) {
-      console.error('[Heartbeat] Check failed:', e);
+      console.error('[Monitor] webhook alert failed:', (e as Error).message);
     }
-  }, 60_000); // Check every 60 seconds
+  }
+
+  async function runMonitoringCheck() {
+    try {
+      const now = new Date();
+      const threshold = new Date(now.getTime() - MONITOR_OFFLINE_MINUTES * 60 * 1000);
+      const all = await db.select().from(screens);
+      for (const s of all) {
+        // จอที่ยังไม่เคยส่ง heartbeat เลย (เช่น seed ที่ยังไม่ pair) → ไม่เตือน
+        const hb = s.lastHeartbeat;
+        const isStale = !!hb && hb < threshold;
+        const state = monitorState.get(s.id) ?? { alertActive: false, alertedAt: now };
+
+        if (isStale && ['online', 'syncing', 'app_inactive'].includes(s.status)) {
+          // เพิ่ง offline (ไม่มี heartbeat เกิน threshold)
+          await db.update(screens).set({ status: 'offline', updatedAt: now }).where(eq(screens.id, s.id));
+          await db.insert(telemetryLogs).values({
+            screenId: s.id, screenName: s.name,
+            eventType: 'screen_offline',
+            message: `Screen offline — no heartbeat for ${MONITOR_OFFLINE_MINUTES}+ min`,
+            details: { offlineThresholdMinutes: MONITOR_OFFLINE_MINUTES, lastHeartbeat: hb.toISOString() },
+          });
+          monitorState.set(s.id, { alertActive: true, alertedAt: now });
+          void fireMonitorAlert('offline', s);
+          broadcast('SCREEN_OFFLINE', { screenId: s.id, name: s.name, since: now.toISOString() });
+        } else if (state.alertActive && hb && !isStale) {
+          // จอกลับมา online แล้ว (heartbeat สด) — ยกเลิก alert + แจ้งกลับ
+          monitorState.set(s.id, { alertActive: false, alertedAt: now });
+          await db.insert(telemetryLogs).values({
+            screenId: s.id, screenName: s.name,
+            eventType: 'screen_online',
+            message: 'Screen back online (monitor resolved)',
+            details: { lastHeartbeat: hb.toISOString() },
+          });
+          void fireMonitorAlert('online', s);
+          broadcast('SCREEN_ONLINE', { screenId: s.id, name: s.name });
+        }
+      }
+    } catch (e) {
+      console.error('[Monitor] check failed:', (e as Error).message);
+    }
+  }
+
+  // ตรวจทุก 30 วิ (รอบเดียวกับ scheduler ticker)
+  setInterval(() => { void runMonitoringCheck(); }, 30_000);
 
   // ─── Schedule Ticker (REQ-003) ───────────────────────────
   // ทุก 30 วิ: ตรวจว่า schedule ของแต่ละจอเปลี่ยนไปไหม → broadcast SCHEDULE_CHANGED

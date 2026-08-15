@@ -242,6 +242,8 @@ export interface Playlist {
   items: PlaylistItem[];
   totalDuration: number;
   tags: string[];
+  status?: 'draft' | 'published' | 'archived';
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
   updatedAt: string;
 }
 

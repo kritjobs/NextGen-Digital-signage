@@ -65,6 +65,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Content Approval Workflow + Tag-Match คู่กัน + Watch script**)
+- **Content Approval:** playlists เพิ่ม `status`+`approval_status` (migration `0011`) — content ขึ้นจอได้ต่อเมื่อ approved+published — server กรอง display data / schedule (ข้ามไป priority ถัดไป) / tag-match — **สร้างใหม่ = pending เสมอ** (POST บังคับ, กัน client ส่ง approved) — `PATCH /api/playlists/:id/approve` (admin only + audit) — UI badge + Approve/Reject ใน PlaylistEditor + SmartLayoutBuilder — เทสจริง dev: pending ไม่ขึ้นจอ → approve แล้วขึ้นทันที ✅
+- **Tag-Match จับคู่คู่กัน:** `findTagMatchedContent` คืน layout + playlist พร้อมกัน (เดิม layout ชนะแล้วตัด playlist) + tie-break updatedAt — เทสจริง: จอ cafeteria+menu ได้ `lay-menu-board` + `pl-lunch-menu` คู่กัน ✅
+- **watch-screen-online.mjs/.bat:** เฝ้าดู scr-002 (poll `/api/monitoring/status`) → แจ้งเมื่อกลับ online (console + log + webhook) — `--once` + auto re-login
+- เทส: typecheck 0, build ผ่าน, integration **14/14** + preview ผ่าน — **ต้อง redeploy** (`CHANGELOG.md` [0.4.4])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Tag-Based Auto-Match ขึ้น prod ✅ — ตรวจหลัง redeploy รอบ 2**)
 - **redeploy รอบ 2 (build 21:25) → Tag-Based Auto-Match ทำงานบน prod จริง:** จอเทส `scr-tagtest-prod` (tags cafeteria+menu) → `/api/display/data` คืน `contentSource: tag_match` + `effectivePlaylistId: pl-tagtest-prod` (มี item 1) ✅ — sanity: scr-001 (ไม่มี tags) → `default` ปกติ ไม่ regression
 - **ประวัติ (รอบแรกพลาด):** build 20:49 เกิดก่อน sync ไฟล์ (20:59+) → container รันโค้ดเก่า — migration `0010` (layouts.tags) รันไป prod DB ตรง + **แก้ redeploy.bat** → `docker compose run --rm --build signage-migrate` (rebuild ภาพ migrate ทุกรอบ — กันภาพเก่าไม่มี migration ใหม่)

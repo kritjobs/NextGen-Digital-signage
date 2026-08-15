@@ -260,8 +260,28 @@ async function startServer() {
     return true;
   }
 
+  // ── Content Approval: content จะขึ้นจอได้ก็ต่อเมื่อ status=published + approvalStatus=approved ──
+  function isApprovedContent(c?: { status?: string | null; approvalStatus?: string | null } | null) {
+    return !!c && c.status === 'published' && c.approvalStatus === 'approved';
+  }
+
+  // schedule ที่อ้าง layout/playlist ที่ยังไม่ approved → ไม่ขึ้นจอ (ข้ามไป priority ถัดไป)
+  async function isScheduleContentApproved(schedule: typeof schedules.$inferSelect): Promise<boolean> {
+    if (schedule.layoutId) {
+      const [l] = await db.select({ status: layouts.status, approvalStatus: layouts.approvalStatus }).from(layouts).where(eq(layouts.id, schedule.layoutId));
+      if (l && !isApprovedContent(l)) return false;
+    }
+    if (schedule.playlistId) {
+      const [p] = await db.select({ status: playlists.status, approvalStatus: playlists.approvalStatus }).from(playlists).where(eq(playlists.id, schedule.playlistId));
+      if (p && !isApprovedContent(p)) return false;
+    }
+    return true;
+  }
+
   async function resolveScreenContent(screenId: string, now: Date) {
-    const schedule = await getActiveScheduleForScreen(screenId, now);
+    let schedule = await getActiveScheduleForScreen(screenId, now);
+    // Content Approval: schedule ที่อ้าง content ยังไม่ approved → ถือว่าไม่มี schedule (ไป priority ถัดไป)
+    if (schedule && !(await isScheduleContentApproved(schedule))) schedule = null;
     const campaign = await getActiveCampaign();
     const campaignLayoutId = campaign ? campaignCurrentLayoutId(campaign, now) : null;
     const effectiveCampaign = campaign && campaignLayoutId ? campaign : null;
@@ -318,27 +338,31 @@ async function startServer() {
       db.select().from(layouts),
     ]);
 
-    let best: { layoutId: string | null; playlistId: string | null; score: number; updatedAt: Date } | null = null;
+    // หา best playlist + best layout แยกกัน แล้วจับคู่กัน (layout กำหนดโซน, playlist กำหนด content)
+    // เฉพาะ content ที่ approved แล้วเท่านั้น (Content Approval Workflow)
+    let bestPl: { id: string; score: number; updatedAt: Date } | null = null;
+    let bestLay: { id: string; score: number; updatedAt: Date } | null = null;
 
-    // เลือก playlist ที่ตรง tags มากสุด (เฉพาะที่มี items จริง)
     for (const p of allPl) {
+      if (!isApprovedContent(p)) continue;
       const pTags: string[] = (p.tags || []).map((t: string) => t.trim().toLowerCase()).filter(Boolean);
       if (!pTags.length) continue;
       const score = pTags.filter((t) => screenTags.includes(t)).length;
-      if (score > 0 && (!best || score > best.score)) {
-        best = { layoutId: null, playlistId: p.id, score, updatedAt: p.updatedAt };
+      if (score > 0 && (!bestPl || score > bestPl.score || (score === bestPl.score && p.updatedAt > bestPl.updatedAt))) {
+        bestPl = { id: p.id, score, updatedAt: p.updatedAt };
       }
     }
-    // layout ที่ตรง tags มากสุด (layout ชนะ playlist ถ้าคะแนนเท่ากัน เพราะเป็นระดับสูงกว่า)
     for (const l of allLay) {
+      if (!isApprovedContent(l)) continue;
       const lTags: string[] = (l.tags || []).map((t: string) => t.trim().toLowerCase()).filter(Boolean);
       if (!lTags.length) continue;
       const score = lTags.filter((t) => screenTags.includes(t)).length;
-      if (score > 0 && (!best || score >= best.score)) {
-        best = { layoutId: l.id, playlistId: null, score, updatedAt: l.updatedAt };
+      if (score > 0 && (!bestLay || score > bestLay.score || (score === bestLay.score && l.updatedAt > bestLay.updatedAt))) {
+        bestLay = { id: l.id, score, updatedAt: l.updatedAt };
       }
     }
-    return best && best.score > 0 ? { layoutId: best.layoutId, playlistId: best.playlistId } : null;
+    if (!bestPl && !bestLay) return null;
+    return { layoutId: bestLay?.id ?? null, playlistId: bestPl?.id ?? null };
   }
 
   // ตรวจจับว่า schedule ของแต่ละจอเปลี่ยนไป → broadcast ให้ player รู้ทันที
@@ -699,7 +723,10 @@ async function startServer() {
       try {
         const { zones: zonesData, ...layoutData } = req.body;
         const [layout] = await db.insert(layouts).values({
-          ...layoutData, id: layoutData.id ?? `lay-${Date.now()}`, createdAt: new Date(), updatedAt: new Date(),
+          ...layoutData, id: layoutData.id ?? `lay-${Date.now()}`,
+          // Content Approval: layout ใหม่ต้องผ่าน approval ก่อนขึ้นจอ (กัน client ส่ง approved เอง)
+          approvalStatus: 'pending',
+          createdAt: new Date(), updatedAt: new Date(),
         }).returning();
         if (zonesData?.length) {
           await db.insert(layoutZones).values(
@@ -795,7 +822,12 @@ async function startServer() {
     async (req: AuthenticatedRequest, res, next) => {
       try {
         const { items: itemsData, ...pData } = req.body;
-        const [playlist] = await db.insert(playlists).values({ ...pData, id: pData.id ?? `pl-${Date.now()}`, createdAt: new Date(), updatedAt: new Date() }).returning();
+        const [playlist] = await db.insert(playlists).values({
+          ...pData, id: pData.id ?? `pl-${Date.now()}`,
+          // Content Approval: เพลย์ลิสต์ใหม่ต้องผ่าน approval ก่อนขึ้นจอ
+          approvalStatus: 'pending',
+          createdAt: new Date(), updatedAt: new Date(),
+        }).returning();
         if (itemsData?.length) {
           await db.insert(playlistItems).values(itemsData.map((it: any, i: number) => ({ ...it, playlistId: playlist.id, id: it.id ?? `pli-${Date.now()}-${i}` })));
         }
@@ -1250,6 +1282,23 @@ async function startServer() {
       } catch (e) { next(e); }
     });
 
+  // ─── Content Approval: playlist (mirror ของ layouts) ────
+  app.patch('/api/playlists/:id/approve',
+    authenticate as any, requireRole('admin', 'super_admin') as any,
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        const status = req.body.approvalStatus; // 'approved' | 'rejected' | 'pending'
+        if (!['approved', 'rejected', 'pending'].includes(status)) {
+          return res.status(400).json({ error: 'approvalStatus must be: approved, rejected, or pending' });
+        }
+        const [playlist] = await db.update(playlists).set({ approvalStatus: status, updatedAt: new Date() }).where(eq(playlists.id, req.params.id)).returning();
+        if (!playlist) return res.status(404).json({ error: 'Playlist not found' });
+        await logAudit(req, `approval_${status}`, 'playlist', req.params.id, { name: playlist.name });
+        broadcast('PLAYLIST_APPROVAL', { playlistId: req.params.id, status });
+        res.json({ success: true, playlist });
+      } catch (e) { next(e); }
+    });
+
   // ─── Slack/Teams Webhook Integration ───────────────────
   // Receives messages from Slack/Teams outgoing webhook → displays on screens
   app.post('/api/integrations/slack',
@@ -1564,14 +1613,25 @@ async function startServer() {
       // ถ้ามี schedule active → ใช้ layout/playlist ของ schedule (ไม่ต้องพึ่งจอเปิดอยู่ตอนสร้าง schedule)
       const now = new Date();
       const resolution = await resolveScreenContent(req.params.screenId, now);
-      const effectiveLayoutId = resolution.layoutId || screen.currentLayoutId || null;
-      const effectivePlaylistId = resolution.playlistId || screen.currentPlaylistId || null;
 
-      const layout = effectiveLayoutId
-        ? await db.query.layouts.findFirst({ where: eq(layouts.id, effectiveLayoutId), with: { zones: true } })
-        : null;
+      // Content Approval: จอเห็นเฉพาะเพลย์ลิสต์/layout ที่ approved + published เท่านั้น
+      const allPlaylists = (await db.query.playlists.findMany({ with: { items: true } })).filter((p) => isApprovedContent(p));
+      const approvedPlaylistIds = new Set(allPlaylists.map((p) => p.id));
 
-      const allPlaylists = await db.query.playlists.findMany({ with: { items: true } });
+      let effectiveLayoutId = resolution.layoutId || screen.currentLayoutId || null;
+      let layout = null;
+      if (effectiveLayoutId) {
+        const l = await db.query.layouts.findFirst({ where: eq(layouts.id, effectiveLayoutId), with: { zones: true } });
+        if (l && isApprovedContent(l)) layout = l;
+        else effectiveLayoutId = null; // layout ยังไม่ approved → ไม่ส่งให้จอ (จอใช้ fallback ของตัวเอง)
+      }
+
+      let effectivePlaylistId =
+        resolution.playlistId && approvedPlaylistIds.has(resolution.playlistId)
+          ? resolution.playlistId
+          : screen.currentPlaylistId && approvedPlaylistIds.has(screen.currentPlaylistId)
+            ? screen.currentPlaylistId
+            : null;
       const allMedia = await db.select().from(mediaItems);
       // Media Expiration + Embargo: จอไม่ได้รับ media ที่หมดอายุแล้ว หรือยังไม่ถึงวันเปิดตัว
       const visibleMedia = allMedia.filter((m) => isMediaPlayable(m, now));

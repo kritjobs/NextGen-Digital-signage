@@ -5,6 +5,7 @@ import {
   GripVertical, Save, Check, Search, X, LayoutGrid, List
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { playlistApi } from '../../services/api';
 import { Playlist, PlaylistItem, MediaType } from '../../types/signage';
 
 export const PlaylistEditor: React.FC = () => {
@@ -24,6 +25,17 @@ export const PlaylistEditor: React.FC = () => {
   const [pickerTypeFilter, setPickerTypeFilter] = useState('all');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+
+  // ─── Content Approval: อนุมัติ/ปฏิเสธเพลย์ลิสต์ (admin) ─────
+  const handleApprove = async (status: 'approved' | 'rejected') => {
+    if (!activePlaylist) return;
+    try {
+      await playlistApi.approve(activePlaylist.id, status);
+      updatePlaylist(activePlaylist.id, { approvalStatus: status });
+    } catch (err: any) {
+      console.error('[Playlist] approve failed:', err.message);
+    }
+  };
 
   // Drag state
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -260,6 +272,40 @@ export const PlaylistEditor: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3 text-xs">
+              {/* Content Approval badge + actions */}
+              {(() => {
+                const st = activePlaylist.approvalStatus;
+                const badge = st === 'approved'
+                  ? { cls: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400', label: '✓ Approved' }
+                  : st === 'rejected'
+                    ? { cls: 'border-rose-500/30 bg-rose-500/5 text-rose-400', label: '✕ Rejected' }
+                    : { cls: 'border-amber-500/30 bg-amber-500/5 text-amber-400', label: '⏳ Pending Approval' };
+                return (
+                  <>
+                    <span className={`px-2.5 py-1 rounded-lg border text-[11px] font-medium ${badge.cls}`} title="ต้องผ่าน approval ก่อนขึ้นจอ">
+                      {badge.label}
+                    </span>
+                    {st !== 'approved' && (
+                      <button
+                        onClick={() => handleApprove('approved')}
+                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold"
+                        title="อนุมัติให้ขึ้นจอได้"
+                      >
+                        Approve
+                      </button>
+                    )}
+                    {st !== 'rejected' && (
+                      <button
+                        onClick={() => handleApprove('rejected')}
+                        className="px-2.5 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-500 text-white text-[11px] font-bold"
+                        title="ปฏิเสธ — ไม่ขึ้นจอ"
+                      >
+                        Reject
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
               {/* Save indicator */}
               <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium ${
                 isSaving ? 'border-amber-500/30 bg-amber-500/5 text-amber-400' :

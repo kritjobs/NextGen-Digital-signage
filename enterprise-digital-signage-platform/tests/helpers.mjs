@@ -53,6 +53,13 @@ export const api = {
     list: (t) => raw('GET', '/layouts', { token: t }),
     create: (t, body) => raw('POST', '/layouts', { token: t, body }),
     remove: (t, id) => raw('DELETE', `/layouts/${id}`, { token: t }),
+    approve: (t, id, approvalStatus) => raw('PATCH', `/layouts/${id}/approve`, { token: t, body: { approvalStatus } }),
+  },
+  playlists: {
+    list: (t) => raw('GET', '/playlists', { token: t }),
+    create: (t, body) => raw('POST', '/playlists', { token: t, body }),
+    remove: (t, id) => raw('DELETE', `/playlists/${id}`, { token: t }),
+    approve: (t, id, approvalStatus) => raw('PATCH', `/playlists/${id}/approve`, { token: t, body: { approvalStatus } }),
   },
   schedules: {
     list: (t) => raw('GET', '/schedules', { token: t }),

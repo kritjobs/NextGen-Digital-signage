@@ -22,21 +22,21 @@ async function seed() {
   // ─── 1. Playlists (ต้องก่อน layouts/screens) ──────────────
   console.log('[seed] Seeding playlists...');
   await db.insert(schema.playlists).values([
-    { id: 'pl-corporate-main',    name: 'Corporate Main Lobby Sequence',      description: 'High-definition video showcase', totalDuration: 90,  tags: ['lobby','corporate','welcome'] },
-    { id: 'pl-lunch-menu',        name: 'Cafeteria Lunch Specials',            description: 'Gourmet specials and dining',    totalDuration: 45,  tags: ['cafeteria','menu'] },
-    { id: 'pl-widgets-sidebar',   name: 'Live Weather & World Clock',          description: 'Clock and weather widgets',      totalDuration: 120, tags: ['widgets','weather','clock'] },
-    { id: 'pl-ticker-only',       name: 'Realtime Stock & Campus News Ticker', description: 'Bottom scrolling ticker',        totalDuration: 60,  tags: ['ticker','news'] },
-    { id: 'pl-executive-briefing',name: 'Executive Elevator Reel',             description: 'Portrait keynotes and policies', totalDuration: 85,  tags: ['portrait','executive'] },
-    { id: 'pl-campus-events',     name: 'Campus Events & Outdoor Showcase',    description: 'Full quad wall sequence',        totalDuration: 75,  tags: ['campus','outdoor'] },
+    { id: 'pl-corporate-main',    name: 'Corporate Main Lobby Sequence',      description: 'High-definition video showcase', totalDuration: 90,  tags: ['lobby','corporate','welcome'], status: 'published', approvalStatus: 'approved' },
+    { id: 'pl-lunch-menu',        name: 'Cafeteria Lunch Specials',            description: 'Gourmet specials and dining',    totalDuration: 45,  tags: ['cafeteria','menu'], status: 'published', approvalStatus: 'approved' },
+    { id: 'pl-widgets-sidebar',   name: 'Live Weather & World Clock',          description: 'Clock and weather widgets',      totalDuration: 120, tags: ['widgets','weather','clock'], status: 'published', approvalStatus: 'approved' },
+    { id: 'pl-ticker-only',       name: 'Realtime Stock & Campus News Ticker', description: 'Bottom scrolling ticker',        totalDuration: 60,  tags: ['ticker','news'], status: 'published', approvalStatus: 'approved' },
+    { id: 'pl-executive-briefing',name: 'Executive Elevator Reel',             description: 'Portrait keynotes and policies', totalDuration: 85,  tags: ['portrait','executive'], status: 'published', approvalStatus: 'approved' },
+    { id: 'pl-campus-events',     name: 'Campus Events & Outdoor Showcase',    description: 'Full quad wall sequence',        totalDuration: 75,  tags: ['campus','outdoor'], status: 'published', approvalStatus: 'approved' },
   ]).onConflictDoNothing();
 
   // ─── 2. Layouts ────────────────────────────────────────────
   console.log('[seed] Seeding layouts...');
   await db.insert(schema.layouts).values([
-    { id: 'lay-split-3zone',    name: 'Enterprise 3-Zone Landscape',  description: '70% main + 30% sidebar + 12% ticker', orientation: 'landscape', aspectRatio: '16:9', widthPx: 1920, heightPx: 1080, tags: ['lobby','corporate','welcome'] },
-    { id: 'lay-portrait-kiosk', name: 'Portrait Elevator Kiosk',      description: '20% header + 65% carousel + 15% ticker', orientation: 'portrait',  aspectRatio: '9:16', widthPx: 1080, heightPx: 1920, tags: ['portrait','executive'] },
-    { id: 'lay-menu-board',     name: 'Full Screen Menu Board',        description: 'Single full-bleed canvas zone',       orientation: 'landscape', aspectRatio: '16:9', widthPx: 1920, heightPx: 1080, tags: ['cafeteria','menu','dining'] },
-    { id: 'lay-hero-banner',    name: 'Outdoor LED Hero Wall',         description: 'Ultra HD main zone + ticker overlay', orientation: 'landscape', aspectRatio: '16:9', widthPx: 2560, heightPx: 1440, tags: ['campus','outdoor','led'] },
+    { id: 'lay-split-3zone',    name: 'Enterprise 3-Zone Landscape',  description: '70% main + 30% sidebar + 12% ticker', orientation: 'landscape', aspectRatio: '16:9', widthPx: 1920, heightPx: 1080, tags: ['lobby','corporate','welcome'], status: 'published', approvalStatus: 'approved' },
+    { id: 'lay-portrait-kiosk', name: 'Portrait Elevator Kiosk',      description: '20% header + 65% carousel + 15% ticker', orientation: 'portrait',  aspectRatio: '9:16', widthPx: 1080, heightPx: 1920, tags: ['portrait','executive'], status: 'published', approvalStatus: 'approved' },
+    { id: 'lay-menu-board',     name: 'Full Screen Menu Board',        description: 'Single full-bleed canvas zone',       orientation: 'landscape', aspectRatio: '16:9', widthPx: 1920, heightPx: 1080, tags: ['cafeteria','menu','dining'], status: 'published', approvalStatus: 'approved' },
+    { id: 'lay-hero-banner',    name: 'Outdoor LED Hero Wall',         description: 'Ultra HD main zone + ticker overlay', orientation: 'landscape', aspectRatio: '16:9', widthPx: 2560, heightPx: 1440, tags: ['campus','outdoor','led'], status: 'published', approvalStatus: 'approved' },
   ]).onConflictDoNothing();
 
   // ─── 3. Layout Zones ───────────────────────────────────────

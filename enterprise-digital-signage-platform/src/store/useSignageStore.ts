@@ -199,6 +199,8 @@ function mapPlaylist(p: any): Playlist {
     })),
     totalDuration: p.totalDuration || p.total_duration || 0,
     tags: p.tags || [],
+    status: p.status || 'published',
+    approvalStatus: p.approvalStatus || 'approved',
     updatedAt: p.updatedAt || p.updated_at || new Date().toISOString(),
   };
 }

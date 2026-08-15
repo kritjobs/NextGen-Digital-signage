@@ -169,6 +169,9 @@ export const layoutApi = {
   create:  (data: any) => request<any>('/layouts', { method: 'POST', body: JSON.stringify(data) }),
   update:  (id: string, data: any) => request<any>(`/layouts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete:  (id: string) => request<any>(`/layouts/${id}`, { method: 'DELETE' }),
+  /** Content Approval: admin อนุมัติ/ปฏิเสธ layout */
+  approve: (id: string, approvalStatus: 'approved' | 'rejected' | 'pending') =>
+    request<any>(`/layouts/${id}/approve`, { method: 'PATCH', body: JSON.stringify({ approvalStatus }) }),
 };
 
 // ─── Playlists ──────────────────────────────────────────────
@@ -178,6 +181,9 @@ export const playlistApi = {
   create:  (data: any) => request<any>('/playlists', { method: 'POST', body: JSON.stringify(data) }),
   update:  (id: string, data: any) => request<any>(`/playlists/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   delete:  (id: string) => request<any>(`/playlists/${id}`, { method: 'DELETE' }),
+  /** Content Approval: admin อนุมัติ/ปฏิเสธเพลย์ลิสต์ */
+  approve: (id: string, approvalStatus: 'approved' | 'rejected' | 'pending') =>
+    request<any>(`/playlists/${id}/approve`, { method: 'PATCH', body: JSON.stringify({ approvalStatus }) }),
 };
 
 // ─── Schedules ──────────────────────────────────────────────

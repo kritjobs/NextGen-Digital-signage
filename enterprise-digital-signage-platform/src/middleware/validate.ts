@@ -108,6 +108,8 @@ export const CreatePlaylistSchema = z.object({
   description: z.string().max(1000).default(''),
   tags:        z.array(z.string().max(50)).max(20).default([]),
   totalDuration: z.number().int().optional(),
+  status:        z.enum(['draft', 'published', 'archived']).optional(),
+  approvalStatus: z.enum(['pending', 'approved', 'rejected']).optional(),
   items:       z.array(z.object({
     id:         z.string().max(50).optional(),
     mediaId:    z.string().min(1).max(50),
@@ -122,6 +124,8 @@ export const UpdatePlaylistSchema = z.object({
   description: z.string().max(1000).optional(),
   tags:        z.array(z.string().max(50)).max(20).optional(),
   totalDuration: z.number().optional(),
+  status:        z.enum(['draft', 'published', 'archived']).optional(),
+  approvalStatus: z.enum(['pending', 'approved', 'rejected']).optional(),
   items:       z.array(z.object({
     id:         z.string().max(50).optional(),
     mediaId:    z.string().min(1).max(50),

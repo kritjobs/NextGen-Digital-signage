@@ -11,6 +11,8 @@ export const playlists = pgTable('playlists', {
   description:   text('description').notNull().default(''),
   totalDuration: integer('total_duration').notNull().default(0),
   tags:          text('tags').array().notNull().default([]),
+  status:        varchar('status', { length: 20 }).notNull().default('published'), // draft | published | archived
+  approvalStatus: varchar('approval_status', { length: 20 }).notNull().default('pending'), // pending | approved | rejected (Content Approval Workflow)
   createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:     timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

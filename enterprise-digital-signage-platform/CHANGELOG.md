@@ -25,6 +25,25 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.4] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Content Approval Workflow + Tag-Match คู่กัน + Watch script)
+
+> เพลย์ลิสต์/layout ต้องผ่าน approval ก่อนขึ้นจอ + tag-match จับคู่ layout+playlist คู่กัน + สคริปต์เฝ้าดูจอ offline
+
+### Added
+- **Content Approval Workflow:**
+  - `playlists` เพิ่ม `status` + `approval_status` (migration `0011` — เพลย์ลิสต์เดิมถือว่า approved ไปก่อน) — layout มีอยู่แล้ว
+  - **Server:** content ขึ้นจอได้ต่อเมื่อ `status=published` + `approvalStatus=approved` — กรองใน `/api/display/:id/data` (playlists/layout), `resolveScreenContent` (schedule ที่อ้าง content ยังไม่ approved → ข้ามไป priority ถัดไป) + `findTagMatchedContent`
+  - **สร้างใหม่ = pending เสมอ** — POST `/api/layouts` + `/api/playlists` บังคับ `approvalStatus: 'pending'` (กัน client ส่ง approved เอง)
+  - **`PATCH /api/playlists/:id/approve`** (mirror ของ layout — admin only, audit log + broadcast) + `layoutApi.approve`/`playlistApi.approve`
+  - **UI:** badge สถานะ (✓ Approved / ⏳ Pending Approval / ✕ Rejected) + ปุ่ม Approve/Reject ใน PlaylistEditor + SmartLayoutBuilder
+- **Tag-Match จับคู่คู่กัน:** `findTagMatchedContent` หา best layout + best playlist **แยกกันแล้วคืนคู่** (เดิม layout ชนะแล้วตัด playlist) — จอได้ layout (โซน) + playlist (content) พร้อมกัน + tie-break ด้วย updatedAt
+- **`scripts/watch-screen-online.mjs` + `watch-screen-online.bat`:** เฝ้าดูจอ (default scr-002) — poll `/api/monitoring/status` ทุก N วิ → แจ้งเมื่อจอกลับมา online (console + `logs/screen-watch.log` + webhook ตัวเลือก) — `--once` ตรวจครั้งเดียว, token หมดอายุ login ใหม่เอง
+
+### Verified
+- typecheck 0 error, build ผ่าน, integration **14/14** (เพิ่ม #12: content pending ต้องไม่ขึ้นจอ → approve แล้วขึ้นทันที) + preview: badge/pending + Approve เปลี่ยนสถานะจริง — ต้อง redeploy ถึงขึ้น prod
+
+---
+
 ## [0.4.2] — 2026-08-15  🤖 แก้ไขโดย Freebuff
 
 > 🔐 ยกเลิกรหัส default — admin password ต้องตั้งเอง + มีระบบเปลี่ยนรหัส

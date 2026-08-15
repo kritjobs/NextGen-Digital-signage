@@ -510,3 +510,62 @@ test('11. Tag-Based Auto-Match — จอที่มี tags ได้ content 
   await api.screens.remove(token, plainSc);
 });
 
+test('12. Content Approval — content ยังไม่ approved ต้องไม่ขึ้นจอ + approve แล้วขึ้นทันที', async () => {
+  const token = await loginAdmin();
+
+  // จอที่มี tags → tag_match กับ content ที่ approved เท่านั้น
+  const scId = tid('scr-appr');
+  const pairing = 'TP' + Date.now().toString(36).slice(-6).toUpperCase() + 'D';
+  const createdSc = await api.screens.create(token, {
+    id: scId, pairingCode: pairing,
+    name: '[TEST] Approval Screen', group: 'Dining',
+    location: 'Test', orientation: 'landscape',
+    tags: ['cafeteria', 'menu'],
+  });
+  assert.equal(createdSc.status, 201, `create screen: ${JSON.stringify(createdSc.json)}`);
+
+  // สร้าง playlist + layout ใหม่ → ต้องถูกบังคับเป็น pending (แม้ส่ง approvalStatus: approved)
+  const plId = tid('pl-appr');
+  const layId = tid('lay-appr');
+  const pl = await api.playlists.create(token, {
+    id: plId, name: '[TEST] Pending Playlist', description: 'test',
+    tags: ['cafeteria', 'menu'],
+    items: [{ mediaId: 'med-003', duration: 15, order: 1 }],
+  });
+  assert.equal(pl.status, 201, `create playlist: ${JSON.stringify(pl.json)}`);
+  assert.equal(pl.json?.approvalStatus, 'pending', 'playlist ใหม่ควรเป็น pending');
+
+  const lay = await api.layouts.create(token, {
+    id: layId, name: '[TEST] Pending Layout', orientation: 'landscape',
+    tags: ['cafeteria', 'menu'], approvalStatus: 'approved',
+    zones: [{ id: `${layId}-z1`, name: 'Main', x: '0', y: '0', width: '100', height: '100', zIndex: 1 }],
+  });
+  assert.equal(lay.status, 201, `create layout: ${JSON.stringify(lay.json)}`);
+  assert.equal(lay.json?.approvalStatus, 'pending', 'layout ใหม่ควรเป็น pending (ห้าม client ส่ง approved เอง)');
+
+  // display data — pending content ต้องไม่ปรากฏ
+  const gt = await api.display.generateToken(token, scId);
+  const dd = await api.display.data(scId, gt.json?.displayToken);
+  assert.equal(dd.status, 200, `display data: ${JSON.stringify(dd.json)}`);
+  const plIds = (dd.json?.playlists ?? []).map((p) => p.id);
+  assert.ok(!plIds.includes(plId), `pending playlist ต้องไม่ถูกส่งให้จอ (มี: ${plIds})`);
+  assert.notEqual(dd.json?.layout?.id, layId, 'pending layout ต้องไม่ถูกส่งให้จอ');
+
+  // approve ทั้งคู่ → ปรากฏทันที + tag_match ใช้ของใหม่
+  const ap = await api.playlists.approve(token, plId, 'approved');
+  assert.equal(ap.status, 200, `approve playlist: ${JSON.stringify(ap.json)}`);
+  const al = await api.layouts.approve(token, layId, 'approved');
+  assert.equal(al.status, 200, `approve layout: ${JSON.stringify(al.json)}`);
+
+  const dd2 = await api.display.data(scId, (await api.display.generateToken(token, scId)).json?.displayToken);
+  const plIds2 = (dd2.json?.playlists ?? []).map((p) => p.id);
+  assert.ok(plIds2.includes(plId), 'approved playlist ควรปรากฏใน playlists ของจอ');
+  assert.equal(dd2.json?.effectiveLayoutId ?? dd2.json?.layout?.id, layId, 'approved layout ใหม่ควรถูกใช้ใน tag_match');
+  assert.equal(dd2.json?.effectivePlaylistId, plId, 'approved playlist ใหม่ควรถูกใช้ใน tag_match');
+
+  // cleanup
+  await api.screens.remove(token, scId);
+  await api.playlists.remove(token, plId);
+  await api.layouts.remove(token, layId);
+});
+

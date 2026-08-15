@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
 import { useApiKeysStore } from '../../store/useApiKeysStore';
+import { layoutApi } from '../../services/api';
 import { LayoutTemplate, LayoutZone, Orientation, MediaType } from '../../types/signage';
 import { LiveWeatherWidget } from '../widgets/LiveWeatherWidget';
 import { LiveRssWidget } from '../widgets/LiveRssWidget';
@@ -140,6 +141,17 @@ const getWidgetColorClasses = (color: string) => ({
 export const SmartLayoutBuilder: React.FC = () => {
   const { layouts, playlists, addLayout, updateLayout, deleteLayout } = useSignageStore();
   const { openWeatherApiKey, googleApiKey, setOpenWeatherApiKey, setGoogleApiKey } = useApiKeysStore();
+
+  // ─── Content Approval: อนุมัติ/ปฏิเสธ layout (admin) ───────
+  const handleApproveLayout = async (status: 'approved' | 'rejected') => {
+    if (!activeLayout || !layouts.length) return;
+    try {
+      await layoutApi.approve(activeLayout.id, status);
+      updateLayout(activeLayout.id, { approvalStatus: status } as any);
+    } catch (err: any) {
+      console.error('[Layout] approve failed:', err.message);
+    }
+  };
   const [showApiKeysModal, setShowApiKeysModal] = useState(false);
 
   // ===== Comprehensive Template Library =====
@@ -1257,6 +1269,29 @@ export const SmartLayoutBuilder: React.FC = () => {
               <span>{activeLayout.status === 'published' ? 'Published' : 'Draft'}</span>
             </button>
           )}
+
+          {/* Content Approval badge + actions */}
+          {activeLayout && layouts.length > 0 && (() => {
+            const st = activeLayout.approvalStatus;
+            const badge = st === 'approved'
+              ? { cls: 'bg-emerald-950 border-emerald-700 text-emerald-300', label: '✓ Approved' }
+              : st === 'rejected'
+                ? { cls: 'bg-rose-950 border-rose-700 text-rose-300', label: '✕ Rejected' }
+                : { cls: 'bg-amber-950 border-amber-700 text-amber-300', label: '⏳ Pending Approval' };
+            return (
+              <div className="flex items-center space-x-1.5">
+                <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border ${badge.cls}`} title="ต้องผ่าน approval ก่อนขึ้นจอ">
+                  {badge.label}
+                </span>
+                {st !== 'approved' && (
+                  <button onClick={() => handleApproveLayout('approved')} className="px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold" title="อนุมัติให้ขึ้นจอได้">Approve</button>
+                )}
+                {st !== 'rejected' && (
+                  <button onClick={() => handleApproveLayout('rejected')} className="px-2.5 py-1.5 rounded-lg bg-rose-800 hover:bg-rose-700 text-white text-[10px] font-bold" title="ปฏิเสธ — ไม่ขึ้นจอ">Reject</button>
+                )}
+              </div>
+            );
+          })()}
 
           <button
             onClick={() => setShowTemplateGallery(true)}

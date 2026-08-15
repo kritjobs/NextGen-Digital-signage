@@ -2,37 +2,49 @@
 setlocal
 REM ============================================================
 REM  Install Caddy HTTPS on 10.70.0.1 (run as ADMINISTRATOR)
-REM  1) Download caddy.exe (curl -> fallback PowerShell)
-REM  2) Copy Caddyfile -> %ProgramData%\Caddy
-REM  3) Validate config
-REM  4) Install + start Windows service "Caddy"
-REM  5) Export root CA (caddy-root-ca.crt) for screens/devices
-REM  6) Self-check: https://10.70.0.1 responds?
+REM  NOTE: https://caddyserver.com/api/download?os=windows&arch=amd64
+REM  returns caddy.exe DIRECTLY (not a zip) - we save it as caddy.exe
+REM  and verify the MZ header. (Fixed 2026-08-15: old version tried
+REM  to Expand-Archive and always failed.)
 REM ============================================================
 cd /d C:\signage\caddy
 
-echo === Step 1/6: Download Caddy (if missing) ===
+echo === Step 1/6: Download Caddy (if missing/invalid) ===
 if exist caddy.exe (
-  echo OK: caddy.exe already present
-  goto cfg
+  powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes((Join-Path $PWD 'caddy.exe'))[0..1]; if($b[0]-eq 0x4D -and $b[1]-eq 0x5A){exit 0}else{exit 1}"
+  if not errorlevel 1 (
+    echo OK: caddy.exe already present
+    goto cfg
+  )
+  echo Existing caddy.exe is invalid - re-downloading...
 )
 echo Downloading Caddy for Windows (curl)...
-curl -L --fail --connect-timeout 20 -o caddy.zip "https://caddyserver.com/api/download?os=windows&arch=amd64"
+curl -L --fail --connect-timeout 20 -o caddy.exe "https://caddyserver.com/api/download?os=windows&arch=amd64"
 if errorlevel 1 (
   echo curl failed - trying PowerShell Invoke-WebRequest...
-  powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri 'https://caddyserver.com/api/download?os=windows&arch=amd64' -OutFile 'caddy.zip'"
+  powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri 'https://caddyserver.com/api/download?os=windows&arch=amd64' -OutFile 'caddy.exe'"
   if errorlevel 1 (
     echo FAIL: cannot download Caddy. Check internet access on this machine.
-    echo Manual option: download caddy.zip from https://caddyserver.com/download
-    echo and extract caddy.exe into C:\signage\caddy\ then re-run this script.
+    echo Manual option: download caddy.exe (Windows amd64) from
+    echo   https://caddyserver.com/download
+    echo into C:\signage\caddy\ then re-run this script.
     pause
     exit /b 1
   )
 )
-powershell -NoProfile -Command "Expand-Archive -Force caddy.zip -DestinationPath ."
-if errorlevel 1 ( echo FAIL: extract failed & pause & exit /b 1 )
-del caddy.zip
-if not exist caddy.exe ( echo FAIL: caddy.exe not found after extract & pause & exit /b 1 )
+REM verify it is a real exe (MZ header)
+powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes((Join-Path $PWD 'caddy.exe'))[0..1]; if($b[0]-eq 0x4D -and $b[1]-eq 0x5A){exit 0}else{exit 1}"
+if errorlevel 1 (
+  echo FAIL: downloaded file is not a valid exe - check the download
+  pause
+  exit /b 1
+)
+for %%f in (caddy.exe) do if %%~zf LSS 1000000 (
+  echo FAIL: caddy.exe too small (%%~zf bytes) - download incomplete
+  pause
+  exit /b 1
+)
+echo OK: caddy.exe downloaded (valid, %%~zf bytes)
 
 :cfg
 echo.
@@ -73,7 +85,7 @@ timeout /t 5 /nobreak >nul
 curl -s -o nul -m 10 https://10.70.0.1/api/health
 if errorlevel 1 (
   echo WARN: https://10.70.0.1 not answering yet.
-  echo       Check: sc query Caddy  /  caddy.exe list-modules  /  netstat -ano | findstr :443
+  echo       Check: sc query Caddy  /  netstat -ano ^| findstr :443
 ) else (
   echo OK: https://10.70.0.1 is answering
 )

@@ -19,7 +19,7 @@ import {
   AuthenticatedRequest,
 } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
-import { LoginSchema, RegisterSchema, RefreshTokenSchema } from '../middleware/validate.js';
+import { LoginSchema, RegisterSchema, RefreshTokenSchema, ChangePasswordSchema } from '../middleware/validate.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 
 export const authRouter = Router();
@@ -217,6 +217,42 @@ authRouter.post('/logout', authenticate as any, async (req: AuthenticatedRequest
     res.json({ success: true, message: 'Logged out successfully' });
   } catch (err: any) {
     res.status(500).json({ error: 'Logout failed' });
+  }
+});
+
+// ─── POST /api/auth/change-password ──────────────────────────
+// ผู้ใช้เปลี่ยนรหัสตัวเอง — ต้องส่งรหัสเดิม + รหัสใหม่ (ห้ามใช้รหัส default)
+authRouter.post('/change-password', authenticate as any, validateBody(ChangePasswordSchema), async (req: AuthenticatedRequest, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user!.userId;
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect', code: 'AUTH_FAILED' });
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await db.update(users).set({
+      passwordHash,
+      updatedAt: new Date(),
+    }).where(eq(users.id, userId));
+
+    // Revoke refresh tokens — บังคับล็อกอินใหม่ทุกเครื่อง
+    await db.update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(
+        eq(refreshTokens.userId, userId),
+        gt(refreshTokens.expiresAt, new Date()),
+      ));
+
+    await logAudit(req, 'change_password', 'auth', userId, {}, 'warning');
+    res.json({ success: true, message: 'Password changed. Please log in again.' });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to change password', code: 'AUTH_ERROR' });
   }
 });
 

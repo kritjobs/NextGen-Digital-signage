@@ -127,10 +127,17 @@ async function seed() {
   ]).onConflictDoNothing();
 
   // ─── 9. Default Users (Admin accounts) ────────────────────
+  // ⚠️ ไม่ hardcode password — อ่านจาก env (ADMIN_INITIAL_PASSWORD ฯลฯ)
+  //    ถ้าไม่ได้ตั้ง จะ generate สุ่ม + พิมพ์ครั้งเดียว (ไม่เก็บที่ไหน)
   console.log('[seed] Seeding default users...');
   const bcrypt = await import('bcryptjs');
-  const adminPasswordHash = await bcrypt.hash('Admin@2026!', 12);
-  const staffPasswordHash = await bcrypt.hash('Staff@2026!', 12);
+  const crypto = await import('node:crypto');
+  const randPw = () => 'Sg!' + crypto.randomBytes(6).toString('hex') + 'A1';
+  const adminPw = process.env.ADMIN_INITIAL_PASSWORD || randPw();
+  const staffPw = process.env.STAFF_INITIAL_PASSWORD || randPw();
+  const viewerPw = process.env.VIEWER_INITIAL_PASSWORD || randPw();
+  const adminPasswordHash = await bcrypt.hash(adminPw, 12);
+  const staffPasswordHash = await bcrypt.hash(staffPw, 12);
 
   await db.insert(schema.users).values([
     {
@@ -152,7 +159,7 @@ async function seed() {
     {
       id: 'usr-viewer-01',
       email: 'viewer@signage.local',
-      passwordHash: await bcrypt.hash('Viewer@2026!', 12),
+      passwordHash: await bcrypt.hash(viewerPw, 12),
       displayName: 'Read-Only Viewer',
       role: 'viewer',
       isActive: true,
@@ -170,10 +177,9 @@ async function seed() {
   console.log('  • 2 emergency templates');
   console.log('  • 3 users (admin/staff/viewer)');
   console.log('');
-  console.log('[seed] 🔐 Default Credentials:');
-  console.log('  admin@signage.local  / Admin@2026!  (super_admin)');
-  console.log('  staff@signage.local  / Staff@2026!  (staff)');
-  console.log('  viewer@signage.local / Viewer@2026! (viewer)');
+  // 🔐 รหัสผ่าน: ไม่พิมพ์ออกมาใน log — ตั้งผ่าน env (ADMIN_INITIAL_PASSWORD ฯลฯ) หรือเปลี่ยนทีหลังผ่าน /api/auth/change-password
+  console.log('[seed] 🔐 รหัสผ่านตั้งผ่าน env: ADMIN_INITIAL_PASSWORD / STAFF_INITIAL_PASSWORD / VIEWER_INITIAL_PASSWORD (ถ้าไม่ตั้งจะสุ่ม)');
+  console.log('[seed]   เปลี่ยนทีหลัง: POST /api/auth/change-password (หรือสคริปต์ change-admin-password.bat บน prod)');
 }
 
 seed()

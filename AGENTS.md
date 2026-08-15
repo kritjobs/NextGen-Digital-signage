@@ -44,7 +44,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - **เครื่องจริง:** `10.70.0.1` (Windows) — โค้ดอยู่ `C:\signage` (เข้าถึงผ่าน SMB `\\10.70.0.1\c\signage`)
 - **รันด้วย Docker ทั้งหมด:** signage-app (:3100), signage-postgres (:5433), signage-redis (:6380), signage-migrate (one-shot)
 - **เครื่อง dev:** `10.10.0.63` — เข้า prod ได้ผ่าน SMB อย่างเดียว (ไม่มี SSH/WinRM)
-- **รหัส admin เริ่มต้น:** `admin@signage.local / Admin@2026!` (⚠️ ต้องเปลี่ยนหลัง deploy)
+- **รหัส admin:** ไม่มี default อีกแล้ว — ตั้งผ่าน env `ADMIN_INITIAL_PASSWORD` (seed) หรือเปลี่ยนด้วย `change-admin-password.bat` / `/api/auth/change-password` (ดู `docs/change-admin-password.md`)
 
 ### เครื่องมือ ops (ในโปรเจคหลัก — ใช้ที่เครื่อง prod หรือ dev ตามที่ระบุ)
 | ไฟล์ | ใช้ที่ไหน | ใช้ทำอะไร |
@@ -78,7 +78,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — โค้ดใหม่ขึ้นครบ ✅**)
 - redeploy ผ่าน — container ใหม่ (uptime ใหม่) + bundle มี UI ครบ (QR interact/โต้ตอบจอ/แคมเปญ/สำรองข้อมูล/Audit/จอไม่ตอบสนอง) — interact API บน prod https คืน `success:true` (QR Scan-to-Interact ใช้งานได้จริง) + campaigns route อยู่ (AUTH_REQUIRED = ต้อง login)
-- **ไม่ใช่ปัญหา password:** login prod ปกติ (`admin@signage.local` / `Admin@2026!` ยังใช้ได้) — error ก่อนหน้าเป็น bug ในคำสั่งเทส (จับ field `token` ผิดเป็น `accessToken` → ส่ง Bearer undefined → TOKEN_INVALID) — campaigns/audit/monitoring บน prod ทำงานครบ
+- **ไม่ใช่ปัญหา password (ประวัติ):** error ก่อนหน้าเป็น bug ในคำสั่งเทส (จับ field `token` ผิดเป็น `accessToken`) — ตั้งแต่วันนี้ **รหัส admin ถูกเปลี่ยนแล้ว** (ดู section ด้านล่าง)
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**QR Scan-to-Interact — สแกน QR บนจอแล้วควบคุมจากมือถือ**)
 - Kiosk: QR badge มุมขวาล่าง (`/interact/:screenId`) + InteractPage (ส่งข้อความไม่ต้อง login, เปลี่ยน playlist/layout ต้อง admin) — backend มีอยู่แล้ว เติม UI — เทส end-to-end ผ่าน (ข้อความขึ้นจอผ่าน WS จริง) + integration 11/11 (`CHANGELOG.md` [0.4.0])
@@ -175,7 +175,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 ## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
 
 - [ ] **Re-pair จอ** — JWT_SECRET เปลี่ยน → display token เก่าหมดอายุ → จอต้อง pairing ใหม่ (ตอนนี้ `connectedClients: 0`)
-- [ ] **เปลี่ยนรหัส admin** — `Admin@2026!` ยังเป็น default + โชว์ใน deploy.bat/seed.bat — ควรเปลี่ยน + ลบ comment นั้น
+- [x] **เปลี่ยนรหัส admin แล้ว** (2026-08-15) — ลบ default ทั้ง seed.ts/docs — วิธีเปลี่ยน: `change-admin-password.bat` หรือ `/api/auth/change-password`
 - [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
 - [ ] **Deploy REQ-003 (server-side scheduler)** — โค้ด sync แล้ว ต้อง `redeploy.bat` ที่เครื่อง prod

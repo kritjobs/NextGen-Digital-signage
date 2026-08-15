@@ -11,6 +11,10 @@ if (process.env.NODE_ENV === 'production') {
 
 export const BASE = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100/api';
 
+// ⚠️ รหัส admin ไม่ hardcode ลงในเทส — อ่านจาก env TEST_ADMIN_PASSWORD
+// (ต้องตั้งให้ตรงกับ dev DB — ดู .env / เปลี่ยนด้วย change-admin-password.bat)
+export const TEST_ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || '';
+
 // ─── HTTP helpers ────────────────────────────────────────────
 export async function raw(method, path, { token, body, query } = {}) {
   const url = `${BASE}${path}${query ? '?' + new URLSearchParams(query) : ''}`;
@@ -24,8 +28,11 @@ export async function raw(method, path, { token, body, query } = {}) {
 }
 
 export async function loginAdmin() {
+  if (!TEST_ADMIN_PASSWORD) {
+    throw new Error('TEST_ADMIN_PASSWORD ไม่ได้ตั้ง — ใส่รหัส admin dev ลงใน .env (TEST_ADMIN_PASSWORD=...) แล้วรันเทสใหม่');
+  }
   const r = await raw('POST', '/auth/login', {
-    body: { email: 'admin@signage.local', password: 'Admin@2026!' },
+    body: { email: 'admin@signage.local', password: TEST_ADMIN_PASSWORD },
   });
   if (r.status !== 200 || !r.json?.accessToken) {
     throw new Error(`login failed: ${r.status} ${JSON.stringify(r.json)}`);

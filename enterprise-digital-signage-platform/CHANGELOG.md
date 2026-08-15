@@ -5,6 +5,20 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.2] — 2026-08-15  🤖 แก้ไขโดย Freebuff
+
+> 🔐 ยกเลิกรหัส default — admin password ต้องตั้งเอง + มีระบบเปลี่ยนรหัส
+
+### Security
+- **ลบ default password** — `Admin@2026!`/`Staff@2026!`/`Viewer@2026!` ถอนออกจาก seed.ts + docs ทั้งหมด — seed ใหม่ใช้ env (`ADMIN_INITIAL_PASSWORD` ฯลฯ) หรือสุ่มอัตโนมัติ
+- **`POST /api/auth/change-password`** (ใหม่) — เปลี่ยนรหัสตัวเอง: ต้องรหัสเดิมถูก + กันรหัส default + revoke refresh token ทุกเครื่อง (บังคับล็อกอินใหม่)
+- **`change-admin-password.bat` + `scripts/change-password.mjs`** — รีเซ็ตรหัสเมื่อ login ไม่ได้ (ใช้ได้ dev/prod ผ่าน DB ตรง) — กัน default + บังคับความแข็งแรง
+- **`docs/change-admin-password.md`** — คู่มือ 3 วิธี (API / สคริปต์ / seed env)
+- **Tests:** helpers อ่าน `TEST_ADMIN_PASSWORD` จาก env (ไม่ hardcode) — 12/12 ผ่าน
+- ✅ **เปลี่ยนรหัส admin จริงแล้ว** บน prod + dev (รหัสใหม่แจกเจ้าของระบบโดยตรง ไม่เก็บใน repo)
+
+---
+
 ## [0.4.1] — 2026-08-15  🤖 แก้ไขโดย Freebuff
 
 > Media Expiration + Embargo + Fallback Image (กฎทอง No Black Screen) — จอไม่โชว์สื่อหมดอายุ/ก่อนวันเปิดตัว และไม่มีจอดำเมื่อสื่อโหลดไม่ได้

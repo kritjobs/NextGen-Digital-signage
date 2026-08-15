@@ -264,3 +264,12 @@ export const RegisterSchema = z.object({
 export const RefreshTokenSchema = z.object({
   refreshToken: z.string().min(1),
 }).strict();
+
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(8).max(128),
+  newPassword:    z.string().min(8).max(128)
+    .regex(/[A-Z]/, 'Must contain uppercase letter')
+    .regex(/[a-z]/, 'Must contain lowercase letter')
+    .regex(/[0-9]/, 'Must contain number')
+    .refine((v) => v !== 'Admin@2026!', 'Default password is not allowed'),
+}).strict();

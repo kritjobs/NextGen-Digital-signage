@@ -21,8 +21,9 @@
 - ✅ **2026-08-15 (Freebuff):** REQ-008 Monitoring & Alerting เสร็จ (ตรวจ heartbeat 30 วิ + webhook + `/api/monitoring/status` + banner/indicator ใน UI; smoke test 9/9) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.8]
 - ✅ **2026-08-15 (Freebuff):** REQ-010 Audit log admin เสร็จ (`/api/audit-logs` + ส่วน Admin Audit Trail ใน Analytics; smoke test 9/9) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.9]
 - ✅ **2026-08-15 (Freebuff):** REQ-007 Backup อัตโนมัติเสร็จ (DB dump JSON ผ่าน pg 21 ตาราง + uploads zip + retention 7 วัน + scheduler 03:00 + หน้า Backup ใน Admin + compose mount ./backups; smoke test 14/14) — **deploy แล้ว** — ดู `CHANGELOG.md` [0.3.0]
-- ✅ **2026-08-15 (Freebuff):** REQ-009 Automated Integration Tests เสร็จ (`tests/` — node:test 9 ชุด ครอบคลุม 7 งาน + security + pair/heartbeat; `npm run test:integration`; 9/9 ผ่าน 2 รอบ) — ใช้ dev เท่านั้น — ดู `CHANGELOG.md` [0.3.1]
-- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** offline-first (IndexedDB) ใน web player
+- ✅ **2026-08-15 (Freebuff):** REQ-009 Automated Integration Tests เสร็จ (`tests/` — node:test 10 ชุด ครอบคลุมทุก REQ + security + pair/heartbeat + SW; `npm run test:integration`; 10/10 ผ่าน) — ใช้ dev เท่านั้น — ดู `CHANGELOG.md` [0.3.1]
+- ✅ **2026-08-15 (Freebuff):** REQ-004 Offline-First Web Player เสร็จ (Service Worker + banner offline + auto-resume + `?simoffline=1`; integration 10/10 + เทส live ใน preview) — ⚠️ SW ต้อง HTTPS/localhost — ดู `CHANGELOG.md` [0.3.2]
+- 🎉 **กลุ่ม 3 (roadmap) ครบทั้งหมด:** REQ-003/004/005/006/007/008/009/010/011 เสร็จทุกงาน (REQ-001/002 = เดิม)
 
 ---
 

@@ -14,7 +14,7 @@
 ### 2026-08-15 — กลุ่ม 3: ฟีเจอร์ roadmap (เจ้าของระบบอนุมัติให้เริ่มพิจารณา)
 
 - ~~**REQ-003 — Server-side scheduler**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง)
-- **REQ-004 — Offline-first ใน web player** — แคชเนื้อหาให้จอเล่นต่อได้เมื่อเน็ตหลุด (Android มี OfflineCacheService อยู่แล้ว)
+- ~~**REQ-004 — Offline-first ใน web player**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — แคชเนื้อหาให้จอเล่นต่อได้เมื่อเน็ตหลุด (Service Worker)
 - ~~**REQ-005 — Proof of Play เข้าระบบจริง**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง
 - ~~**REQ-006 — 6-Level Priority Resolver ให้ครบ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — ระบบ priority เต็มรูปแบบ 6 ระดับ
 - ~~**REQ-007 — Scheduled DB backup อัตโนมัติ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — backup DB + uploads อัตโนมัติ/ตามสั่ง ดาวน์โหลดได้จากหน้า Admin
@@ -48,6 +48,29 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-004 — Offline-First Web Player ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**จอเล่นเนื้อหาต่อได้เมื่อเน็ตหลุด — Service Worker + แคชอัจฉริยะ**
+
+- **เดิม:** จอ (DisplayKiosk) โหลดข้อมูลทุก 30 วิ — เน็ตหลุด = error เต็มจอ + เนื้อหาหยุด
+- **`public/sw.js`** (ใหม่) — Service Worker กลยุทธ์ 4 แบบ:
+  - navigate (หน้า app) → **network-first** + fallback cache — เปิดจอได้แม้ offline
+  - `/api/display/*data` → **network-first** + fallback cache — ข้อมูลจอเล่นต่อ (stale แต่ทำงาน)
+  - `/uploads/*` + `/api/media-proxy` → **stale-while-revalidate** — สื่อที่เล่นแล้วเล่นซ้ำได้ offline (อัปเดตพื้นหลัง)
+  - `/assets/*` (hashed) → cache-first; อย่างอื่น → network-only (ห้าม cache auth/CRUD)
+  - versioned cache + ล้างของเก่าอัตโนมัติ + `clients.claim()` ควบคุมหน้าทันที
+- **`DisplayKiosk.tsx`:**
+  - register SW + **offline state** (navigator.onLine + fetch ล้มเหลว) + **banner ทอง** "⚡ OFFLINE — เล่นจากแคช (เวลา)"
+  - fetch ล้มเหลวแต่มีข้อมูลเก่า → **เล่นต่อจาก cache** (ไม่ error เต็มจอ) — ไม่มี cache → error พร้อมข้อความชัด
+  - **auto-resume** — event `online` → ดึงข้อมูลสดทันที
+  - dev hook `?simoffline=1` — จำลองเน็ตหลุด (อ่านจาก SW cache ตรงๆ) ใช้เทส/เดโม
+- **`PlayerApp.tsx`** — register SW ด้วย (idempotent)
+- **`tests/integration.test.mjs`** — เพิ่มเทสข้อ 10: `/sw.js` ถูกเสิร์ฟ + มีกลยุทธ์ครบ
+- เทส: typecheck 0 error, build ผ่าน, **integration 10/10** + **เทส live ใน preview**: SW activated + controller, cache 3 กลุ่ม (shell/data/media) มีข้อมูลจริง, `?simoffline=1` → banner + เนื้อหายังแสดงครบ
+
+### ⚠️ ข้อจำกัดสำคัญ
+- **Service Worker ทำงานบน HTTPS หรือ localhost เท่านั้น** — prod ปัจจุบันเป็น `http://10.70.0.1:3100` → SW จะไม่ register (โค้ด fallback เงียบ) — จอ prod ยังเล่นต่อแบบ in-page ได้เมื่อ fetch ล้มเหลว (ข้อมูลเก่า + banner) แต่ **media cache เต็มรูปแบบต้อง HTTPS** — แนะนำติดตั้ง HTTPS (reverse proxy) หรือใช้ Android app (มี OfflineCacheService อยู่แล้ว)
 
 ### REQ-009 — Automated Integration Tests ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

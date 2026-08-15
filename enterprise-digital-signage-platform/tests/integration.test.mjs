@@ -338,6 +338,20 @@ test('8. REQ-010 Audit — login + layout create ถูกบันทึก; fi
 });
 
 // ═══════════════════════════════════════════════════════════════
+// 10) REQ-004 — Service Worker (offline-first) ถูกเสิร์ฟถูกต้อง
+// ═══════════════════════════════════════════════════════════════
+test('10. REQ-004 SW — /sw.js ถูกเสิร์ฟ + มีกลยุทธ์ cache ครบ', async () => {
+  const origin = BASE.replace('/api', '');
+  const r = await fetch(`${origin}/sw.js`);
+  assert.equal(r.status, 200, '/sw.js ควร 200');
+  const text = await r.text();
+  assert.match(text, /signage-sw-v1/, 'SW version ควรมี');
+  assert.match(text, /networkFirst/, 'กลยุทธ์ network-first (ข้อมูลจอ) ควรมี');
+  assert.match(text, /staleWhileRevalidate/, 'กลยุทธ์ media cache ควรมี');
+  assert.match(text, /DATA_RE/, 'ควร cache เฉพาะ /api/display/*data');
+});
+
+// ═══════════════════════════════════════════════════════════════
 // 9) REQ-007 — Backup (สร้างไฟล์จริงแล้วลบให้)
 // ═══════════════════════════════════════════════════════════════
 test('9. REQ-007 Backup — list/run/download/delete + path traversal', { timeout: 120_000 }, async () => {

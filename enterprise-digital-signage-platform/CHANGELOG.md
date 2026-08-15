@@ -45,6 +45,24 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.2] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-004 Offline-First Web Player)
+
+### Added
+- **Offline-first web player (REQ-004)** — จอเล่นเนื้อหาต่อได้เมื่อเน็ตหลุด:
+  - `public/sw.js` — Service Worker: navigate network-first + fallback cache, `/api/display/*data` network-first, `/uploads` + `/api/media-proxy` stale-while-revalidate, `/assets` cache-first, อื่นๆ network-only (ไม่แคช auth/CRUD) + versioned cache + `clients.claim()`
+  - `DisplayKiosk.tsx` — register SW + offline state (navigator.onLine + fetch ล้มเหลว) + **banner "OFFLINE — เล่นจากแคช"** + fetch ล้มเหลวแต่มีข้อมูลเก่า → เล่นต่อจาก cache + **auto-resume** (event online → fetch ทันที) + dev hook `?simoffline=1` (จำลองเน็ตหลุด อ่านจาก SW cache)
+  - `PlayerApp.tsx` — register SW ด้วย (idempotent)
+
+### Verified
+- typecheck 0 error, build ผ่าน, integration **10/10** (เพิ่มเทส SW: `/sw.js` เสิร์ฟ + กลยุทธ์ครบ)
+- เทส live ใน preview: SW activated + controller ✅, cache 3 กลุ่ม (shell/data/media) มีข้อมูลจริง ✅, `?simoffline=1` → banner + เนื้อหายังแสดงครบ ✅
+
+### Known / Pending
+- ⚠️ **SW ต้องการ HTTPS/localhost** — prod ปัจจุบัน `http://10.70.0.1:3100` ไม่ได้ HTTPS → SW ไม่ register (fallback เงียบ) — จอเล่นต่อแบบ in-page ได้บางส่วน แต่ media cache เต็มรูปแบบต้อง HTTPS (แนะนำ reverse proxy) หรือใช้ Android app (OfflineCacheService)
+- สื่อ seed ตัวหนึ่ง (BigBuckBunny บน Google bucket) ต้นทางตาย (403) — ไม่เกี่ยวกับ REQ-004
+
+---
+
 ## [0.3.1] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-009 Automated Integration Tests)
 
 ### Added

@@ -24,6 +24,13 @@ export const DisplayKiosk: React.FC = () => {
   // REQ-003: ref ไว้ให้ WS handler เรียก fetch ใหม่ได้ทันทีเมื่อ schedule เปลี่ยน
   const fetchDataRef = useRef<() => void>(() => {});
 
+  // REQ-004: Offline-first — เล่นต่อได้จากแคชเมื่อเน็ตหลุด
+  const [offline, setOffline] = useState<boolean>(typeof navigator !== 'undefined' && !navigator.onLine);
+  const [cachedAt, setCachedAt] = useState<string | null>(null);
+  const dataRef = useRef<any>(null); // ข้อมูลจอล่าสุด (ใช้เล่นต่อเมื่อ fetch ล้มเหลว)
+  // dev/test hook: ?simoffline=1 จำลองเน็ตหลุด (อ่านจาก SW cache ตรงๆ)
+  const simOffline = new URLSearchParams(window.location.search).get('simoffline') === '1';
+
   // Auto-fullscreen on first user interaction
   const enterFullscreen = () => {
     const el = document.documentElement;
@@ -91,6 +98,29 @@ export const DisplayKiosk: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // REQ-004: register Service Worker (แคชข้อมูลจอ + สื่อ — ใช้ได้บน localhost/HTTPS)
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .catch((e) => console.warn('[Kiosk] SW register failed (ต้องการ HTTPS/localhost):', e.message));
+    }
+  }, []);
+
+  // REQ-004: online/offline event + auto-resume ทันทีเมื่อกลับมา
+  useEffect(() => {
+    const onOnline = () => {
+      setOffline(false);
+      fetchDataRef.current(); // resume: ดึงข้อมูลสดทันที
+    };
+    const onOffline = () => setOffline(true);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, []);
+
   // Fetch data (initial + refresh every 30s)
   useEffect(() => {
     if (!token || !screenId) {
@@ -99,18 +129,40 @@ export const DisplayKiosk: React.FC = () => {
     }
 
     const fetchData = async () => {
+      // dev/test hook: จำลอง offline — อ่านจาก SW cache โดยตรง
+      if (simOffline) {
+        setOffline(true);
+        try {
+          const cacheRes = await caches.match(`/api/display/${screenId}/data?token=${token}`);
+          if (cacheRes) {
+            const json = await cacheRes.json();
+            dataRef.current = json;
+            setData(json);
+            setError(null);
+            setCachedAt(new Date().toLocaleTimeString('th-TH'));
+          }
+        } catch { /* ยังไม่มี cache */ }
+        return;
+      }
       try {
         const res = await fetch(`/api/display/${screenId}/data?token=${token}`);
         if (!res.ok) {
-          const err = await res.json();
+          const err = await res.json().catch(() => ({}));
+          // REQ-004: fetch ไม่สำเร็จแต่ยังมีข้อมูลเก่า → เล่นต่อจากแคช
+          if (dataRef.current) { setOffline(true); return; }
           setError(err.error || 'Failed to load display data');
           return;
         }
         const json = await res.json();
+        dataRef.current = json;
         setData(json);
         setError(null);
+        // ไม่ลบ offline ถ้าเน็ตยังหลุดจริง (navigator.onLine=false) — SW อาจตอบ cache มาเอง
+        if (navigator.onLine) setOffline(false);
       } catch (e: any) {
-        setError('Network error: ' + e.message);
+        // REQ-004: เน็ตหลุด — มี cache ให้เล่นต่อ, ไม่มี cache → แจ้ง error
+        if (dataRef.current) { setOffline(true); return; }
+        setError('Network error: ' + e.message + (offline ? ' (offline — ไม่มี cached data)' : ''));
       }
     };
 
@@ -236,6 +288,17 @@ export const DisplayKiosk: React.FC = () => {
       className="w-screen h-screen bg-black overflow-hidden relative select-none"
       onClick={() => { if (!audioUnlocked) setAudioUnlocked(true); }}
     >
+      {/* REQ-004: Offline indicator — เล่นจากแคช */}
+      {offline && data && (
+        <div className="absolute top-3 right-3 z-40 bg-amber-500/90 text-black text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0M2 8.82a15 15 0 0 1 20 0" />
+            <line x1="2" y1="2" x2="22" y2="22" />
+          </svg>
+          OFFLINE — เล่นจากแคช{cachedAt ? ` (${cachedAt})` : ''}
+        </div>
+      )}
+
       {/* Fullscreen + Audio unlock prompt (แสดงครั้งเดียวจนกว่าจะคลิก) */}
       {!audioUnlocked && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 cursor-pointer"

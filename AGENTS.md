@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.2]`)
+- **REQ-004 (Offline-First Web Player) เสร็จ** — `public/sw.js` (network-first ข้อมูลจอ + stale-while-revalidate สื่อ + cache-first assets) + DisplayKiosk offline state/banner/auto-resume + dev hook `?simoffline=1` — **REQ-004 เป็นงานสุดท้ายของกลุ่ม 3 ครบทั้งหมด!** — integration 10/10 + เทส live ใน preview (SW activated, cache 3 กลุ่ม, simoffline แสดงเนื้อหาจาก cache) — ⚠️ SW ต้อง HTTPS/localhost (prod ยัง http) — ยังไม่ sync/deploy (`CHANGELOG.md` [0.3.2])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.1]`)
 - **REQ-009 (Automated Integration Tests) เสร็จ** — `tests/helpers.mjs` + `tests/integration.test.mjs` (node:test 0 dep) 9 ชุด ครอบคลุม 7 งาน + security + pair/heartbeat; สร้าง/ลบข้อมูล `[TEST]` เอง; safety guard กันรันบน prod; `npm run test:integration` — **9/9 ผ่าน 2 รอบติด** (ยังไม่ sync prod รอบนี้ — โค้ดเทสกับ dev เท่านั้น)
 

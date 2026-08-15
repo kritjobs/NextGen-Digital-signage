@@ -122,6 +122,14 @@ export const PlayerApp: React.FC = () => {
     return () => { cancelled = true; };
   }, [playerScreenId]);
 
+  // REQ-004: register Service Worker (แคช app shell + ข้อมูลจอ + สื่อ — localhost/HTTPS)
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .catch((e) => console.warn('[Player] SW register failed (ต้องการ HTTPS/localhost):', e.message));
+    }
+  }, []);
+
   // Precision Clock tick
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);

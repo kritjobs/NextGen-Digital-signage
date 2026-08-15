@@ -15,6 +15,7 @@ import assert from 'node:assert/strict';
 import {
   BASE, raw, loginAdmin, api, pool,
   dbSetHeartbeat, dbClose, todayDate, tid,
+  openWs, waitFor,
 } from './helpers.mjs';
 
 // ─── Shared state ────────────────────────────────────────────
@@ -573,5 +574,84 @@ test('12. Content Approval — content ยังไม่ approved ต้อง�
   await api.screens.remove(token, scId);
   await api.playlists.remove(token, plId);
   await api.layouts.remove(token, layId);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 13) Emergency — trigger/clear ผ่าน REST → WS broadcast → จอสถานะ
+//     emergency → กลับ online (กัน regression วงจร overlay แดงบน player)
+// ═══════════════════════════════════════════════════════════════
+test('13. Emergency — REST trigger/clear → WS broadcast → จอ emergency → กลับ online', async () => {
+  const title = '[TEST] Emergency Integration';
+  const message = 'Automated regression test — please ignore.';
+
+  // WS client: 1) admin (ได้ยิน broadcast) 2) anonymous (player — รับอย่างเดียว)
+  const adminWs = await openWs(token);
+  const anonWs = await openWs(null);
+  try {
+    // รอทั้งคู่เชื่อม (INIT_CONNECTED)
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'admin WS ควรเชื่อม');
+    assert.ok(await waitFor(() => anonWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'anon WS ควรเชื่อม');
+
+    // ⚠️ Security: anonymous (player) ส่ง EMERGENCY_TRIGGERED ปลอม → hub ต้องไม่ relay ต่อ
+    const before = adminWs.messages.length;
+    anonWs.ws.send(JSON.stringify({ type: 'EMERGENCY_TRIGGERED', payload: { id: 'emg-fake' } }));
+    assert.ok(!await waitFor(() => adminWs.messages.slice(before).some((m) => m.type === 'EMERGENCY_TRIGGERED'), 800),
+      'anonymous relay ปลอมต้องถูกบล็อก (receive-only)');
+
+    // trigger ผ่าน REST → 200 + alert active
+    const tr = await api.emergency.trigger(token, {
+      title, message, type: 'custom', severity: 'critical',
+      targetScreenIds: [testScreenId],
+    });
+    assert.equal(tr.status, 200, `trigger: ${JSON.stringify(tr.json)}`);
+    const alert = tr.json?.alert;
+    assert.ok(alert?.id, 'ควรได้ alert id');
+    assert.equal(alert.isActive, true, 'alert ควร active');
+
+    // WS: admin ได้รับ EMERGENCY_TRIGGERED พร้อม payload ครบ
+    // (PlayerApp ใช้ payload นี้ทำ overlay แดง + EmergencyBanner แสดง banner)
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'EMERGENCY_TRIGGERED' && m.payload?.id === alert.id)),
+      'ควรได้รับ EMERGENCY_TRIGGERED ผ่าน WS');
+    const trig = adminWs.messages.find((m) => m.type === 'EMERGENCY_TRIGGERED' && m.payload?.id === alert.id);
+    assert.equal(trig.payload.title, title, 'WS payload ควรมี title');
+    assert.equal(trig.payload.message, message, 'WS payload ควรมี message');
+    assert.equal(trig.payload.severity, 'critical', 'severity ควรเป็น critical');
+    assert.deepEqual(trig.payload.targetScreenIds, [testScreenId], 'target ควรเป็นจอเทสเท่านั้น');
+
+    // จอเทส → สถานะ emergency + ชี้ alert
+    const sc = await raw('GET', `/screens/${testScreenId}`, { token });
+    assert.equal(sc.status, 200, 'GET screen ควร 200');
+    assert.equal(sc.json?.status, 'emergency', 'จอควรเป็น emergency');
+    assert.equal(sc.json?.activeEmergencyId, alert.id, 'จอควรชี้ alert id');
+
+    // จออื่นต้องไม่โดน (target เฉพาะจอเทส)
+    const others = await api.screens.list(token);
+    const touched = (others.json?.data ?? []).find((s) => s.status === 'emergency' && s.id !== testScreenId);
+    assert.ok(!touched, `จออื่นต้องไม่เป็น emergency (เจอ: ${touched?.id})`);
+
+    // clear → 200
+    const cl = await api.emergency.clear(token, { alertId: alert.id });
+    assert.equal(cl.status, 200, `clear: ${JSON.stringify(cl.json)}`);
+    assert.equal(cl.json?.alertId, alert.id, 'clear ควรคืน alertId');
+
+    // WS: admin ได้รับ EMERGENCY_CLEARED
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'EMERGENCY_CLEARED' && m.payload?.alertId === alert.id)),
+      'ควรได้รับ EMERGENCY_CLEARED ผ่าน WS');
+
+    // จอกลับ online + activeEmergencyId เคลียร์ (ส่ง heartbeat สดกัน monitor ฟลัค)
+    await api.telemetry.heartbeat(displayToken, { screenId: testScreenId, status: 'online', storageUsageMb: 0, uptimeSeconds: 1 });
+    const sc2 = await raw('GET', `/screens/${testScreenId}`, { token });
+    assert.equal(sc2.json?.status, 'online', 'จอควรกลับ online');
+    assert.equal(sc2.json?.activeEmergencyId, null, 'activeEmergencyId ควรเคลียร์');
+
+    // audit บันทึก emergency_trigger + emergency_clear
+    const audit = await api.audit.logs(token, { resource: 'emergency', limit: 20 });
+    const acts = (audit.json?.data ?? []).map((l) => l.action);
+    assert.ok(acts.includes('emergency_trigger'), 'audit ควรมี emergency_trigger');
+    assert.ok(acts.includes('emergency_clear'), 'audit ควรมี emergency_clear');
+  } finally {
+    adminWs.ws.close();
+    anonWs.ws.close();
+  }
 });
 

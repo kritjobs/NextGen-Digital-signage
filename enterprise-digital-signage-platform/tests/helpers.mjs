@@ -3,6 +3,7 @@
 // รัน: node --test tests/
 import 'dotenv/config';
 import pg from 'pg';
+import { WebSocket } from 'ws';
 
 // ⛔ Safety guard — ห้ามรันเทสบน prod (เทสสร้าง/ลบข้อมูลใน DB ที่มันชี้ไป)
 if (process.env.NODE_ENV === 'production') {
@@ -99,7 +100,39 @@ export const api = {
   security: {
     ssrf: (url) => raw('GET', `/media-proxy?url=${encodeURIComponent(url)}`),
   },
+  emergency: {
+    trigger: (t, body) => raw('POST', '/emergency/trigger', { token: t, body }),
+    clear:   (t, body) => raw('POST', '/emergency/clear', { token: t, body }),
+  },
 };
+
+// ─── WebSocket helpers ────────────────────────────────────────
+// server.ts: WS_PATH = /ws (บนพอร์ตเดียวกับ REST)
+export const WS_URL = BASE.replace(/^http/, 'ws').replace(/\/api$/, '') + '/ws';
+
+// เปิด WS client (token=admin → authenticated, null → anonymous/player)
+// คืน { ws, messages } — messages เก็บทุก JSON ที่ได้รับ
+export function openWs(token) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(WS_URL + (token ? `?token=${token}` : ''));
+    const messages = [];
+    ws.on('message', (raw) => {
+      try { messages.push(JSON.parse(raw.toString())); } catch { /* ข้ามข้อความที่ไม่ใช่ JSON */ }
+    });
+    ws.on('error', (err) => reject(err));
+    ws.on('open', () => resolve({ ws, messages }));
+  });
+}
+
+// รอจนกว่า cond() เป็นจริง (หรือหมดเวลา) — ใช้รอ WS message
+export async function waitFor(cond, timeoutMs = 5000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (cond()) return true;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return cond();
+}
 
 // ─── DB access ตรง (สำหรับเทส offline detection) ────────────
 export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });

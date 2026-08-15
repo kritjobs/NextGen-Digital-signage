@@ -5,6 +5,19 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.10] — 2026-08-15  🤖 แก้ไขโดย Freebuff (integration test วงจร Emergency ✅)
+
+### Added
+- **`tests/integration.test.mjs` #13 — Emergency วงจรเต็ม:** REST trigger/clear → WS broadcast → สถานะจอ emergency → กลับ online
+  - เปิด WS client จริง 2 ตัว (admin + anonymous/player) → trigger `/api/emergency/trigger` → admin ได้รับ `EMERGENCY_TRIGGERED` พร้อม payload ครบ (title/message/severity/targetScreenIds — สิ่งที่ PlayerApp ใช้ทำ overlay แดง)
+  - จอเทสเป็น `emergency` + `activeEmergencyId` ชี้ alert; จออื่นไม่โดน (target เฉพาะ)
+  - clear → ได้รับ `EMERGENCY_CLEARED` + จอกลับ `online` + `activeEmergencyId=null` + audit บันทึก `emergency_trigger`/`emergency_clear`
+  - **Security guard:** anonymous WS ส่ง `EMERGENCY_TRIGGERED` ปลอม → hub ไม่ relay ต่อ (receive-only)
+- **`tests/helpers.mjs`:** `api.emergency` (trigger/clear) + `openWs(token)`/`waitFor()` — เปิด WS client เก็บข้อความที่ได้รับ
+- **ผล:** 15/15 ผ่าน (~72 วิ — หลักๆ รอ monitor ticker ในเทส 7)
+
+---
+
 ## [0.4.9] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจ Emergency Alert ผ่าน Realtime Control ✅)
 
 ### Verified (dev preview)

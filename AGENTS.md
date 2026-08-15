@@ -63,6 +63,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**integration test วงจร Emergency — 15/15 ผ่าน ✅**)
+- **เพิ่ม `tests/integration.test.mjs` #13:** Emergency วงจรเต็ม — REST trigger/clear → WS broadcast → จอ emergency → กลับ online — เปิด WS client จริง (admin + anonymous) ยืนยัน `EMERGENCY_TRIGGERED`/`EMERGENCY_CLEARED` payload ครบ (สิ่งที่ PlayerApp ใช้ทำ overlay แดง) + จออื่นไม่โดน + audit บันทึก trigger/clear + **anonymous WS ส่งข้อความปลอมไม่ relay ต่อ** (security guard)
+- **`tests/helpers.mjs`:** เพิ่ม `api.emergency` + `openWs()`/`waitFor()` (WS client เก็บข้อความ) — `npm run test:integration` → **15/15 ผ่าน** (~72 วิ)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ Emergency Alert ผ่าน Realtime Control — ผ่าน ✅**)
 - **Trigger ผ่าน UI:** Realtime Control → EMERGENCY ALERT → BROADCAST (Critical, ทุกจอ) → `POST /api/emergency/trigger 200` → **overlay แดงขึ้นบน TV Player ทันที** (`bg-rose-950/95 + border-rose 8px + animate-pulse` เต็ม canvas, title + ข้อความเทส) + banner admin "CRITICAL BROADCAST OVERRIDE" + การ์ดจอสถานะ EMERGENCY
 - **Clear ผ่าน UI:** ปุ่มสลับเป็น CLEAR EMERGENCY BROADCAST → `POST /api/emergency/clear 200` → overlay หาย + player กลับเล่นเนื้อหาปกติ — ไม่มีการแก้โค้ด

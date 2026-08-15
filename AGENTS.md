@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (data cleanup — dev DB)
+- **ล้าง media rows ที่ไฟล์หาย** (dev): 4 rows `*_optimized.webp` ไม่อยู่ในดิสก์ → ลบ (cascade) + แทนที่ reference ใน 2 เพลย์ลิสต์ (pl-lunch-menu, pl-1786423269073) เป็น med-003 — ยืนยัน 0 ไฟล์หาย, media 24→20, Cafeteria Lunch Specials ยังมี 2 items ใช้ไฟล์ได้ทั้งคู่ (ไม่มี commit — ข้อมูล dev ล้วน)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.4]`)
 - **Ops: สคริปต์แก้ media URL บน prod** — `fix-prod-media.sql` + `fix-prod-media.bat` (รันที่ 10.70.0.1 หลัง redeploy: ตรวจ sample media เสิร์ฟ → psql ผ่าน docker compose exec → ชี้ med-001..008 ไป /media/sample/*) — SQL เทสผ่าน dev แล้ว (`CHANGELOG.md` [0.3.4])
 

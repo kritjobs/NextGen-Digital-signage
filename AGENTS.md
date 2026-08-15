@@ -66,7 +66,8 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**QR Scan-to-Interact — สแกน QR บนจอแล้วควบคุมจากมือถือ**)
-- Kiosk: QR badge มุมขวาล่าง (`/interact/:screenId`) + InteractPage (ส่งข้อความไม่ต้อง login, เปลี่ยน playlist/layout ต้อง admin) — backend มีอยู่แล้ว เติม UI — เทส end-to-end ผ่าน (ข้อความขึ้นจอผ่าน WS จริง) + integration 11/11 (`CHANGELOG.md` [0.4.0]) — ต้อง redeploy
+- Kiosk: QR badge มุมขวาล่าง (`/interact/:screenId`) + InteractPage (ส่งข้อความไม่ต้อง login, เปลี่ยน playlist/layout ต้อง admin) — backend มีอยู่แล้ว เติม UI — เทส end-to-end ผ่าน (ข้อความขึ้นจอผ่าน WS จริง) + integration 11/11 (`CHANGELOG.md` [0.4.0])
+- ✅ **push `57725b6` ขึ้น GitHub แล้ว** (GCM re-auth เสร็จ — origin/main = 57725b6) + **sync prod เรียบร้อย** (SHA ตรงกันทุกไฟล์: InteractPage/DisplayKiosk/App.tsx/integration test) — เหลือ **redeploy.bat ที่ prod** 1 รอบเพื่อ build dist ใหม่
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**คู่มือสลับโหมด HTTP/HTTPS ทีละขั้น**)
 - `docs/screen-install-guide.md` ข้อ 6 ขยายเต็ม: เปิด mode.conf → แก้ (http/https) → รัน switch-mode.bat → URL ต่อโหมด → ตรวจ + ตารางแก้ปัญหาสลับโหมด (ไม่ต้องแก้โค้ด/redeploy)

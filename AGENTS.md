@@ -65,6 +65,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Android TV: CA อัตโนมัติผ่าน native player + ADB**)
+- `android-player`: ฝัง Caddy CA ใน APK (`res/raw/caddy_root_ca.crt` + `network_security_config.xml` + manifest) → WebView trust HTTPS เอง ไม่ต้องติดตั้ง CA ที่จอ — build APK ผ่าน + ยืนยัน CA/NSC ใน APK — ⚠️ CA เปลี่ยนต้อง rebuild (`CHANGELOG.md` [0.3.9])
+- `caddy/push-ca-adb.bat`: ติดตั้ง CA ผ่าน ADB WiFi (จอที่ใช้ browser ทั่วไป) + อัปเดตคู่มือ (TRUST-CA.md / screen-install-guide / android-player README)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**QR จับคู่จอ — URL ถูกโหมดอัตโนมัติ**)
 - `PairingPage`: `?code=` pre-fill + QR encode `{origin}/pair?code=...` (http/https ตามโหมดที่เปิด) + Copy URL — ช่างสแกน QR/เปิดลิงก์ได้รหัสมาให้เลย ไม่ต้องพิมพ์
 - `ScreensManager`: ปุ่ม **Pairing QR** บนทุกการ์ดจอ → modal QR + URL + Copy — ตรวจ typecheck/build + preview ผ่าน (`CHANGELOG.md` [0.3.8])

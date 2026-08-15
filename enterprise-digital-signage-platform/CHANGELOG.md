@@ -45,6 +45,14 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.9] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Android TV — CA อัตโนมัติ ไม่ต้องติดตั้งที่จอ)
+
+**native player (`android-player/`) ฝัง Caddy CA ใน APK** — `res/raw/caddy_root_ca.crt` (ตัวถูกปัจจุบัน) + `res/xml/network_security_config.xml` + manifest `android:networkSecurityConfig` → WebView/OkHttp trust HTTPS ให้เอง **ไม่ต้องเข้า Settings → CA certificates ที่จอเลย** (cleartext ยังเปิด = รองรับโหมด http ด้วย)
+
+**เครื่องมือช่าง:** `caddy/push-ca-adb.bat` — ติดตั้ง CA ผ่าน ADB WiFi (push + เปิด CertInstaller) สำหรับจอที่ใช้ browser ทั่วไป
+
+ตรวจ: gradle assembleDebug ผ่าน + ยืนยัน `res/raw/caddy_root_ca.crt` + `networkSecurityConfig` อยู่ใน APK — ⚠️ CA เปลี่ยนเมื่อไหร่ต้อง rebuild APK (วิธีใน `android-player/README.md`)
+
 ## [0.3.8] — 2026-08-15  🤖 แก้ไขโดย Freebuff (QR จับคู่จอ — URL ถูกโหมดอัตโนมัติ)
 
 **ช่างไม่ต้องพิมพ์ URL:**

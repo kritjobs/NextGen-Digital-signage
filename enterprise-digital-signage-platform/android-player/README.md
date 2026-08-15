@@ -121,10 +121,27 @@ adb install app-debug.apk
 ### Step 2: ตั้ง Server URL
 
 ```
-Server URL: http://192.168.1.100:3100
+Server URL: http://192.168.1.100:3100      (โหมด HTTP)
+Server URL: https://10.70.0.1              (โหมด HTTPS)
 ```
 
 กรอก IP ของเครื่องที่รัน NextGen Digital Signage Server + port 3100
+
+> ### 🔒 HTTPS (โหมด B) — ไม่ต้องติดตั้ง CA ที่จอ!
+> แอปฝัง Caddy root CA ไว้ในตัว (`res/raw/caddy_root_ca.crt` + `network_security_config.xml`)
+> → WebView/OkHttp trust ให้อัตโนมัติ **ไม่มีขั้นตอน Settings → CA certificates เลย**
+>
+> ⚠️ ถ้า CA บน server เปลี่ยน (รัน `install-caddy.bat` ที่สร้าง CA ใหม่) → ต้องอัปเดต
+> `res/raw/caddy_root_ca.crt` แล้ว build APK ใหม่ (ดู Workflow ด้านล่าง)
+>
+> **งานเมื่อ CA เปลี่ยน:**
+> ```bash
+> # 1. ดึง CA ปัจจุบันจาก server
+> cp "//10.70.0.1/c/signage/caddy/caddy-root-ca.crt" \
+>    app/src/main/res/raw/caddy_root_ca.crt
+> # 2. build APK ใหม่
+> ./gradlew assembleRelease
+> ```
 
 ### Step 3: Test Connection
 

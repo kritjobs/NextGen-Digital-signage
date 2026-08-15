@@ -27,13 +27,20 @@ Caddy ใช้ `tls internal` ออก certificate เอง — เบรา�
 
 ## Android TV / Android (จอ signage)
 
-วิธีที่ 1 — ติดตั้ง CA (แนะนำ):
+**ทางเลือกที่ดีที่สุด — native player (`android-player/`):** CA ฝังใน APK ผ่าน Network Security Config (`res/raw/caddy_root_ca.crt`) → WebView trust ให้เอง **ไม่ต้องติดตั้ง CA ที่จอเลย** — อัปเดต CA เมื่อ server เปลี่ยน = rebuild APK (ดู `android-player/README.md`)
+
+วิธีที่ 1 — ติดตั้ง CA ผ่าน **ADB (WiFi)** — รันสคริปต์ `caddy\push-ca-adb.bat` (ที่เครื่องช่าง):
+1. ที่ TV: Settings → About → กด "Build" 7 ครั้ง → Developer Options → เปิด **USB/Network debugging**
+2. ที่คอม: รัน `push-ca-adb.bat` → กรอก IP TV → มันจะ push CA + เปิดหน้าติดตั้งให้อัตโนมัติ
+3. ที่จอ: กด OK/Install + ใส่ PIN (ครั้งเดียว)
+
+วิธีที่ 2 — ติดตั้งด้วยมือ (USB):
 1. คัดลอก `caddy-root-ca.crt` ไปที่จอ (USB / ผ่านเครือข่าย)
 2. ไปที่ **Settings → Security & restrictions → CA certificates → Install a CA certificate** (Android TV บางรุ่น: Settings → Security → Install from storage)
 3. เลือกไฟล์ `.crt` → ยืนยัน
 4. เปิด `https://10.70.0.1` — ไม่มี warning + SW ทำงาน
 
-วิธีที่ 2 — ข้ามคำเตือนทีละเครื่อง (เร็ว แต่ต้องทำทุกครั้งที่เปิด browser ใหม่):
+วิธีที่ 3 — ข้ามคำเตือนทีละเครื่อง (เร็ว แต่ต้องทำทุกครั้งที่เปิด browser ใหม่):
 1. เปิด `https://10.70.0.1` → เบราว์เซอร์เตือน "Not secure"
 2. กด **Advanced → Proceed to 10.70.0.1 (unsafe)**
 3. หน้านั้น (แล้วก็ SW ที่ register หลังจากนี้) อยู่ใน secure context แล้ว — **SW ทำงานได้**

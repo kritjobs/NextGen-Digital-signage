@@ -80,11 +80,14 @@ http://10.70.0.1:3100/pair
 3. เลือก **Place all certificates in the following store** → **Browse…** → **Trusted Root Certification Authorities** → OK → Finish
 4. ปิดเบราว์เซอร์ทั้งหมด แล้วเปิดใหม่ → เข้า URL อีกครั้ง → คำเตือนควรหายไป
 
-**ถ้าจอเป็น Android TV:**
-1. copy ไฟล์ `caddy-root-ca.crt` ไปที่จอ (USB / แชร์ไฟล์)
-2. ไปที่ **Settings → Security & restrictions → CA certificates → Install a CA certificate** (บางรุ่น: Settings → Security → Install from storage)
-3. เลือกไฟล์ `.crt` → ยืนยัน (ต้องตั้ง PIN/รหัสหน้าจอก่อน ถ้ายังไม่เคย)
-4. เปิด browser ใหม่ → เข้า URL อีกครั้ง → คำเตือนควรหายไป
+**ถ้าจอเป็น Android TV — ทางเลือกเรียงตามง่ายสุด:**
+
+✅ **ดีที่สุด — ใช้ native player (`android-player/`):** CA ฝังในแอปแล้ว → ตั้ง Server URL เป็น `https://<IP>` → ใช้ได้เลย **ไม่ต้องติดตั้ง CA ที่จอ**
+
+ถ้าใช้ browser ทั่วไป:
+1. **วิธี ADB (เร็วสุด):** ที่จอเปิด Developer Options → **USB/Network debugging** → ที่คอมรัน `caddy\push-ca-adb.bat` → กรอก IP จอ → กด OK ที่จอ (ครั้งเดียว)
+2. **วิธี USB:** copy ไฟล์ `caddy-root-ca.crt` ไปที่จอ (USB / แชร์ไฟล์) → **Settings → Security → CA certificates → Install** → เลือกไฟล์ `.crt` → ยืนยัน
+3. เปิด browser ใหม่ → เข้า URL อีกครั้ง → คำเตือนควรหายไป
 
 ### ขั้นที่ 7 — ตรวจว่า CA ทำงาน
 - เปิด `https://<IP>` → **📸 ควรเห็น:** ไม่มีคำเตือนอีกแล้ว เปิดหน้า login ได้ตรงๆ

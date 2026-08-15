@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Config — ให้ WebView/OkHttp เชื่อถือ Caddy internal root CA
+  ที่ฝังในแอป (res/raw/caddy_root_ca.crt) → ใช้ HTTPS กับ https://10.70.0.1
+  ได้โดย**ไม่ต้องติดตั้ง CA ที่จอ** (ไม่มีขั้นตอน Settings เลย)
+
+  ⚠️ ถ้า CA บน server เปลี่ยน (เช่นรัน install-caddy.bat ที่สร้าง CA ใหม่)
+     ต้องอัปเดตไฟล์ res/raw/caddy_root_ca.crt แล้ว build APK ใหม่
+-->
+<network-security-config>
+    <!-- cleartextTrafficPermitted=true → รองรับโหมด http:// ด้วย (สลับโหมดได้) -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+            <!-- Caddy Local Authority - 2026 ECC Root (internal LAN CA) -->
+            <certificates src="@raw/caddy_root_ca" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

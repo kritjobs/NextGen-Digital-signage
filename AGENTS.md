@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-16 — 🤖 โดย Freebuff (**Regression รอบสุดท้าย — 5 เทสทั้งหมดของวันนี้ผ่านครบ**)
+- เทสซ้ำบน dev preview ครบทุกวงจรที่ทำวันนี้ (หลังแก้โค้ด 0.4.11/0.4.12) — **ผ่านหมด ไม่มีการแก้โค้ด**: ① Dual Simulator (Admin+TV Player คู่กัน) ② Quick Post realtime (POST → WS → overlay ทั้ง admin banner + player) ③ Emergency ครบวงจร (trigger แดงเต็ม canvas → ทุกจอ EMERGENCY → clear หายหมด) ④ Emergency เจาะจงจอ (scr-001 ไม่แดง / scr-002 แดง / kiosk /display/scr-002 แดงจาก display data → clear) ⑤ Quick Post เจาะจงจอ (scr-001 ไม่ขึ้น / scr-002 ขึ้น) — รายละเอียด `CHANGELOG.md` [0.4.13]
+
 ### 2026-08-16 — 🤖 โดย Freebuff (**บทเรียน deploy: 4 รอบไม่ขึ้น — สาเหตุ + ขั้นตอนพิสูจน์**)
 
 > ⚠️ **อ่านก่อน deploy ทุกครั้ง** — เรื่องนี้ทำให้เสียเวลา 4 รอบ deploy ซ้ำๆ

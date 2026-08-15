@@ -5,6 +5,23 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.13] — 2026-08-16  🤖 โดย Freebuff (Regression รอบสุดท้าย — 5 เทสทั้งหมดของวันนี้ผ่านครบ ✅)
+
+### Verified (dev preview — เทสซ้ำทุกวงจรที่ทำวันนี้ หลังแก้โค้ดครบ 0.4.11/0.4.12)
+
+| # | เทส | ผล | หลักฐาน |
+|---|---|---|---|
+| 1 | **Dual Simulator** — Admin Console (ซ้าย) + TV Player (ขวา) คู่กัน | ✅ | Matrix 6 จอ + player LOBBY-88 เล่นวิดีโอ/weather "Buffer Cache: 100% Synced" |
+| 2 | **Quick Post realtime** — POST /api/quick-post → WS broadcast | ✅ | admin banner ฟ้า + TV Player overlay ขึ้นทันที (DOM: 2 จุด — sticky top + absolute ใน player) |
+| 3 | **Emergency Alert ครบวงจร** — Realtime Control → trigger → clear | ✅ | overlay แดงเต็ม canvas 738x640 (bg-rose-950/95 + pulse) + ทุกจอสถานะ EMERGENCY + navbar "EMERGENCY ACTIVE" → clear แล้วหายหมด (0 overlay, 0 จอ EMERGENCY) |
+| 4 | **Emergency เจาะจงจอ** (target scr-002) | ✅ | player scr-001 **ไม่แดง** / สลับ scr-002 **แดงเต็มจอ** / kiosk `/display/scr-002` **แดงเต็มจอ** (catch-up จาก display data) → clear หายทั้ง kiosk ผ่าน WS |
+| 5 | **Quick Post เจาะจงจอ** (target scr-002) | ✅ | player scr-001 **ไม่ขึ้น** (มีแค่ admin banner) / สลับ scr-002 **ขึ้น** (banner เหลือง warning 756px) + admin banner ซิงก์ |
+
+- WS จริงเชื่อม (server log `[WS] Connected (super_admin) Total: 7`) — navbar "WS Offline" เป็น indicator ของอีก channel ไม่กระทบการทำงาน
+- ไม่มีการแก้โค้ดรอบนี้ — เทสซ้ำเพื่อยืนยันความถูกต้องของงาน 0.4.11/0.4.12 (WS global + filter targetScreenIds) ทั้งหมด
+
+---
+
 ## [0.4.12] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Quick Post เจาะจงจอ + WS global ทุกแท็บ ✅)
 
 ### Fixed

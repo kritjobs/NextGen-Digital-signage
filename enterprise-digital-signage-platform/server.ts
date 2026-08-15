@@ -30,7 +30,7 @@ import {
   CreateMediaSchema, CreatePlaylistSchema, UpdatePlaylistSchema,
   CreateScheduleSchema, UpdateScheduleSchema,
   TriggerEmergencySchema, ClearEmergencySchema,
-  SendCommandSchema, HeartbeatSchema,
+  SendCommandSchema, HeartbeatSchema, ProofOfPlaySchema,
 } from './src/middleware/validate.js';
 import {
   generalLimiter, emergencyLimiter, commandLimiter,
@@ -1178,6 +1178,31 @@ async function startServer() {
         const limit = Math.min(Number(req.query.limit ?? 100), 500);
         const rows = await db.select().from(proofOfPlayLogs).orderBy(desc(proofOfPlayLogs.playedAt)).limit(limit);
         res.json({ data: rows, total: rows.length });
+      } catch (e) { next(e); }
+    });
+
+  // ─── POST /api/analytics/proof-of-play (REQ-005) ────────
+  // player/kiosk รายงานการเล่นสื่อจริง → Analytics มีข้อมูลจริง
+  app.post('/api/analytics/proof-of-play',
+    authenticate as any, telemetryLimiter, validateBody(ProofOfPlaySchema),
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        const { screenId, screenName, mediaId, mediaTitle, playedAt, durationSeconds, status } = req.body;
+        // ⚠️ Security: display token รายงานได้เฉพาะจอของตัวเอง (admin รายงานได้ทุกจอ)
+        const tok = req.user as any;
+        if (tok?.type === 'display' && tok.screenId && tok.screenId !== screenId) {
+          return res.status(403).json({ error: 'Display token can only report for its own screen' });
+        }
+        await db.insert(proofOfPlayLogs).values({
+          screenId,
+          screenName: screenName || screenId,
+          mediaId,
+          mediaTitle: mediaTitle || mediaId,
+          playedAt: playedAt ? new Date(playedAt) : new Date(),
+          durationSeconds: durationSeconds ?? 0,
+          status: status || 'completed',
+        });
+        res.status(201).json({ success: true });
       } catch (e) { next(e); }
     });
 

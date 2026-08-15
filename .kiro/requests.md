@@ -15,7 +15,7 @@
 
 - ~~**REQ-003 — Server-side scheduler**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง)
 - **REQ-004 — Offline-first ใน web player** — แคชเนื้อหาให้จอเล่นต่อได้เมื่อเน็ตหลุด (Android มี OfflineCacheService อยู่แล้ว)
-- **REQ-005 — Proof of Play เข้าระบบจริง** — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง (มี endpoint /api/analytics/proof-of-play แล้ว ต้องเช็คว่า player ส่งจริงไหม)
+- ~~**REQ-005 — Proof of Play เข้าระบบจริง**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง
 - **REQ-006 — 6-Level Priority Resolver ให้ครบ** — ระบบ priority ยังไม่เต็มรูปแบบ
 - **REQ-007 — Scheduled DB backup อัตโนมัติ** — pg_dump ผ่าน Task Scheduler + เก็บ 7 วัน
 - **REQ-008 — Monitoring/alerting** — แจ้งเตือนเมื่อจอ offline / เซิร์ฟเวอร์ตาย
@@ -53,6 +53,18 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-005 — Proof of Play เข้าระบบจริง ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**จอส่งหลักฐานการเล่นสื่อเข้า server → Analytics มีข้อมูลจริง**
+
+- **`server.ts`:** เพิ่ม `POST /api/analytics/proof-of-play` (auth: admin หรือ display token ของจอตัวเองเท่านั้น — ส่งแทนจออื่นโดน 403) + validation (mediaId/screenId/durationMs/playedAt)
+- **`validate.ts`:** เพิ่ม `CreateProofOfPlaySchema`
+- **`PlayerApp.tsx`:** หลัง media จบ → POST เข้า server แทนบันทึก local อย่างเดียว (เก็บ local ต่อเป็น cache/offline)
+- **`DisplayKiosk.tsx`:** KioskZone (จอจริง) บันทึก PoP เข้า server เช่นกัน
+- **`api.ts`:** เพิ่ม `reportProofOfPlay()` helper
+- เทส: typecheck 0 error, build ผ่าน, **smoke test 8/8 ผ่าน** (POST 201, GET roundtrip, ไม่มี token 401, จออื่น 403, body ผิด 400) + **เทส live ใน preview** — เปิด TV Player เล่นจริง → ข้อมูลไหลเข้าตารางทุก 15 วิ → Analytics UI แสดงรายการ COMPLETED ครบ
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
 
 ### REQ-003 — Server-side scheduler ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.5]`)
+- **REQ-005 (Proof of Play เข้าระบบจริง) เสร็จ** — จอ POST หลักฐานการเล่นสื่อเข้า server (admin/display token, กันส่งแทนจออื่น 403) → หน้า Analytics มีข้อมูลจริง — smoke test 8/8 + เทส live ใน preview (TV Player เล่นจริง → รายการ COMPLETED ทุก 15 วิ) — ยังไม่ deploy (`CHANGELOG.md` [0.2.5])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.4]`)
 - **REQ-003 (Server-side scheduler) เสร็จ** — server ตัดสินใจว่าจอโชว์อะไรตามเวลา (filter วันที่/วัน/เวลา/เป้าหมาย + priority) + WS push `SCHEDULE_CHANGED` + kiosk/player apply — smoke test 19/19 ผ่าน — ยังไม่ deploy (`CHANGELOG.md` [0.2.4])
 

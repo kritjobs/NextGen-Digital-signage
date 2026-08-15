@@ -23,6 +23,7 @@ import { useSignageStore } from '../../store/useSignageStore';
 import { LayoutZone, MediaItem, Playlist, DigitalScreen } from '../../types/signage';
 import { PairingQRCode } from './PairingQRCode';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
+import { analyticsApi } from '../../services/api';
 
 export const PlayerApp: React.FC = () => {
   const { 
@@ -379,15 +380,18 @@ const ZoneContainer: React.FC<ZoneContainerProps> = ({
 
     const timer = setTimeout(() => {
       if (activeMedia) {
-        recordProofOfPlay({
+        const pop = {
           screenId,
           screenName,
           mediaId: activeMedia.id,
           mediaTitle: activeMedia.title,
           playedAt: new Date().toISOString(),
           durationSeconds: activePlaylistItem.duration,
-          status: 'completed'
-        });
+          status: 'completed' as const,
+        };
+        recordProofOfPlay(pop);
+        // REQ-005: ส่ง PoP เข้า server ด้วย (Analytics มีข้อมูลจริง)
+        analyticsApi.reportProofOfPlay(pop).catch(() => {});
       }
 
       setCurrentIndex((prev) => (prev + 1) % items.length);

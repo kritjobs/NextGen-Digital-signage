@@ -205,6 +205,8 @@ export const analyticsApi = {
   getTelemetry:   (limit = 100) => request<{ data: any[]; total: number }>(`/analytics/telemetry?limit=${limit}`),
   getProofOfPlay: (limit = 100) => request<{ data: any[]; total: number }>(`/analytics/proof-of-play?limit=${limit}`),
   getSummary:     () => request<any>('/analytics/summary'),
+  // REQ-005: player รายงานการเล่นสื่อจริงเข้า server
+  reportProofOfPlay: (pop: any) => request<{ success: boolean }>('/analytics/proof-of-play', { method: 'POST', body: JSON.stringify(pop) }),
 };
 
 

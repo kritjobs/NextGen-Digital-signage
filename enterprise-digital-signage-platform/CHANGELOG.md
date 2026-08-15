@@ -45,6 +45,24 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.5] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-005 Proof of Play เข้าระบบจริง)
+
+### Added
+- **Proof of Play เข้าระบบจริง (REQ-005)** — จอส่งหลักฐานการเล่นสื่อเข้า server → Analytics มีข้อมูลจริง:
+  - `server.ts` — `POST /api/analytics/proof-of-play` (auth: admin หรือ display token ของจอตัวเอง — ส่งแทนจออื่นโดน 403) + validation ผ่าน `CreateProofOfPlaySchema` (mediaId/screenId/durationMs/playedAt)
+  - `PlayerApp.tsx` — หลัง media จบ → `reportProofOfPlay()` POST เข้า server (เก็บ local ต่อเป็น cache/offline)
+  - `DisplayKiosk.tsx` — KioskZone (จอจริง) บันทึก PoP เข้า server เช่นกัน
+  - `api.ts` — เพิ่ม `reportProofOfPlay()` helper
+
+### Verified
+- typecheck 0 error, build ผ่าน, smoke test 8/8 (POST 201, GET roundtrip, ไม่มี token 401, ส่งแทนจออื่น 403, body ผิด 400)
+- **เทส live ใน preview:** เปิด TV Player เล่นจริง → PoP ไหลเข้า server ทุก ~15 วิ → หน้า Analytics & Telemetry แสดงรายการ COMPLETED จริง (Main Lobby, ชื่อ media, duration 15s)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+
+---
+
 ## [0.2.4] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-003 Server-side scheduler)
 
 ### Added

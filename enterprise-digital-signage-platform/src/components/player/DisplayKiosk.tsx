@@ -4,7 +4,7 @@
  * ไม่ต้อง login — ใช้ display token
  * Auto-fullscreen, auto-refresh data ทุก 30 วินาที
  */
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LayoutZone, MediaItem, Playlist } from '../../types/signage';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
 
@@ -73,6 +73,17 @@ export const DisplayKiosk: React.FC = () => {
   const pathParts = window.location.pathname.split('/');
   const screenId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
   const token = new URLSearchParams(window.location.search).get('token');
+
+  // REQ-005: รายงาน Proof of Play เข้า server (ใช้ display token)
+  const reportPoP = useCallback((pop: any) => {
+    const displayToken = token || localStorage.getItem('signage_display_token') || '';
+    if (!displayToken) return;
+    fetch('/api/analytics/proof-of-play', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${displayToken}` },
+      body: JSON.stringify(pop),
+    }).catch(() => {});
+  }, [token]);
 
   // Clock tick
   useEffect(() => {
@@ -229,6 +240,9 @@ export const DisplayKiosk: React.FC = () => {
             playlists={playlists}
             mediaItems={mediaItems}
             currentTime={currentTime}
+            screenId={screen.id}
+            screenName={screen.name}
+            reportPoP={reportPoP}
           />
         ))}
       </div>
@@ -261,9 +275,12 @@ interface KioskZoneProps {
   playlists: any[];
   mediaItems: any[];
   currentTime: Date;
+  screenId: string;
+  screenName: string;
+  reportPoP: (pop: any) => void;
 }
 
-const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists, mediaItems, currentTime }) => {
+const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists, mediaItems, currentTime, screenId, screenName, reportPoP }) => {
   // Zone-specific playlist takes priority, fall back to screen-level playlist only if zone has no assignment
   const zonePlaylistId = zone.playlistId || zone.playlist_id;
   const effectivePlaylistId = zonePlaylistId || screenPlaylistId;
@@ -283,6 +300,21 @@ const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists
     }, duration);
     return () => clearTimeout(timer);
   }, [currentIndex, items.length, activeItem]);
+
+  // REQ-005: รายงาน PoP ทุกครั้งที่เริ่มเล่นสื่อ (จริง — ผ่าน display token)
+  useEffect(() => {
+    if (!activeItem || !activeMedia) return;
+    reportPoP({
+      screenId,
+      screenName,
+      mediaId: activeMedia.id,
+      mediaTitle: activeMedia.title,
+      playedAt: new Date().toISOString(),
+      durationSeconds: activeItem.duration || 10,
+      status: 'completed',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
 
   return (
     <div

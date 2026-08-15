@@ -193,6 +193,16 @@ export const SendCommandSchema = z.object({
 // SCHEMAS — Telemetry
 // ═══════════════════════════════════════════════════════════════
 
+export const ProofOfPlaySchema = z.object({
+  screenId:        z.string().min(1).max(50),
+  screenName:      z.string().max(200).optional().default(''),
+  mediaId:         z.string().min(1).max(50),
+  mediaTitle:      z.string().max(300).optional().default(''),
+  playedAt:        z.string().optional(),
+  durationSeconds: z.number().int().min(0).max(86400).optional().default(0),
+  status:          z.enum(['completed', 'interrupted', 'buffered', 'playing']).optional().default('completed'),
+}).strict();
+
 export const HeartbeatSchema = z.object({
   screenId:       z.string().min(1).max(50),
   status:         z.enum(['online', 'offline', 'syncing', 'error', 'emergency']),

@@ -17,7 +17,8 @@
 - ✅ **2026-08-15 (Freebuff):** REQ-003 Server-side scheduler เสร็จ (smoke test 19/19) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.4]
 - ✅ **2026-08-15 (Freebuff):** REQ-005 Proof of Play เข้าระบบจริง เสร็จ (smoke test 8/8 + เทส live ใน preview) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.5]
 - ✅ **2026-08-15 (Freebuff):** REQ-006 6-Level Priority เสร็จ (smoke test 8/8 + ยืนยัน UI) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.6]
-- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** offline-first (IndexedDB) ใน web player, campaigns ฝั่ง server (REQ-011), backup อัตโนมัติ (REQ-007), monitoring (REQ-008), tests (REQ-009), audit log (REQ-010)
+- ✅ **2026-08-15 (Freebuff):** REQ-011 Campaigns ฝั่ง server เสร็จ (CRUD API + แสดงผลบนจอระดับ campaign + rotation; smoke test 12/12 + เทส UI เต็มวงจร) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.7]
+- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** offline-first (IndexedDB) ใน web player, backup อัตโนมัติ (REQ-007), monitoring (REQ-008), tests (REQ-009), audit log (REQ-010)
 
 ---
 

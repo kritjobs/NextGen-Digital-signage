@@ -164,6 +164,32 @@ export const UpdateScheduleSchema = z.object({
 }).passthrough();
 
 // ═══════════════════════════════════════════════════════════════
+// SCHEMAS — Campaigns (REQ-011)
+// ═══════════════════════════════════════════════════════════════
+
+export const CampaignLayoutItemSchema = z.object({
+  layoutId:    z.string().min(1).max(50),
+  durationSec: z.number().int().min(5).max(3600),
+});
+
+export const CreateCampaignSchema = z.object({
+  id:             z.string().max(50).optional(),
+  name:           z.string().min(1).max(200),
+  description:    z.string().max(2000).optional().default(''),
+  isActive:       z.boolean().optional().default(true),
+  layoutSequence: z.array(CampaignLayoutItemSchema).default([]),
+  cycleMode:      z.enum(['sequential', 'random']).optional().default('sequential'),
+}).strict();
+
+export const UpdateCampaignSchema = z.object({
+  name:           z.string().min(1).max(200).optional(),
+  description:    z.string().max(2000).optional(),
+  isActive:       z.boolean().optional(),
+  layoutSequence: z.array(CampaignLayoutItemSchema).optional(),
+  cycleMode:      z.enum(['sequential', 'random']).optional(),
+}).passthrough();
+
+// ═══════════════════════════════════════════════════════════════
 // SCHEMAS — Emergency
 // ═══════════════════════════════════════════════════════════════
 

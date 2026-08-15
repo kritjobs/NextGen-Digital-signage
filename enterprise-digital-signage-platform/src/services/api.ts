@@ -188,6 +188,14 @@ export const scheduleApi = {
   delete:  (id: string) => request<any>(`/schedules/${id}`, { method: 'DELETE' }),
 };
 
+// ─── Campaigns (REQ-011: ฝั่ง server แทน localStorage) ──────
+export const campaignApi = {
+  getAll: () => request<{ data: any[]; total: number }>('/campaigns'),
+  create: (data: any) => request<any>('/campaigns', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => request<any>(`/campaigns/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  delete: (id: string) => request<any>(`/campaigns/${id}`, { method: 'DELETE' }),
+};
+
 // ─── Emergency ──────────────────────────────────────────────
 export const emergencyApi = {
   trigger: (data: any) => request<{ success: boolean; alert: any }>('/emergency/trigger', { method: 'POST', body: JSON.stringify(data) }),

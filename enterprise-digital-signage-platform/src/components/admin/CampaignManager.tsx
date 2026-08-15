@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Play, Pause, GripVertical, Layers, Clock, RotateCcw } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
 import { Campaign, CampaignLayoutItem } from '../../types/signage';
+import { campaignApi } from '../../services/api';
 
 export const CampaignManager: React.FC = () => {
   const { layouts } = useSignageStore();
   const publishedLayouts = layouts.filter(l => l.status === 'published');
 
-  // Local campaign state (persisted via store in future)
-  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
-    try { const raw = localStorage.getItem('signage_campaigns'); return raw ? JSON.parse(raw) : []; } catch { return []; }
-  });
+  // REQ-011: campaigns เก็บฝั่ง server (DB) — ไม่ใช้ localStorage อีกต่อไป
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const saveCampaigns = (c: Campaign[]) => {
-    setCampaigns(c);
-    localStorage.setItem('signage_campaigns', JSON.stringify(c));
-  };
+  const loadCampaigns = useCallback(async () => {
+    try {
+      const res = await campaignApi.getAll();
+      setCampaigns(res.data || []);
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || 'Failed to load campaigns');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadCampaigns(); }, [loadCampaigns]);
 
   // Create modal
   const [showCreate, setShowCreate] = useState(false);
@@ -40,33 +50,43 @@ export const CampaignManager: React.FC = () => {
     setShowCreate(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formName.trim()) return;
-    const now = new Date().toISOString();
-    if (editId) {
-      saveCampaigns(campaigns.map(c => c.id === editId ? { ...c, name: formName, cycleMode: formMode, layoutSequence: formSequence, updatedAt: now } : c));
-    } else {
-      const newCampaign: Campaign = {
-        id: 'cmp-' + Date.now(),
-        name: formName,
-        description: '',
-        isActive: true,
-        layoutSequence: formSequence,
-        cycleMode: formMode,
-        createdAt: now,
-        updatedAt: now,
-      };
-      saveCampaigns([newCampaign, ...campaigns]);
+    try {
+      setError(null);
+      const payload = { name: formName, cycleMode: formMode, layoutSequence: formSequence };
+      if (editId) {
+        await campaignApi.update(editId, payload);
+      } else {
+        await campaignApi.create({ ...payload, description: '', isActive: true });
+      }
+      await loadCampaigns();
+      setShowCreate(false);
+    } catch (e: any) {
+      setError(e.message || 'Failed to save campaign');
     }
-    setShowCreate(false);
   };
 
-  const toggleActive = (id: string) => {
-    saveCampaigns(campaigns.map(c => c.id === id ? { ...c, isActive: !c.isActive } : c));
+  const toggleActive = async (id: string) => {
+    const target = campaigns.find(c => c.id === id);
+    if (!target) return;
+    try {
+      setError(null);
+      await campaignApi.update(id, { isActive: !target.isActive });
+      await loadCampaigns();
+    } catch (e: any) {
+      setError(e.message || 'Failed to update campaign');
+    }
   };
 
-  const deleteCampaign = (id: string) => {
-    saveCampaigns(campaigns.filter(c => c.id !== id));
+  const deleteCampaign = async (id: string) => {
+    try {
+      setError(null);
+      await campaignApi.delete(id);
+      await loadCampaigns();
+    } catch (e: any) {
+      setError(e.message || 'Failed to delete campaign');
+    }
   };
 
   const addSequenceItem = () => {
@@ -100,12 +120,24 @@ export const CampaignManager: React.FC = () => {
         </button>
       </div>
 
+      {/* Error banner */}
+      {error && (
+        <div className="bg-rose-950/40 border border-rose-700/40 rounded-xl px-4 py-2 text-xs text-rose-300">
+          ⚠️ {error}
+        </div>
+      )}
+
       {/* Campaign List */}
-      {campaigns.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800">
+          <RotateCcw className="h-12 w-12 text-slate-700 mx-auto mb-3 animate-spin" />
+          <p className="text-slate-400 text-sm">Loading campaigns...</p>
+        </div>
+      ) : campaigns.length === 0 ? (
         <div className="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800">
           <RotateCcw className="h-12 w-12 text-slate-700 mx-auto mb-3" />
           <p className="text-slate-400 text-sm">No campaigns yet</p>
-          <p className="text-slate-600 text-xs mt-1">Create a campaign to rotate multiple layouts automatically</p>
+          <p className="text-slate-600 text-xs mt-1">Create a campaign to rotate multiple layouts automatically (saved to server, applies to all screens below schedule priority)</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

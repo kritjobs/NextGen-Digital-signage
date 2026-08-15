@@ -11,7 +11,7 @@ import morgan from 'morgan';
 import { db, checkDbConnection, pool } from './src/db/index.js';
 import {
   screens, mediaItems, layouts, layoutZones,
-  playlists, playlistItems, schedules,
+  playlists, playlistItems, schedules, campaigns,
   emergencyAlerts, telemetryLogs, proofOfPlayLogs, layoutVersions,
 } from './src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
@@ -30,6 +30,7 @@ import {
   CreateScreenSchema, UpdateScreenSchema,
   CreateMediaSchema, CreatePlaylistSchema, UpdatePlaylistSchema,
   CreateScheduleSchema, UpdateScheduleSchema,
+  CreateCampaignSchema, UpdateCampaignSchema,
   TriggerEmergencySchema, ClearEmergencySchema,
   SendCommandSchema, HeartbeatSchema, ProofOfPlaySchema,
 } from './src/middleware/validate.js';
@@ -214,20 +215,72 @@ async function startServer() {
     return best;
   }
 
-  // ผลลัพธ์สุดท้ายว่าจอควรได้ layout/playlist ไหน (REQ-006: คืนระดับ priority ด้วย)
+  // REQ-011: campaign ที่ active (global — ใช้กับทุกจอ; ถ้ามีหลายอันเลือกอันล่าสุด)
+  async function getActiveCampaign(): Promise<(typeof campaigns.$inferSelect) | null> {
+    const rows = await db.select().from(campaigns).where(eq(campaigns.isActive, true));
+    if (!rows.length) return null;
+    return rows.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())[0];
+  }
+
+  // campaign มี priority กลาง band campaign (21-40) — schedule ระดับเดียวกันต้องชนะ/แพ้ตามตัวเลข
+  const CAMPAIGN_DEFAULT_PRIORITY = 30;
+
+  // REQ-011: คำนวณ layout ปัจจุบันของ campaign (server-side rotation ตามเวลาตั้งแต่ createdAt)
+  function campaignCurrentLayoutId(c: { layoutSequence: unknown; cycleMode: string; createdAt: Date }, now: Date): string | null {
+    const seq: { layoutId: string; durationSec?: number }[] = Array.isArray(c.layoutSequence)
+      ? (c.layoutSequence as any[]).filter((i: any) => i && i.layoutId)
+      : [];
+    if (!seq.length) return null;
+    if (c.cycleMode === 'random') return seq[Math.floor(Math.random() * seq.length)].layoutId;
+    const totalSec = seq.reduce((s, i) => s + (Number(i.durationSec) || 0), 0);
+    if (!totalSec) return seq[0].layoutId;
+    const epoch = new Date(c.createdAt).getTime();
+    let elapsed = ((now.getTime() - epoch) % (totalSec * 1000)) / 1000;
+    if (elapsed < 0) elapsed += totalSec;
+    for (const i of seq) {
+      const d = Number(i.durationSec) || 0;
+      if (elapsed < d) return i.layoutId;
+      elapsed -= d;
+    }
+    return seq[seq.length - 1].layoutId;
+  }
+
+  // ผลลัพธ์สุดท้ายว่าจอควรได้ layout/playlist ไหน (REQ-006/011: schedule > campaign > default ตามระดับ priority)
+  // ลำดับการตัดสิน: schedule (ระดับตามตัวเลข) เทียบกับ campaign (ระดับ campaign, เลข 30) → ระดับสูงกว่าชนะ,
+  // เท่ากัน → เลขสูงกว่าชนะ, เท่ากันอีก → schedule ชนะ (เจาะจงกว่าจอ)
   async function resolveScreenContent(screenId: string, now: Date) {
     const schedule = await getActiveScheduleForScreen(screenId, now);
-    if (schedule) {
+    const campaign = await getActiveCampaign();
+    const campaignLayoutId = campaign ? campaignCurrentLayoutId(campaign, now) : null;
+    const effectiveCampaign = campaign && campaignLayoutId ? campaign : null;
+
+    const sRank = schedule ? priorityRankOf(schedule.priority) : -1;
+    const cRank = effectiveCampaign ? priorityRankOf(CAMPAIGN_DEFAULT_PRIORITY) : -1;
+    const scheduleWins = schedule
+      && (sRank > cRank || (sRank === cRank && schedule.priority >= CAMPAIGN_DEFAULT_PRIORITY));
+
+    if (scheduleWins) {
       return {
         schedule,
+        campaign: null,
         layoutId: schedule.layoutId ?? null,
         playlistId: schedule.playlistId ?? null,
         priorityLevel: priorityLevelOf(schedule.priority),
         source: 'schedule' as const,
       };
     }
-    // ไม่มี schedule → จอใช้เนื้อหาปกติของตัวเอง (ระดับ default)
-    return { schedule: null, layoutId: null, playlistId: null, priorityLevel: 'default' as const, source: 'default' as const };
+    if (effectiveCampaign) {
+      return {
+        schedule: null,
+        campaign: effectiveCampaign,
+        layoutId: campaignLayoutId,
+        playlistId: null,
+        priorityLevel: 'campaign' as const,
+        source: 'campaign' as const,
+      };
+    }
+    // ไม่มี schedule/campaign → จอใช้เนื้อหาปกติของตัวเอง (ระดับ default)
+    return { schedule: null, campaign: null, layoutId: null, playlistId: null, priorityLevel: 'default' as const, source: 'default' as const };
   }
 
   // ตรวจจับว่า schedule ของแต่ละจอเปลี่ยนไป → broadcast ให้ player รู้ทันที
@@ -238,15 +291,22 @@ async function startServer() {
       const all = await db.select().from(screens);
       for (const s of all) {
         const r = await resolveScreenContent(s.id, now);
+        // key ต้องไม่รวม layoutId ของ campaign (server หมุน layout ตามเวลา) — ไม่งั้น broadcast
+        // ทุก rotation → player รีเซ็ต campaignIndex=0 วนลูป stuck ที่ layout แรก
         const key = r.schedule
           ? `sch:${r.schedule.id}:${r.layoutId ?? ''}:${r.playlistId ?? ''}`
-          : '';
+          : r.campaign
+            ? `cmp:${r.campaign.id}`
+            : '';
         if (lastScheduleState.get(s.id) !== key) {
           lastScheduleState.set(s.id, key);
           broadcast('SCHEDULE_CHANGED', {
             screenId: s.id,
             schedule: r.schedule
               ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId, priority: r.schedule.priority, priorityLevel: r.priorityLevel }
+              : null,
+            campaign: r.campaign
+              ? { id: r.campaign.id, name: r.campaign.name, layoutSequence: r.campaign.layoutSequence, cycleMode: r.campaign.cycleMode, createdAt: r.campaign.createdAt }
               : null,
             priorityLevel: r.priorityLevel,
             source: r.source,
@@ -753,6 +813,63 @@ async function startServer() {
       } catch (e) { next(e); }
     });
 
+  // ─── Campaigns (REQ-011: CRUD ฝั่ง server — เดิมเก็บ localStorage ฝั่ง client) ────
+  app.get('/api/campaigns',
+    authenticate as any, requirePermission('read:schedules') as any,
+    async (_req, res, next) => {
+      try {
+        const rows = await db.select().from(campaigns).orderBy(desc(campaigns.createdAt));
+        res.json({ data: rows, total: rows.length });
+      } catch (e) { next(e); }
+    });
+
+  app.post('/api/campaigns',
+    authenticate as any, requirePermission('write:schedules') as any,
+    writeLimiter, validateBody(CreateCampaignSchema),
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        const id = req.body.id ?? `cmp-${Date.now()}`;
+        const now = new Date();
+        const [row] = await db.insert(campaigns).values({
+          id,
+          name: req.body.name,
+          description: req.body.description ?? '',
+          isActive: req.body.isActive ?? true,
+          layoutSequence: req.body.layoutSequence ?? [],
+          cycleMode: req.body.cycleMode ?? 'sequential',
+          createdAt: now,
+          updatedAt: now,
+        }).returning();
+        await logAudit(req, 'create', 'campaign', row.id, { name: row.name });
+        setTimeout(() => { void pushScheduleUpdates(); }, 100);
+        res.status(201).json(row);
+      } catch (e) { next(e); }
+    });
+
+  app.patch('/api/campaigns/:id',
+    authenticate as any, requirePermission('write:schedules') as any,
+    writeLimiter, validateBody(UpdateCampaignSchema),
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        const [row] = await db.update(campaigns).set({ ...req.body, updatedAt: new Date() }).where(eq(campaigns.id, req.params.id)).returning();
+        if (!row) return res.status(404).json({ error: 'Campaign not found' });
+        await logAudit(req, 'update', 'campaign', row.id, req.body);
+        setTimeout(() => { void pushScheduleUpdates(); }, 100);
+        res.json(row);
+      } catch (e) { next(e); }
+    });
+
+  app.delete('/api/campaigns/:id',
+    authenticate as any, requireRole('admin', 'super_admin') as any,
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        await db.delete(campaigns).where(eq(campaigns.id, req.params.id));
+        await logAudit(req, 'delete', 'campaign', req.params.id, {}, 'warning');
+        setTimeout(() => { void pushScheduleUpdates(); }, 100);
+        res.json({ success: true, id: req.params.id });
+      } catch (e) { next(e); }
+    });
+
   // GET /api/schedules/resolve — ดูว่า schedule ไหน active สำหรับจอตอนนี้ (admin/debug)
   app.get('/api/schedules/resolve',
     authenticate as any,
@@ -765,6 +882,9 @@ async function startServer() {
           screenId,
           schedule: r.schedule
             ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId, priority: r.schedule.priority, priorityLevel: r.priorityLevel }
+            : null,
+          campaign: r.campaign
+            ? { id: r.campaign.id, name: r.campaign.name, layoutSequence: r.campaign.layoutSequence, cycleMode: r.campaign.cycleMode, createdAt: r.campaign.createdAt }
             : null,
           priorityLevel: r.priorityLevel,
           source: r.source,
@@ -1391,9 +1511,12 @@ async function startServer() {
         playlists: allPlaylists,
         mediaItems: allMedia,
         serverTime: now.toISOString(),
-        // REQ-003/006: ข้อมูล schedule ที่ active อยู่ (null = ไม่มี schedule → ใช้ค่า default) + ระดับ priority
+        // REQ-003/006/011: ข้อมูล schedule/campaign ที่ active อยู่ + ระดับ priority
         schedule: resolution.schedule
           ? { id: resolution.schedule.id, name: resolution.schedule.name, layoutId: resolution.layoutId, playlistId: resolution.playlistId, priority: resolution.schedule.priority, priorityLevel: resolution.priorityLevel }
+          : null,
+        campaign: resolution.campaign
+          ? { id: resolution.campaign.id, name: resolution.campaign.name, layoutSequence: resolution.campaign.layoutSequence, cycleMode: resolution.campaign.cycleMode, createdAt: resolution.campaign.createdAt }
           : null,
         priorityLevel: resolution.priorityLevel,
         contentSource: resolution.source,

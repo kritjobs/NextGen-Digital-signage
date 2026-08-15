@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.7]`)
+- **REQ-011 (Campaigns ฝั่ง server) เสร็จ** — CRUD `/api/campaigns` + resolver รับ campaign (priority 30, ระดับ campaign 21-40) + server/client rotation + CampaignManager ใช้ API แทน localStorage — smoke test 12/12 + เทส UI เต็มวงจร (สร้างผ่าน UI → จอแสดง campaign → rotation A→B→A) + แก้ bug stuck layout แรก — ยังไม่ deploy (`CHANGELOG.md` [0.2.7])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.6]`)
 - **REQ-006 (6-Level Priority) เสร็จ** — ขยาย priority จาก 3 เป็น 6 ระดับ (emergency>critical>scheduled>campaign>default>standby) + resolver (REQ-003) เทียบระดับก่อนเลข + คืน priorityLevel/source ใน API — smoke test 8/8 + ยืนยัน UI — ยังไม่ deploy (`CHANGELOG.md` [0.2.6])
 

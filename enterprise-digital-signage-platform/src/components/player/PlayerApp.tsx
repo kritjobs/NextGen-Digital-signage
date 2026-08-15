@@ -20,7 +20,7 @@ import {
   Presentation
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
-import { LayoutZone, MediaItem, Playlist, DigitalScreen, PriorityLevel } from '../../types/signage';
+import { LayoutZone, MediaItem, Playlist, DigitalScreen, PriorityLevel, CampaignLayoutItem } from '../../types/signage';
 import { PairingQRCode } from './PairingQRCode';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
 import { analyticsApi } from '../../services/api';
@@ -60,33 +60,31 @@ export const PlayerApp: React.FC = () => {
     || layouts.find((l) => l.id === activeScreen?.fallbackLayoutId)
     || layouts[0];
 
-  // Campaign Rotation — auto-cycle through campaign layouts
+  // REQ-011: campaign ที่ active จาก server (rotation ฝั่ง client ตาม layoutSequence)
+  const [campaign, setCampaign] = useState<{ id: string; name: string; layoutSequence: CampaignLayoutItem[]; cycleMode: string; createdAt: string } | null>(null);
   const [campaignLayoutId, setCampaignLayoutId] = useState<string | null>(null);
   const [campaignIndex, setCampaignIndex] = useState(0);
 
+  // Campaign Rotation — auto-cycle ตามลำดับจาก server (cycleMode: sequential/random)
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('signage_campaigns');
-      if (!raw) return;
-      const campaigns = JSON.parse(raw);
-      const activeCampaign = campaigns.find((c: any) => c.isActive && c.layoutSequence?.length > 0);
-      if (!activeCampaign) { setCampaignLayoutId(null); return; }
+    if (!campaign) { setCampaignLayoutId(null); return; }
+    const sequence = campaign.layoutSequence || [];
+    if (!sequence.length) { setCampaignLayoutId(null); return; }
 
-      const sequence = activeCampaign.layoutSequence;
-      const currentItem = sequence[campaignIndex % sequence.length];
-      setCampaignLayoutId(currentItem.layoutId);
+    const currentItem = sequence[campaignIndex % sequence.length];
+    if (!currentItem?.layoutId) { setCampaignLayoutId(null); return; }
+    setCampaignLayoutId(currentItem.layoutId);
 
-      const timer = setTimeout(() => {
-        if (activeCampaign.cycleMode === 'random') {
-          setCampaignIndex(Math.floor(Math.random() * sequence.length));
-        } else {
-          setCampaignIndex((prev) => (prev + 1) % sequence.length);
-        }
-      }, currentItem.durationSec * 1000);
+    const timer = setTimeout(() => {
+      if (campaign.cycleMode === 'random') {
+        setCampaignIndex(Math.floor(Math.random() * sequence.length));
+      } else {
+        setCampaignIndex((prev) => (prev + 1) % sequence.length);
+      }
+    }, (currentItem.durationSec || 30) * 1000);
 
-      return () => clearTimeout(timer);
-    } catch { setCampaignLayoutId(null); }
-  }, [campaignIndex]);
+    return () => clearTimeout(timer);
+  }, [campaign, campaignIndex]);
 
   // Final content priority (REQ-006, 6 levels): emergency(91-100) > critical(81-90) > scheduled(41-80) > campaign(21-40) > default(11-20) > standby(1-10)
   // emergency แสดงเป็น overlay ต่างหาก — ส่วนนี้เลือก layout เนื้อหาปกติ
@@ -114,7 +112,10 @@ export const PlayerApp: React.FC = () => {
         });
         if (!res.ok) return;
         const json = await res.json();
-        if (!cancelled) setScheduleOverride(json.schedule || null);
+        if (!cancelled) {
+          setScheduleOverride(json.schedule || null);
+          setCampaign(json.campaign || null);
+        }
       } catch { /* ignore */ }
     };
     load();
@@ -152,9 +153,11 @@ export const PlayerApp: React.FC = () => {
               setQuickPost({ message: post.message, style: post.style || 'info' });
               setTimeout(() => setQuickPost(null), (post.duration || 30) * 1000);
             }
-            // REQ-003: schedule เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
+            // REQ-003/011: schedule/campaign เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
             if (msg.type === 'SCHEDULE_CHANGED' && msg.payload?.screenId === activeScreenIdRef.current) {
               setScheduleOverride(msg.payload.schedule || null);
+              setCampaign(msg.payload.campaign || null);
+              setCampaignIndex(0);
             }
           } catch {}
         };

@@ -41,11 +41,6 @@
 
 ---
 
-### REQ-011 — Campaigns ฝั่ง server (Open, ต่อจาก REQ-003)
-- campaigns มีตารางใน DB แล้ว แต่ `CampaignManager` ใช้ localStorage → ย้ายมาใช้ API + ให้ `/api/display/:id/data` apply campaign ด้วย
-
----
-
 ## รายการที่กำลังทำ (In Progress)
 
 _(ว่าง)_
@@ -53,6 +48,15 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-011 — Campaigns ฝั่ง server ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**แคมเปญเก็บฝั่ง server (DB) — แสดงผลจริงบนจอที่ระดับ priority campaign (21-40)**
+
+- **`server.ts`:** CRUD `/api/campaigns` + resolver รับ campaign เป็นตัวแข่ง (priority 30 กลาง band campaign) — schedule ระดับ/เลขสูงกว่าชนะ, campaign ชนะ default; server-side rotation ตามเวลา (createdAt); broadcast เมื่อ campaign เปลี่ยนจริง (แก้ bug stuck layout แรก)
+- **`CampaignManager.tsx`:** ใช้ API แทน localStorage; **`PlayerApp`/`DisplayKiosk`:** campaign จาก server payload + rotation
+- เทส: smoke 12/12 + UI เต็มวงจร (สร้างผ่าน UI → จอแสดง campaign → rotation A→B→A)
+- ยังไม่ deploy — ต้อง `redeploy.bat`
 
 ### REQ-006 — 6-Level Priority ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

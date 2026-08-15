@@ -45,6 +45,33 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.7] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-011 Campaigns ฝั่ง server)
+
+### Added
+- **Campaigns CRUD ฝั่ง server (REQ-011)** — เดิม `CampaignManager` เก็บ localStorage → ย้ายมาเป็น API จริง:
+  - `server.ts` — `GET/POST/PATCH/DELETE /api/campaigns` (admin auth, `write:schedules` permission, audit log)
+  - `validate.ts` — `CreateCampaignSchema`/`UpdateCampaignSchema` (layoutSequence: layoutId + durationSec)
+  - `api.ts` — `campaignApi` helper
+  - `CampaignManager.tsx` — โหลด/สร้าง/แก้/ลบ/สลับ active ผ่าน API + loading/error state (ไม่แตะ localStorage)
+- **Campaign แสดงผลจริงบนจอ (ระดับ campaign 21-40)** — resolver ผูกกับ 6-Level Priority:
+  - `resolveScreenContent()` — campaign เป็นตัวแข่ง priority 30 (กลาง band campaign): schedule ระดับ/เลขสูงกว่า → ชนะ; ไม่มี schedule → campaign ชนะ; ไม่มีทั้งคู่ → default
+  - `campaignCurrentLayoutId()` — server-side rotation ตามเวลา (epoch = createdAt)
+  - `/api/display/:id/data`, `/api/schedules/resolve`, `SCHEDULE_CHANGED` broadcast — ส่ง `campaign` payload (layoutSequence/cycleMode/createdAt)
+  - `PlayerApp.tsx` — campaign จาก resolve + WS (rotation ฝั่ง client) แทน localStorage
+  - `DisplayKiosk.tsx` — refetch ให้ทันที่ขอบเวลา item (คณิตเดียวกับ server)
+
+### Fixed
+- **bug rotation stuck:** broadcast key ของ campaign เดิมรวม `layoutId` (server หมุนทุก 30 วิ) → `SCHEDULE_CHANGED` ยิงทุก rotation → player รีเซ็ต `campaignIndex=0` → ติด layout แรก — แก้เป็น key แค่ `cmp:{id}` (broadcast เฉพาะเมื่อ campaign เปลี่ยนจริง)
+
+### Verified
+- typecheck 0 error, build ผ่าน, smoke test 12/12 (CRUD, campaign vs schedule 50/25/35, display data มี campaign+layout, validation 400)
+- **เทส UI เต็มวงจรใน preview:** สร้าง campaign ผ่าน UI (2 layouts) → TV Player แสดง campaign layout แทน default → **rotation A→B→A ครบ 60 วิ** (ยืนยัน 3 จุดเวลา)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+
+---
+
 ## [0.2.6] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-006 6-Level Priority)
 
 ### Added

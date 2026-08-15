@@ -120,6 +120,26 @@ export const DisplayKiosk: React.FC = () => {
     return () => clearInterval(interval);
   }, [screenId, token]);
 
+  // REQ-011: campaign rotation — refetch ให้ทันเมื่อ item เปลี่ยน (server คำนวณ layout ตามเวลา)
+  useEffect(() => {
+    const c: any = (data as any)?.campaign;
+    if (!c || (data as any)?.contentSource !== 'campaign') return;
+    const seq: any[] = Array.isArray(c.layoutSequence) ? c.layoutSequence.filter((i: any) => i?.layoutId) : [];
+    if (!seq.length || c.cycleMode === 'random') return;
+    const totalSec = seq.reduce((s: number, i: any) => s + (Number(i.durationSec) || 0), 0);
+    if (!totalSec || !c.createdAt) return;
+    const epoch = new Date(c.createdAt).getTime();
+    const elapsed = ((Date.now() - epoch) % (totalSec * 1000)) / 1000;
+    let acc = 0;
+    let remaining = totalSec;
+    for (const i of seq) {
+      acc += Number(i.durationSec) || 0;
+      if (elapsed < acc) { remaining = acc - elapsed; break; }
+    }
+    const timer = setTimeout(() => { fetchDataRef.current(); }, Math.max(1000, remaining * 1000));
+    return () => clearTimeout(timer);
+  }, [data]);
+
   // WebSocket: listen for remote commands (UNPAIR, EMERGENCY, etc.)
   useEffect(() => {
     if (!token || !screenId) return;

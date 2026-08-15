@@ -1389,7 +1389,12 @@ async function startServer() {
           { expiresIn: '365d' }
         );
 
-        const displayUrl = `${process.env.APP_URL || `http://localhost:${PORT}`}/display/${screenId}?token=${displayToken}`;
+        // Protocol-agnostic (โหมดสลับ HTTP/HTTPS ไม่ต้องแก้ config/redeploy):
+        // ใช้ protocol+host จาก request — ผ่าน Caddy (trust proxy เปิดอยู่)
+        // ได้ https:// อัตโนมัติ, เข้าตรง :3100 ได้ http:// — APP_URL เป็น fallback
+        const host = req.get('host');
+        const baseUrl = host ? `${req.protocol}://${host}` : (process.env.APP_URL || `http://localhost:${PORT}`);
+        const displayUrl = `${baseUrl}/display/${screenId}?token=${displayToken}`;
         await logAudit(req, 'generate_display_token', 'screen', screenId, { name: screen.name });
         res.json({ success: true, screenId, displayToken, displayUrl, expiresIn: '30 days' });
       } catch (e) { next(e); }

@@ -65,6 +65,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**สลับโหมด HTTP/HTTPS — config เดียว ไม่ต้องแก้โค้ด**)
+- `server.ts` generate-token: display URL สร้างจาก request (`req.protocol`+Host, trust proxy เปิดอยู่) — ผ่าน Caddy ได้ https:// อัตโนมัติ, ตรง :3100 ได้ http:// — APP_URL เหลือเป็น fallback — **สลับโหมดไม่ต้องแก้ .env/redeploy**
+- `caddy/mode.conf` (http/https) + `caddy/switch-mode.bat` (เปิด/ปิด Caddy service ตามโหมด) — จอเก่ายังใช้ URL เดิมได้ (ทั้ง 2 โหมดรันพร้อมกัน)
+- ตรวจ: typecheck ✅, integration 10/10 ✅, เทสจำลอง Caddy (X-Forwarded-Proto) → https://10.70.0.1 ถูกต้อง ✅ — **prod ต้อง redeploy 1 รอบเพื่อรับโค้ดใหม่**
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (Ops: **CA ถูกต้องแล้ว + SW ผ่าน HTTPS เต็มรูปแบบ ✅**)
 - **แก้ CA ผิดตัวครบวงจร:** pin storage `C:/signage/caddy/storage` + install-caddy.bat restart service จริง (net stop+start) + export CA จาก pinned storage — chain verify ผ่าน (`openssl verify: OK`, leaf ใหม่ 10:34)
 - **เทส SW register ผ่าน HTTPS prod จริง (headless Edge + CDP):** secure context ✅ → SW registered+activated ที่ scope `https://10.70.0.1/` ✅ → **cache ครบ 3 กลุ่ม:** shell + display data + media (`/uploads/...webp` ผ่าน stale-while-revalidate) ✅

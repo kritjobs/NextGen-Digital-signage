@@ -45,6 +45,14 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.7] — 2026-08-15  🤖 แก้ไขโดย Freebuff (โหมด HTTP/HTTPS สลับได้ — config เดียว)
+
+**display URL สร้างจาก request อัตโนมัติ** (`server.ts` generate-token): `req.protocol` + `Host` (trust proxy เปิดอยู่ — ผ่าน Caddy ได้ https:// อัตโนมัติ) — APP_URL เหลือเป็น fallback — **สลับโหมดไม่ต้องแก้ .env ไม่ต้อง redeploy**
+
+**สคริปต์สลับโหมด:** `caddy/mode.conf` (บรรทัดเดียว: `http`/`https`) + `caddy/switch-mode.bat` (เปิด/ปิด Caddy service ตามโหมด) — จอใหม่ที่ generate ได้ URL ถูกโหมด, จอเก่ายังใช้ URL เดิมได้ (รองรับทั้ง 2 พร้อมกัน)
+
+ตรวจ: typecheck ✅ + integration 10/10 ✅ + เทส dev (Host/X-Forwarded-Proto จำลอง Caddy → https://10.70.0.1, ตรง → http://10.70.0.1:3100) ✅
+
 ## [0.3.6] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Ops: CA ถูกต้องแล้ว + SW register ผ่าน HTTPS ✅)
 
 **Fix (CA ผิดตัว):** cert บน prod ถูกเซ็นโดย root คนละตัวกับ `caddy-root-ca.crt` (storage ของ validate/start ต่างจาก Windows service → CA แตก) — pin `storage file_system { root C:/signage/caddy/storage }` ใน `caddy/Caddyfile` + `install-caddy.bat` restart service จริง (net stop+start — `net start` ไม่ reload config) + export CA จาก pinned storage เสมอ

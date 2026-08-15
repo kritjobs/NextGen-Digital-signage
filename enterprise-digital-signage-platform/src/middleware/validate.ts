@@ -93,6 +93,9 @@ export const CreateMediaSchema = z.object({
   announceHeader:z.string().max(200).optional(),
   announceBody:  z.string().max(2000).optional(),
   webUrl:        z.string().url().max(2048).optional(),
+  expiresAt:     z.string().datetime({ offset: true }).optional().or(z.string().datetime().optional()),
+  releaseDate:   z.string().datetime({ offset: true }).optional().or(z.string().datetime().optional()),
+  fallbackImageUrl: z.string().max(2048).default(''),
 }).strict();
 
 // ═══════════════════════════════════════════════════════════════

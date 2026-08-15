@@ -252,6 +252,14 @@ async function startServer() {
   // ผลลัพธ์สุดท้ายว่าจอควรได้ layout/playlist ไหน (REQ-006/011: schedule > campaign > default ตามระดับ priority)
   // ลำดับการตัดสิน: schedule (ระดับตามตัวเลข) เทียบกับ campaign (ระดับ campaign, เลข 30) → ระดับสูงกว่าชนะ,
   // เท่ากัน → เลขสูงกว่าชนะ, เท่ากันอีก → schedule ชนะ (เจาะจงกว่าจอ)
+  // Media Expiration + Embargo: media จะแสดงบนจอได้ก็ต่อเมื่อ
+  // (1) ถึงวันเปิดตัวแล้ว (releaseDate <= now) และ (2) ยังไม่หมดอายุ (expiresAt > now)
+  function isMediaPlayable(m: { expiresAt: Date | null; releaseDate: Date | null }, now: Date): boolean {
+    if (m.releaseDate && new Date(m.releaseDate) > now) return false; // ยังไม่ถึงวันเปิดตัว
+    if (m.expiresAt && new Date(m.expiresAt) <= now) return false;    // หมดอายุแล้ว
+    return true;
+  }
+
   async function resolveScreenContent(screenId: string, now: Date) {
     const schedule = await getActiveScheduleForScreen(screenId, now);
     const campaign = await getActiveCampaign();
@@ -593,8 +601,12 @@ async function startServer() {
     writeLimiter, validateBody(CreateMediaSchema),
     async (req: AuthenticatedRequest, res, next) => {
       try {
+        // expiresAt/releaseDate รับเป็น ISO string จาก client → แปลงเป็น Date ให้ drizzle
+        const b = { ...req.body };
+        if (b.expiresAt) b.expiresAt = new Date(b.expiresAt);
+        if (b.releaseDate) b.releaseDate = new Date(b.releaseDate);
         const [row] = await db.insert(mediaItems).values({
-          ...req.body, id: req.body.id ?? `med-${Date.now()}`,
+          ...b, id: b.id ?? `med-${Date.now()}`,
           createdAt: new Date(), updatedAt: new Date(),
         }).returning();
         await logAudit(req, 'create', 'media', row.id, { title: row.title });
@@ -1513,12 +1525,14 @@ async function startServer() {
 
       const allPlaylists = await db.query.playlists.findMany({ with: { items: true } });
       const allMedia = await db.select().from(mediaItems);
+      // Media Expiration + Embargo: จอไม่ได้รับ media ที่หมดอายุแล้ว หรือยังไม่ถึงวันเปิดตัว
+      const visibleMedia = allMedia.filter((m) => isMediaPlayable(m, now));
 
       res.json({
         screen,
         layout,
         playlists: allPlaylists,
-        mediaItems: allMedia,
+        mediaItems: visibleMedia,
         serverTime: now.toISOString(),
         // REQ-003/006/011: ข้อมูล schedule/campaign ที่ active อยู่ + ระดับ priority
         schedule: resolution.schedule

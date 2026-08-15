@@ -386,7 +386,15 @@ const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const activeItem = items[currentIndex];
-  const activeMedia = mediaItems.find((m: any) => m.id === (activeItem?.mediaId || activeItem?.media_id));
+  // Skip media ที่หมดอายุ/ยังไม่ถึงวันเปิดตัว (server กรองให้แล้ว — กันไว้ชั้น client ด้วย)
+  const isMediaVisible = (m: any) => {
+    const now = new Date();
+    if (m.releaseDate && new Date(m.releaseDate) > now) return false;
+    if (m.expiresAt && new Date(m.expiresAt) < now) return false;
+    return true;
+  };
+  const rawMedia = mediaItems.find((m: any) => m.id === (activeItem?.mediaId || activeItem?.media_id));
+  const activeMedia = rawMedia && isMediaVisible(rawMedia) ? rawMedia : undefined;
 
   // Auto-advance
   useEffect(() => {
@@ -447,8 +455,14 @@ const KioskMediaRenderer: React.FC<{ media: any; currentTime: Date }> = ({ media
     url = `/api/media-proxy?url=${encodeURIComponent(url)}`;
   }
 
-  // Reset error state when media changes
+  // Reset error state when media changes (⚠️ hooks ต้องมาก่อน early return เสมอ)
   React.useEffect(() => { setHasError(false); }, [media.id, url]);
+
+  // Fallback Image: สื่อโหลดไม่ได้ → fallbackImageUrl/thumbnail แทนจอดำ
+  const fallbackUrl = media.fallbackImageUrl || media.fallback_image_url || media.thumbnailUrl || media.thumbnail_url;
+  if (hasError && fallbackUrl) {
+    return <img src={fallbackUrl} alt={media.title || ''} crossOrigin="anonymous" className="w-full h-full object-cover" />;
+  }
 
   if (type === 'video') {
     if (hasError) {

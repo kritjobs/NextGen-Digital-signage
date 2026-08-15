@@ -46,6 +46,8 @@ export const MediaLibrary: React.FC = () => {
   const [duration, setDuration] = useState(15);
   const [tagsInput, setTagsInput] = useState('corporate, banner');
   const [expiresAt, setExpiresAt] = useState('');
+  const [releaseDate, setReleaseDate] = useState('');
+  const [fallbackImageUrl, setFallbackImageUrl] = useState('');
 
   // Widget custom data
   const [tickerText, setTickerText] = useState('Welcome to our Enterprise Campus! Free WiFi: Corp-Guest');
@@ -123,12 +125,16 @@ export const MediaLibrary: React.FC = () => {
       },
       createdAt: new Date().toISOString(),
       expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+      releaseDate: releaseDate ? new Date(releaseDate).toISOString() : undefined,
+      fallbackImageUrl,
     };
 
     addMediaItem(newMedia);
     setIsAddModalOpen(false);
     setTitle('');
     setExpiresAt('');
+    setReleaseDate('');
+    setFallbackImageUrl('');
   };
 
   const getMediaIcon = (mediaType: MediaType) => {
@@ -271,6 +277,11 @@ export const MediaLibrary: React.FC = () => {
             <div className="px-3.5 py-2 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
               <span>{m.sizeMb} MB</span>
               <div className="flex items-center space-x-2">
+                {m.releaseDate && new Date(m.releaseDate) > new Date() && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold bg-cyan-500/20 text-cyan-300" title={`เปิดตัว: ${new Date(m.releaseDate).toLocaleString()}`}>
+                    🔒 Embargo
+                  </span>
+                )}
                 {m.expiresAt && (
                   <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${
                     new Date(m.expiresAt) < new Date() ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'
@@ -366,6 +377,33 @@ export const MediaLibrary: React.FC = () => {
                 />
                 <p className="text-[10px] text-slate-500 mt-1">Media will auto-hide from player after this date</p>
               </div>
+
+              {/* Release Date (Embargo) */}
+              <div>
+                <label className="text-slate-300 block mb-1">Release Date — Embargo (optional)</label>
+                <input
+                  type="datetime-local"
+                  value={releaseDate}
+                  onChange={(e) => setReleaseDate(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">Media will NOT show on screens until this date (e.g. เปิดตัวสินค้า)</p>
+              </div>
+
+              {/* Fallback Image */}
+              {(type === 'image' || type === 'video') && (
+                <div>
+                  <label className="text-slate-300 block mb-1">Fallback Image URL (optional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://.../backup.png"
+                    value={fallbackImageUrl}
+                    onChange={(e) => setFallbackImageUrl(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-white font-mono text-[11px]"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">แสดงแทนเมื่อสื่อหลักโหลดไม่ได้ (กันจอดำ)</p>
+                </div>
+              )}
 
               {(type === 'image' || type === 'video') && (
                 <div>

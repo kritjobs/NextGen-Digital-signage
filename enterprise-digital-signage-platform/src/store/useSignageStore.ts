@@ -148,6 +148,8 @@ function mapMedia(m: any): MediaItem {
       webUrl: m.webUrl || m.web_url,
     },
     expiresAt: m.expiresAt || m.expires_at || undefined,
+    releaseDate: m.releaseDate || m.release_date || undefined,
+    fallbackImageUrl: m.fallbackImageUrl || m.fallback_image_url || '',
     createdAt: m.createdAt || m.created_at || new Date().toISOString(),
   };
 }

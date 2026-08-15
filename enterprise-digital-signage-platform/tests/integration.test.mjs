@@ -426,3 +426,45 @@ test('9. REQ-007 Backup — list/run/download/delete + path traversal', { timeou
   const after = await api.backups.list(token);
   assert.ok(!(after.json?.data ?? []).some((b) => files.includes(b.name)), 'ไฟล์ที่ลบไม่ควรอยู่ใน list');
 });
+
+test('10. Media Expiration + Embargo — จอไม่ได้รับ media ที่หมดอายุ/ยังไม่ถึงวันเปิดตัว', async () => {
+  // สร้าง media เทส 3 ตัว: ปกติ / expired / embargo
+  const now = Date.now();
+  const normId = tid('med-norm');
+  const expId = tid('med-exp');
+  const embId = tid('med-emb');
+  for (const [id, extra] of [
+    [normId, {}],
+    [expId, { expiresAt: new Date(now - 86400000).toISOString() }], // หมดอายุเมื่อวาน
+    [embId, { releaseDate: new Date(now + 7 * 86400000).toISOString() }], // เปิดตัวสัปดาห์หน้า
+  ]) {
+    const r = await raw('POST', '/media', {
+      token,
+      body: {
+        id, title: '[TEST] media-lifecycle', type: 'image',
+        url: '/media/sample/campus-1.png', duration: 10, sizeMb: 0.1,
+        tags: [], thumbnailUrl: '/media/sample/campus-1.png',
+        ...extra,
+      },
+    });
+    assert.equal(r.status, 201, `create ${id}: ${JSON.stringify(r.json)}`);
+  }
+
+  // สร้าง display token + ดึง /api/display/:id/data
+  const gt = await api.display.generateToken(token, testScreenId);
+  const dtoken = gt.json?.displayToken;
+  assert.ok(dtoken, 'ควรได้ displayToken');
+  const dd = await api.display.data(testScreenId, dtoken);
+  assert.equal(dd.status, 200, `display data: ${JSON.stringify(dd.json)}`);
+  const ids = (dd.json?.mediaItems ?? []).map((m) => m.id);
+
+  assert.ok(ids.includes(normId), `จอควรเห็น media ปกติ (${normId})`);
+  assert.ok(!ids.includes(expId), `จอไม่ควรเห็น media ที่หมดอายุแล้ว (${expId})`);
+  assert.ok(!ids.includes(embId), `จอไม่ควรเห็น media ที่ยังไม่ถึงวันเปิดตัว (${embId})`);
+
+  // cleanup
+  for (const id of [normId, expId, embId]) {
+    await raw('DELETE', `/media/${id}`, { token });
+  }
+});
+

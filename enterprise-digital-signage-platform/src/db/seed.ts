@@ -70,6 +70,10 @@ async function seed() {
     { id: 'med-006', title: 'Global City Weather & Air Quality',  type: 'weather',     url: '', duration: 60, sizeMb: '0.2', tags: ['widget','weather','realtime'], thumbnailUrl: '/media/sample/campus-2.png', weatherCity: 'San Francisco, CA' },
     { id: 'med-007', title: 'Precision Digital World Clock',      type: 'clock',       url: '', duration: 60, sizeMb: '0.1', tags: ['widget','clock','time'], thumbnailUrl: '/media/sample/campus-3.png', clockFormat: '24h' },
     { id: 'med-008', title: 'Security & Visitors Policy Notice',  type: 'announcement',url: '', duration: 25, sizeMb: '0.3', tags: ['announcement','security'], thumbnailUrl: '/media/sample/campus-4.png', announceHeader: 'VISITOR REGISTRATION NOTICE', announceBody: 'All guests must scan their QR badge at reception desk 1 before entering corporate floors.' },
+    // Media Expiration + Embargo (ตัวอย่าง)
+    { id: 'med-009', title: 'Summer Sale หมดอายุแล้ว (ตัวอย่าง)',    type: 'image', url: '/media/sample/campus-3.png', duration: 15, sizeMb: '1.2', tags: ['expired','ตัวอย่าง'], thumbnailUrl: '/media/sample/campus-3.png', expiresAt: new Date(Date.now() - 7 * 86400000), fallbackImageUrl: '/media/sample/campus-4.png' },
+    { id: 'med-010', title: 'เปิดตัว Q4 สินค้าใหม่ (embargo ตัวอย่าง)', type: 'image', url: '/media/sample/campus-4.png', duration: 15, sizeMb: '1.4', tags: ['embargo','ตัวอย่าง'], thumbnailUrl: '/media/sample/campus-4.png', releaseDate: new Date(Date.now() + 14 * 86400000) },
+    { id: 'med-011', title: 'Hero Poster (fallback image ตัวอย่าง)', type: 'image', url: '/media/sample/missing-file.png', duration: 15, sizeMb: '1.0', tags: ['fallback','ตัวอย่าง'], thumbnailUrl: '/media/sample/campus-1.png', fallbackImageUrl: '/media/sample/campus-1.png' },
   ]).onConflictDoNothing();
 
   // ─── 5. Playlist Items ─────────────────────────────────────

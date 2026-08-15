@@ -5,6 +5,29 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.1] — 2026-08-15  🤖 แก้ไขโดย Freebuff
+
+> Media Expiration + Embargo + Fallback Image (กฎทอง No Black Screen) — จอไม่โชว์สื่อหมดอายุ/ก่อนวันเปิดตัว และไม่มีจอดำเมื่อสื่อโหลดไม่ได้
+
+### Added
+- **Media Expiration + Embargo (Release Date):**
+  - `media_items` เพิ่ม `release_date` (embargo — ยังไม่โชว์ก่อนวันเปิดตัว) + `fallback_image_url` (migration `0009`)
+  - **Server:** `isMediaPlayable()` — `/api/display/:id/data` กรอง media ที่หมดอายุแล้ว (`expiresAt < now`) หรือยังไม่ถึงวันเปิดตัว (`releaseDate > now`) — จอไม่ได้รับสื่อที่ใช้ไม่ได้ตั้งแต่ต้น
+  - **Player/Kiosk:** filter ชั้น client ด้วย (PlayerApp + DisplayKiosk) — กันข้อมูลเก่าจาก cache
+  - **MediaLibrary UI:** field Release Date — Embargo + Fallback Image URL + badge สถานะ (🔒 Embargo / ⛔ Expired / ⏰ วันหมดอายุ)
+- **Fallback Image (No Black Screen):**
+  - **KioskMediaRenderer + MediaRenderer:** media error (โหลดไม่ได้/ไฟล์หาย) → แสดง `fallbackImageUrl` (fallback → thumbnail) แทนจอดำ
+  - ตัวอย่าง seed: med-009 (expired), med-010 (embargo), med-011 (fallback image)
+
+### Fixed
+- **Bug hooks:** KioskMediaRenderer early return (fallback) อยู่ก่อน `React.useEffect` → "Rendered fewer hooks than expected" crash — ย้าย hooks ขึ้นก่อน early return (กฎ React hooks)
+- **POST /api/media:** `expiresAt`/`releaseDate` รับ ISO string → แปลงเป็น Date ก่อน insert (drizzle ต้องการ Date)
+
+### Tests
+- Integration test #10: สร้าง media 3 ตัว (ปกติ/หมดอายุ/embargo) → จอเห็นเฉพาะตัวปกติ — **12/12 ผ่าน**
+
+---
+
 ## [0.2.0] — 2026-08-12  🤖 แก้ไขโดย Freebuff
 
 > รอบนี้เป็นการเตรียมความพร้อม production: แก้ช่องโหว่ความปลอดภัยวิกฤต + เคลียร์ type errors 49 จุด

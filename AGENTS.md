@@ -65,6 +65,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Media Expiration + Embargo + Fallback Image**)
+- `release_date` (embargo) + `fallback_image_url` ใน media_items (migration `0009`) — server กรอง `/api/display/:id/data` (`isMediaPlayable`) — จอไม่เห็น media หมดอายุ/ยังไม่ถึงวันเปิดตัว — player/kiosk filter ชั้น client ด้วย
+- MediaLibrary: field Release Date — Embargo + Fallback Image URL + badge (🔒 Embargo / ⛔ Expired)
+- Fallback Image: media error → fallbackImageUrl/thumbnail แทนจอดำ (กฎทอง No Black Screen) — **เจอ+แก้ bug hooks crash** (early return ก่อน useEffect) + fix POST /api/media date conversion
+- เทส: typecheck 0, build ผ่าน, integration **12/12** (เพิ่ม #10 media lifecycle) + preview: badge + fallback แสดงจริง (`CHANGELOG.md` [0.4.1]) — ต้อง redeploy
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — โค้ดใหม่ขึ้นครบ ✅**)
 - redeploy ผ่าน — container ใหม่ (uptime ใหม่) + bundle มี UI ครบ (QR interact/โต้ตอบจอ/แคมเปญ/สำรองข้อมูล/Audit/จอไม่ตอบสนอง) — interact API บน prod https คืน `success:true` (QR Scan-to-Interact ใช้งานได้จริง) + campaigns route อยู่ (AUTH_REQUIRED = ต้อง login)
 - **ไม่ใช่ปัญหา password:** login prod ปกติ (`admin@signage.local` / `Admin@2026!` ยังใช้ได้) — error ก่อนหน้าเป็น bug ในคำสั่งเทส (จับ field `token` ผิดเป็น `accessToken` → ส่ง Bearer undefined → TOKEN_INVALID) — campaigns/audit/monitoring บน prod ทำงานครบ

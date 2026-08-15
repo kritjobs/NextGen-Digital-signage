@@ -384,8 +384,14 @@ const ZoneContainer: React.FC<ZoneContainerProps> = ({
 
   const activePlaylistItem = items[currentIndex];
   const rawMedia = mediaItems.find((m) => m.id === activePlaylistItem?.mediaId);
-  // Skip expired media
-  const activeMedia = rawMedia && rawMedia.expiresAt && new Date(rawMedia.expiresAt) < new Date() ? undefined : rawMedia;
+  // Skip media ที่หมดอายุแล้ว หรือยังไม่ถึงวันเปิดตัว (embargo)
+  const isMediaVisible = (m: MediaItem) => {
+    const now = new Date();
+    if (m.releaseDate && new Date(m.releaseDate) > now) return false;
+    if (m.expiresAt && new Date(m.expiresAt) < now) return false;
+    return true;
+  };
+  const activeMedia = rawMedia && isMediaVisible(rawMedia) ? rawMedia : undefined;
 
   useEffect(() => {
     if (!items.length || !activePlaylistItem) return;
@@ -442,6 +448,15 @@ const ZoneContainer: React.FC<ZoneContainerProps> = ({
 
 // Media Item Specific Renderer
 const MediaRenderer: React.FC<{ media: MediaItem; isMuted: boolean; currentTime: Date }> = ({ media, isMuted, currentTime }) => {
+  // Fallback Image: ถ้าสื่อโหลดไม่ได้ → แสดง fallbackImageUrl แทนจอดำ (กฎทอง No Black Screen)
+  const [mediaError, setMediaError] = React.useState(false);
+  React.useEffect(() => { setMediaError(false); }, [media.id]);
+
+  const fallbackUrl = media.fallbackImageUrl || media.thumbnailUrl;
+  if (mediaError && fallbackUrl) {
+    return <img src={fallbackUrl} alt={media.title} className="w-full h-full object-cover" />;
+  }
+
   if (media.type === 'video') {
     return (
       <video
@@ -450,6 +465,7 @@ const MediaRenderer: React.FC<{ media: MediaItem; isMuted: boolean; currentTime:
         loop
         muted={isMuted}
         playsInline
+        onError={() => setMediaError(true)}
         className="w-full h-full object-cover"
       />
     );
@@ -460,6 +476,7 @@ const MediaRenderer: React.FC<{ media: MediaItem; isMuted: boolean; currentTime:
       <img
         src={media.url || media.thumbnailUrl}
         alt={media.title}
+        onError={() => setMediaError(true)}
         className="w-full h-full object-cover animate-fade-in"
       />
     );

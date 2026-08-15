@@ -220,6 +220,8 @@ export interface MediaItem {
     worldClockCities?: string; // comma-separated city names
   };
   expiresAt?: string; // ISO date — auto-remove after this date
+  releaseDate?: string; // ISO date — embargo: don't show before this date
+  fallbackImageUrl?: string; // shown when primary media fails to load (no black screen)
   createdAt: string;
 }
 

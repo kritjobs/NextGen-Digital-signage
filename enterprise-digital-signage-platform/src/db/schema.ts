@@ -49,6 +49,8 @@ export const mediaItems = pgTable('media_items', {
   announceBody:   text('announce_body'),
   webUrl:         text('web_url'),
   expiresAt:      timestamp('expires_at', { withTimezone: true }),
+  releaseDate:    timestamp('release_date', { withTimezone: true }),
+  fallbackImageUrl: text('fallback_image_url').notNull().default(''),
   createdAt:      timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:      timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [

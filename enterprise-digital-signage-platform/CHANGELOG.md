@@ -45,6 +45,24 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.3] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Deploy REQ-001/002)
+
+### Changed
+- **Deploy REQ-001 + REQ-002 ขึ้น prod สำเร็จ** (`redeploy.bat` ที่ 10.70.0.1) — ยืนยัน live tests ผ่าน:
+  - Health: container ใหม่ (uptime < 5 นาที), `database: connected`
+  - SSRF media-proxy (169.254.169.254) → `URL blocked` [400]
+  - SSRF RSS (192.168.x) → `RSS feed blocked` [400]
+  - `/api/trigger` ไม่มี token → [401], token ผิด → [401]
+  - `/api/trigger` token ถูก + `action: refresh` → [200] success (targetScreens 5)
+  - **หมายเหตุ:** `/api/trigger` ตอนนี้บังคับ field `action` + `target` — webhook ภายนอกที่เคยส่งแค่ `{}` ต้องปรับ payload (โค้ดใหม่ตรวจเข้มขึ้น)
+
+### Known / Pending
+- จอต้อง **re-pair** (JWT_SECRET เปลี่ยน — display token เก่าหมดอายุ)
+- เปลี่ยนรหัส admin เริ่มต้น (`Admin@2026!`)
+- แจก `WEBHOOK_TOKEN` ให้ระบบภายนอกที่เรียก webhook
+
+---
+
 ## [0.2.1] — 2026-08-12  🤖 แก้ไขโดย Freebuff (REQ-001)
 
 ### Added

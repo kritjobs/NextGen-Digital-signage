@@ -65,6 +65,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.3]`)
+- **Deploy REQ-001/002 ขึ้น prod สำเร็จ** — ยืนยัน live tests 7 จุด (SSRF block ×2, trigger 401/200, health container ใหม่) — `CHANGELOG.md` [0.2.3]
+- **ตั้ง git version control** — baseline commit 313 ไฟล์ + `git-help.md` + remote GitHub (`kritjobs/NextGen-Digital-signage`) — กติกาใน §6.7
+
 ### 2026-08-12 — 🤖 แก้ไขโดย Kiro (`CHANGELOG.md` → `[0.2.2]`)
 - **REQ-002 (IP priority fix):** กลับลำดับ IP priority ใน `server.ts` — เดิม device IP > connection IP (spoof ได้) → ใหม่ connection IP > device IP (spoof ไม่ได้)
 - แก้ 2 จุด: pair endpoint + heartbeat endpoint

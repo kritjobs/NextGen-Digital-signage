@@ -39,9 +39,9 @@ _(ว่าง)_
 - **Web pair page:** merge deviceInfo จาก SignageNative; browser หา MAC ไม่ได้ → server ใช้ req.ip
 - **UI:** Network Info โชว์ "—" จนกว่าจอรายงานจริง + แสดง last heartbeat
 - **ลบ mock:** initialData.ts + seed.ts เปลี่ยน IP/MAC ปลอมเป็นค่าว่าง
-- เทส: typecheck 0 error, build ผ่าน, smoke test ผ่าน (IP จาก connection + MAC จาก heartbeat ถูกเก็บจริง) — ยังไม่ deploy ต้อง `redeploy.bat`
+- เทส: typecheck 0 error, build ผ่าน, smoke test ผ่าน (IP จาก connection + MAC จาก heartbeat ถูกเก็บจริง) — ✅ **deployed 2026-08-15** (เทส 7 จุดผ่าน)
 
 ### REQ-002 — กลับลำดับ IP priority: connection IP เป็นหลัก ✅ เสร็จ (2026-08-12 — 🤖 Kiro)
 - **Security fix:** กลับลำดับ IP priority ใน `server.ts` — connection IP (spoof ไม่ได้) > reported IP จาก device (fallback)
 - แก้ 2 จุด: pair endpoint + heartbeat endpoint
-- typecheck 0 errors, build ผ่าน — ยังไม่ deploy ต้อง `redeploy.bat`
+- typecheck 0 errors, build ผ่าน — ✅ **deployed 2026-08-15** (เทส 7 จุดผ่าน)

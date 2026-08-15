@@ -101,7 +101,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 4. **คุณภาพ:** typecheck 0 errors เสมอ, ไม่ใช้ `as any` แก้ปัญหา, แก้ที่ต้นเหตุ
 5. **ความปลอดภัย:** ไม่เปิดเผย secret ในเอกสาร/แชท, ไม่แก้ไฟล์ prod ตรงๆ โดยไม่ผ่าน workflow
 6. **Kiro:** อ่าน specs ใน `.kiro/specs/nextgen-digital-signage/` ก่อนเริ่มฟีเจอร์ใหม่ — งานที่ทำต้องตรง requirements.md + design.md
-7. **Git (ตั้งแต่ 2026-08-15):** ทุกงานที่เสร็จต้อง commit — มาร์คผู้ทำใน commit message (`🤖 Freebuff` / `🤖 Kiro`) ห้าม commit `.env` / `uploads/` / `.freebuff/` (อยู่ใน .gitignore แล้ว) — git ใช้เป็นประวัติ + ย้อนกลับได้
+7. **Git (ตั้งแต่ 2026-08-15):** ทุกงานที่เสร็จต้อง commit + push — มาร์คผู้ทำใน commit message (`🤖 Freebuff` / `🤖 Kiro`) ห้าม commit `.env` / `uploads/` / `.freebuff/` (อยู่ใน .gitignore แล้ว) — ดูคำสั่ง/กฎทั้งหมดใน `git-help.md` (root)
 
 ## 7. การรับไอเดีย/ความต้องการใหม่ (Requirement Intake) — สำคัญ
 

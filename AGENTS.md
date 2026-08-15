@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.4]`)
+- **REQ-003 (Server-side scheduler) เสร็จ** — server ตัดสินใจว่าจอโชว์อะไรตามเวลา (filter วันที่/วัน/เวลา/เป้าหมาย + priority) + WS push `SCHEDULE_CHANGED` + kiosk/player apply — smoke test 19/19 ผ่าน — ยังไม่ deploy (`CHANGELOG.md` [0.2.4])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.3]`)
 - **Deploy REQ-001/002 ขึ้น prod สำเร็จ** — ยืนยัน live tests 7 จุด (SSRF block ×2, trigger 401/200, health container ใหม่) — `CHANGELOG.md` [0.2.3]
 - **ตั้ง git version control** — baseline commit 313 ไฟล์ + `git-help.md` + remote GitHub (`kritjobs/NextGen-Digital-signage`) — กติกาใน §6.7
@@ -90,7 +93,8 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - [ ] **เปลี่ยนรหัส admin** — `Admin@2026!` ยังเป็น default + โชว์ใน deploy.bat/seed.bat — ควรเปลี่ยน + ลบ comment นั้น
 - [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
-- [ ] ฟีเจอร์จาก roadmap ที่ยังไม่ทำ (server-side scheduler, offline-first ใน web player, 6-Level Priority ให้ครบ ฯลฯ)
+- [ ] **Deploy REQ-003 (server-side scheduler)** — โค้ด sync แล้ว ต้อง `redeploy.bat` ที่เครื่อง prod
+- [ ] ฟีเจอร์จาก roadmap ที่ยังไม่ทำ (offline-first ใน web player, 6-Level Priority, campaigns ฝั่ง server (REQ-011), PoP จริง, backup อัตโนมัติ, monitoring, tests, audit log — ดู requests.md)
 
 ---
 

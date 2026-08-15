@@ -11,7 +11,38 @@
 
 ## รายการที่รอพิจารณา (Open)
 
-_(ว่าง)_
+### 2026-08-15 — กลุ่ม 3: ฟีเจอร์ roadmap (เจ้าของระบบอนุมัติให้เริ่มพิจารณา)
+
+- ~~**REQ-003 — Server-side scheduler**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง)
+- **REQ-004 — Offline-first ใน web player** — แคชเนื้อหาให้จอเล่นต่อได้เมื่อเน็ตหลุด (Android มี OfflineCacheService อยู่แล้ว)
+- **REQ-005 — Proof of Play เข้าระบบจริง** — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง (มี endpoint /api/analytics/proof-of-play แล้ว ต้องเช็คว่า player ส่งจริงไหม)
+- **REQ-006 — 6-Level Priority Resolver ให้ครบ** — ระบบ priority ยังไม่เต็มรูปแบบ
+- **REQ-007 — Scheduled DB backup อัตโนมัติ** — pg_dump ผ่าน Task Scheduler + เก็บ 7 วัน
+- **REQ-008 — Monitoring/alerting** — แจ้งเตือนเมื่อจอ offline / เซิร์ฟเวอร์ตาย
+- **REQ-009 — Automated tests** — integration test ของ security guard + pair/heartbeat
+- **REQ-010 — Audit log admin** — บันทึกการกระทำของ admin (login, trigger emergency, แก้ playlist ฯลฯ)
+
+#### 📋 ผลสำรวจความพร้อม (2026-08-15 — 🤖 Freebuff)
+
+| # | งาน | ความพร้อม | ขนาดงาน | หมายเหตุ |
+|---|---|---|---|---|
+| REQ-009 | Automated tests | สูง | เล็ก | ทำบน dev ล้วน ไม่แตะ prod — กัน regression ทั้งหมด |
+| REQ-007 | Scheduled DB backup | สูง | เล็ก | script + Task Scheduler บน prod — ประกันข้อมูล |
+| REQ-005 | Proof of Play จริง | สูง | กลาง | **DB ตาราง + GET endpoint มีแล้ว** แต่ player บันทึกแค่ local (store) ไม่ POST เข้า server → Analytics ว่าง — แค่เพิ่ม POST + player ส่ง |
+| REQ-008 | Monitoring/alerting | กลาง | เล็ก-กลาง | script ตรวจ health + connectedClients + แจ้งเตือน |
+| REQ-010 | Audit log admin | กลาง | กลาง | ต้องเพิ่มตาราง + middleware |
+| REQ-003 | Server-side scheduler | กลาง | **ใหญ่** | **DB ตาราง schedules ครบแล้ว + CRUD มี** แต่ player (PlayerApp) **ไม่เคย evaluate schedule เลย** — ต้องเพิ่ม resolver ฝั่ง server + WS push + player รับ/apply — งานหลักของระบบ |
+| REQ-006 | 6-Level Priority | กลาง | กลาง | ตอนนี้ `PriorityLevel = 'emergency' \| 'scheduled' \| 'default'` (3 ระดับ) — ต้องขยายเป็น 6 + resolver — ควรทำคู่กับ REQ-003 |
+| REQ-004 | Offline-first web player | ต่ำ | ใหญ่ | ต้อง IndexedDB + service worker — Android มี OfflineCacheService แล้ว |
+
+**พบ gap เพิ่ม:** `campaigns` มีตารางใน DB แล้ว แต่ `PlayerApp` อ่านจาก **localStorage** (`signage_campaigns`) ไม่ได้ดึงจาก server → แยกเป็น REQ-011
+
+**ลำดับที่แนะนำ:** REQ-009/007 (ไว้อันตราย) → REQ-005 (Analytics เป็นจริง) → REQ-006 (Priority) → REQ-008/010 → REQ-004 → REQ-011
+
+---
+
+### REQ-011 — Campaigns ฝั่ง server (Open, ต่อจาก REQ-003)
+- campaigns มีตารางใน DB แล้ว แต่ `CampaignManager` ใช้ localStorage → ย้ายมาใช้ API + ให้ `/api/display/:id/data` apply campaign ด้วย
 
 ---
 
@@ -22,6 +53,22 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-003 — Server-side scheduler ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**เซิร์ฟเวอร์ตัดสินใจว่าจอโชว์อะไรตามเวลา — ไม่ต้องพึ่งจอเปิดอยู่ตอนสร้าง schedule**
+
+- **`server.ts`:**
+  - `getActiveScheduleForScreen()` — filter: isActive + วันที่ + วันในสัปดาห์ + เวลา (HH:MM) + เป้าหมาย (ทุกจอ / screenIds / กลุ่ม) + **ชนกันเลือก priority สูงสุด**
+  - `resolveScreenContent()` — หน้าตัดสินใจกลาง (schedule → fallback)
+  - `pushScheduleUpdates()` — ticker ทุก 30 วิ ตรวจจับ schedule เปลี่ยน → broadcast `SCHEDULE_CHANGED`
+  - `/api/display/:id/data` — ใช้ effective layout/playlist จาก schedule + ส่ง `schedule`/`effectivePlaylistId` ใน payload
+  - `/api/schedules/resolve?screenId=` — ดูว่า schedule ไหน active ตอนนี้ (admin/debug)
+  - schedule CRUD (POST/PATCH/DELETE) → trigger push ทันที
+- **`DisplayKiosk.tsx`:** รับ `SCHEDULE_CHANGED` → refetch ทันที (ไม่รอ poll 30 วิ) + ใช้ `effectivePlaylistId`
+- **`PlayerApp.tsx`:** ดึง resolve ตอน mount/เปลี่ยนจอ + ฟัง WS → ลำดับความสำคัญ **emergency overlay > schedule > campaign > base**
+- เทส: typecheck 0 error, build ผ่าน, **smoke test 19/19 ผ่าน** (resolve, display data ใช้ scheduled layout, WS push, fallback เมื่อ schedule inactive)
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
 
 ### 2026-08-15 — 🤖 Freebuff
 - **ตั้ง git version control** ที่ workspace root — baseline commit ครอบ AGENTS.md + .kiro + docs + โปรเจคหลัก + prototypes (exclude .freebuff, node_modules, dist, .env, uploads, backups, logs) — กติกา commit ใน AGENTS.md §6.7

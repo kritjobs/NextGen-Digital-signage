@@ -160,6 +160,91 @@ async function startServer() {
     wss.clients.forEach((c) => { if (c.readyState === WebSocket.OPEN) c.send(data); });
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // SERVER-SIDE SCHEDULER (REQ-003)
+  // ─── ตัดสินใจจากฝั่ง server ว่าจอควรโชว์อะไรตามเวลา ───
+  // ═══════════════════════════════════════════════════════════
+
+  function localDateStr(d: Date): string {
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+  function localTimeStr(d: Date): string {
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${p(d.getHours())}:${p(d.getMinutes())}`;
+  }
+
+  // หา schedule ที่ active สำหรับจอหนึ่ง ณ เวลานี้
+  // กฎ: isActive + ช่วงวันที่ + วันในสัปดาห์ + ช่วงเวลา + เป้าหมาย (ทุกจอ / จอที่ระบุ / กลุ่ม)
+  // ถ้าชนกันหลายรายการ → เลือก priority สูงสุด (เลขมาก = สำคัญกว่า)
+  async function getActiveScheduleForScreen(screenId: string, now: Date): Promise<(typeof schedules.$inferSelect) | null> {
+    const [screen] = await db.select().from(screens).where(eq(screens.id, screenId));
+    if (!screen) return null;
+
+    const today = localDateStr(now);
+    const nowTime = localTimeStr(now);
+    const day = now.getDay(); // 0 = Sunday
+
+    const rows = await db.select().from(schedules).where(eq(schedules.isActive, true));
+    let best: (typeof schedules.$inferSelect) | null = null;
+
+    for (const s of rows) {
+      // schedule ต้องมีอะไรให้เล่นจริง (layout หรือ playlist) อย่างน้อยหนึ่งอย่าง
+      if (!s.layoutId && !s.playlistId) continue;
+      // ช่วงวันที่
+      if (today < s.startDate || today > s.endDate) continue;
+      // วันในสัปดาห์
+      if (s.daysOfWeek && s.daysOfWeek.length && !s.daysOfWeek.includes(day)) continue;
+      // ช่วงเวลา (เทียบ HH:MM)
+      const st = (s.startTime ?? '00:00').slice(0, 5);
+      const et = (s.endTime ?? '23:59').slice(0, 5);
+      if (nowTime < st || nowTime > et) continue;
+      // เป้าหมาย: ไม่ระบุ = ทุกจอ | ระบุ screenIds | ระบุกลุ่ม
+      const targetsAll = (!s.screenIds || s.screenIds.length === 0) && (!s.screenGroupIds || s.screenGroupIds.length === 0);
+      const targetsScreen = s.screenIds?.includes(screenId);
+      const targetsGroup = s.screenGroupIds?.includes(screen.group ?? '');
+      if (!targetsAll && !targetsScreen && !targetsGroup) continue;
+      // เลือก priority สูงสุด
+      if (!best || s.priority > best.priority) best = s;
+    }
+    return best;
+  }
+
+  // ผลลัพธ์สุดท้ายว่าจอควรได้ layout/playlist ไหน
+  async function resolveScreenContent(screenId: string, now: Date) {
+    const schedule = await getActiveScheduleForScreen(screenId, now);
+    if (schedule) {
+      return { schedule, layoutId: schedule.layoutId ?? null, playlistId: schedule.playlistId ?? null };
+    }
+    return { schedule: null, layoutId: null, playlistId: null };
+  }
+
+  // ตรวจจับว่า schedule ของแต่ละจอเปลี่ยนไป → broadcast ให้ player รู้ทันที
+  const lastScheduleState = new Map<string, string>();
+  async function pushScheduleUpdates() {
+    try {
+      const now = new Date();
+      const all = await db.select().from(screens);
+      for (const s of all) {
+        const r = await resolveScreenContent(s.id, now);
+        const key = r.schedule
+          ? `sch:${r.schedule.id}:${r.layoutId ?? ''}:${r.playlistId ?? ''}`
+          : '';
+        if (lastScheduleState.get(s.id) !== key) {
+          lastScheduleState.set(s.id, key);
+          broadcast('SCHEDULE_CHANGED', {
+            screenId: s.id,
+            schedule: r.schedule
+              ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId }
+              : null,
+          });
+        }
+      }
+    } catch (e) {
+      console.error('[Scheduler] pushScheduleUpdates error:', (e as Error).message);
+    }
+  }
+
 
   // ═══════════════════════════════════════════════════════════
   // PUBLIC ROUTES (no auth required)
@@ -626,6 +711,7 @@ async function startServer() {
       try {
         const [row] = await db.insert(schedules).values({ ...req.body, id: req.body.id ?? `sch-${Date.now()}`, createdAt: new Date(), updatedAt: new Date() }).returning();
         await logAudit(req, 'create', 'schedule', row.id, { name: row.name });
+        setTimeout(() => { void pushScheduleUpdates(); }, 100);
         res.status(201).json(row);
       } catch (e) { next(e); }
     });
@@ -638,6 +724,7 @@ async function startServer() {
         const [row] = await db.update(schedules).set({ ...req.body, updatedAt: new Date() }).where(eq(schedules.id, req.params.id)).returning();
         if (!row) return res.status(404).json({ error: 'Schedule not found' });
         await logAudit(req, 'update', 'schedule', row.id, req.body);
+        setTimeout(() => { void pushScheduleUpdates(); }, 100);
         res.json(row);
       } catch (e) { next(e); }
     });
@@ -648,7 +735,23 @@ async function startServer() {
       try {
         await db.delete(schedules).where(eq(schedules.id, req.params.id));
         await logAudit(req, 'delete', 'schedule', req.params.id, {}, 'warning');
+        setTimeout(() => { void pushScheduleUpdates(); }, 100);
         res.json({ success: true, id: req.params.id });
+      } catch (e) { next(e); }
+    });
+
+  // GET /api/schedules/resolve — ดูว่า schedule ไหน active สำหรับจอตอนนี้ (admin/debug)
+  app.get('/api/schedules/resolve',
+    authenticate as any,
+    async (req, res, next) => {
+      try {
+        const screenId = req.query.screenId as string;
+        if (!screenId) return res.status(400).json({ error: 'screenId query param required' });
+        const r = await resolveScreenContent(screenId, new Date());
+        res.json({
+          screenId,
+          schedule: r.schedule ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId } : null,
+        });
       } catch (e) { next(e); }
     });
 
@@ -1226,8 +1329,15 @@ async function startServer() {
         status: screen.status === 'offline' ? 'online' : screen.status,
       }).where(eq(screens.id, req.params.screenId));
 
-      const layout = screen.currentLayoutId
-        ? await db.query.layouts.findFirst({ where: eq(layouts.id, screen.currentLayoutId), with: { zones: true } })
+      // ── REQ-003: Server-side scheduler — ตัดสินใจจากฝั่ง server ว่าจอโชว์อะไร ──
+      // ถ้ามี schedule active → ใช้ layout/playlist ของ schedule (ไม่ต้องพึ่งจอเปิดอยู่ตอนสร้าง schedule)
+      const now = new Date();
+      const resolution = await resolveScreenContent(req.params.screenId, now);
+      const effectiveLayoutId = resolution.layoutId || screen.currentLayoutId || null;
+      const effectivePlaylistId = resolution.playlistId || screen.currentPlaylistId || null;
+
+      const layout = effectiveLayoutId
+        ? await db.query.layouts.findFirst({ where: eq(layouts.id, effectiveLayoutId), with: { zones: true } })
         : null;
 
       const allPlaylists = await db.query.playlists.findMany({ with: { items: true } });
@@ -1238,7 +1348,12 @@ async function startServer() {
         layout,
         playlists: allPlaylists,
         mediaItems: allMedia,
-        serverTime: new Date().toISOString(),
+        serverTime: now.toISOString(),
+        // REQ-003: ข้อมูล schedule ที่ active อยู่ (null = ไม่มี schedule → ใช้ค่า default)
+        schedule: resolution.schedule
+          ? { id: resolution.schedule.id, name: resolution.schedule.name, layoutId: resolution.layoutId, playlistId: resolution.playlistId }
+          : null,
+        effectivePlaylistId,
       });
     } catch (e) { next(e); }
   });
@@ -1298,6 +1413,12 @@ async function startServer() {
       console.error('[Heartbeat] Check failed:', e);
     }
   }, 60_000); // Check every 60 seconds
+
+  // ─── Schedule Ticker (REQ-003) ───────────────────────────
+  // ทุก 30 วิ: ตรวจว่า schedule ของแต่ละจอเปลี่ยนไปไหม → broadcast SCHEDULE_CHANGED
+  // (จอที่ offline อยู่ตอน schedule เริ่ม จะได้ content ที่ถูกต้องทันทีที่ reconnect — ผ่าน endpoint /api/display/:id/data)
+  setInterval(() => { void pushScheduleUpdates(); }, 30_000);
+  void pushScheduleUpdates(); // sync ครั้งแรก (ยังบังคับให้ client ที่ connect ค้างอยู่ refresh ด้วย)
 
   // ─── Start ─────────────────────────────────────────────
   httpServer.listen(PORT, '0.0.0.0', () => {

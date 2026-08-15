@@ -13,8 +13,9 @@
 - ✅ **Phase 0–9 สร้างเสร็จแล้ว** — React+Vite+Zustand+Express+WS+PostgreSQL (Drizzle) + Docker + Android player
 - ✅ **2026-08-12 (Freebuff):** Security 6 จุด + Type errors 49→0 + Deploy ขึ้น prod (10.70.0.1) สำเร็จ — รายละเอียดใน `enterprise-digital-signage-platform/CHANGELOG.md` [0.2.0] และ `AGENTS.md` (root)
 - ✅ **REQ-001 (IP/MAC จริงของจอ):** เสร็จแล้ว (เทสผ่าน) — ยังไม่ deploy ต้อง `redeploy.bat` — รายละเอียด `CHANGELOG.md` [0.2.1]
-- ⏳ **Pending:** re-pair จอ (JWT_SECRET เปลี่ยน), เปลี่ยนรหัส admin default, แจก WEBHOOK_TOKEN, เทสหลัง deploy, deploy REQ-001
-- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** server-side scheduler, offline-first (IndexedDB) ใน web player, 6-Level Priority Resolver ให้ครบทั้ง 6 ระดับ
+- ⏳ **Pending:** re-pair จอ (JWT_SECRET เปลี่ยน), เปลี่ยนรหัส admin default, แจก WEBHOOK_TOKEN, เทสหลัง deploy, deploy REQ-001/002 + REQ-003
+- ✅ **2026-08-15 (Freebuff):** REQ-003 Server-side scheduler เสร็จ (smoke test 19/19) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.4]
+- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** offline-first (IndexedDB) ใน web player, 6-Level Priority Resolver ให้ครบทั้ง 6 ระดับ, campaigns ฝั่ง server (REQ-011), PoP จริง (REQ-005), backup อัตโนมัติ (REQ-007), monitoring (REQ-008), tests (REQ-009), audit log (REQ-010)
 
 ---
 

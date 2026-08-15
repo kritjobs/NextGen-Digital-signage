@@ -44,11 +44,15 @@ export const PlayerApp: React.FC = () => {
   const [showPairingQr, setShowPairingQr] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quickPost, setQuickPost] = useState<{ message: string; style: string } | null>(null);
+  // REQ-003: schedule ที่ active สำหรับจอนี้ (server-side resolution)
+  const [scheduleOverride, setScheduleOverride] = useState<{ id: string; name: string; layoutId: string | null; playlistId: string | null } | null>(null);
 
   const playerRef = useRef<HTMLDivElement>(null);
+  const activeScreenIdRef = useRef<string | null>(null);
 
   const activeScreen = screens.find((s) => s.id === playerScreenId) || screens[0];
   const activeEmergency = emergencyAlerts.find((a) => a.active);
+  activeScreenIdRef.current = activeScreen?.id || null;
 
   // Active Layout (with fallback: currentLayout → fallbackLayout → first layout)
   const baseLayout = layouts.find((l) => l.id === activeScreen?.currentLayoutId)
@@ -83,10 +87,37 @@ export const PlayerApp: React.FC = () => {
     } catch { setCampaignLayoutId(null); }
   }, [campaignIndex]);
 
-  // Final layout: Campaign layout takes priority over schedule (but not emergency)
-  const activeLayout = (campaignLayoutId && !activeEmergency)
-    ? (layouts.find((l) => l.id === campaignLayoutId) || baseLayout)
-    : baseLayout;
+  // Final layout priority (REQ-003): emergency overlay > schedule > campaign > base
+  // (emergency แสดงเป็น overlay ต่างหาก — ส่วนนี้เลือก layout เนื้อหาปกติ)
+  const activeLayout = (() => {
+    if (scheduleOverride?.layoutId) {
+      const l = layouts.find((x) => x.id === scheduleOverride.layoutId);
+      if (l) return l;
+    }
+    if (campaignLayoutId && !activeEmergency) {
+      const l = layouts.find((x) => x.id === campaignLayoutId);
+      if (l) return l;
+    }
+    return baseLayout;
+  })();
+
+  // REQ-003: ดึง schedule ที่ active สำหรับจอตอนนี้จาก server (จอที่เพิ่งเปิด/เปลี่ยนจอจะได้ทันที)
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const token = localStorage.getItem('signage_access_token') || '';
+        const res = await fetch(`/api/schedules/resolve?screenId=${encodeURIComponent(activeScreen?.id || '')}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled) setScheduleOverride(json.schedule || null);
+      } catch { /* ignore */ }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [playerScreenId]);
 
   // Precision Clock tick
   useEffect(() => {
@@ -118,6 +149,10 @@ export const PlayerApp: React.FC = () => {
               const post = msg.payload;
               setQuickPost({ message: post.message, style: post.style || 'info' });
               setTimeout(() => setQuickPost(null), (post.duration || 30) * 1000);
+            }
+            // REQ-003: schedule เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
+            if (msg.type === 'SCHEDULE_CHANGED' && msg.payload?.screenId === activeScreenIdRef.current) {
+              setScheduleOverride(msg.payload.schedule || null);
             }
           } catch {}
         };
@@ -197,7 +232,7 @@ export const PlayerApp: React.FC = () => {
             mediaItems={mediaItems}
             screenId={activeScreen.id}
             screenName={activeScreen.name}
-            screenPlaylistId={activeScreen.currentPlaylistId}
+            screenPlaylistId={scheduleOverride?.playlistId || activeScreen.currentPlaylistId}
             isMuted={activeScreen.isMuted}
             recordProofOfPlay={recordProofOfPlay}
             currentTime={currentTime}

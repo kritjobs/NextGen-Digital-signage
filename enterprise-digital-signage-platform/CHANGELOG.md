@@ -45,6 +45,25 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.4] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-003 Server-side scheduler)
+
+### Added
+- **Server-side scheduler (REQ-003)** — เซิร์ฟเวอร์ตัดสินใจว่าจอโชว์อะไรตามเวลา ไม่ต้องพึ่งจอเปิดอยู่ตอนสร้าง schedule:
+  - `server.ts` — `getActiveScheduleForScreen()` (filter isActive + วันที่ + วันในสัปดาห์ + เวลา + เป้าหมายทุกจอ/จอ/กลุ่ม, ชนกันเลือก priority สูงสุด), `resolveScreenContent()`, `pushScheduleUpdates()` (ticker 30 วิ + หลัง schedule CRUD → broadcast `SCHEDULE_CHANGED`)
+  - `/api/display/:id/data` — ใช้ effective layout/playlist จาก schedule + ส่ง `schedule`/`effectivePlaylistId` ใน payload
+  - `GET /api/schedules/resolve?screenId=` — ดู schedule ที่ active ตอนนี้
+  - `DisplayKiosk.tsx` — รับ `SCHEDULE_CHANGED` → refetch ทันที + ใช้ `effectivePlaylistId`
+  - `PlayerApp.tsx` — ดึง resolve + ฟัง WS → ลำดับความสำคัญ **emergency > schedule > campaign > base**
+
+### Changed
+- ลำดับความสำคัญ layout ใน Player: schedule มาก่อน campaign (เดิม campaign > schedule)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- **REQ-011 (Open):** campaigns ฝั่ง server (ตอนนี้ CampaignManager ยังใช้ localStorage)
+
+---
+
 ## [0.2.3] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Deploy REQ-001/002)
 
 ### Changed

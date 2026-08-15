@@ -21,6 +21,8 @@ export const DisplayKiosk: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [quickPost, setQuickPost] = useState<any>(null);
+  // REQ-003: ref ไว้ให้ WS handler เรียก fetch ใหม่ได้ทันทีเมื่อ schedule เปลี่ยน
+  const fetchDataRef = useRef<() => void>(() => {});
 
   // Auto-fullscreen on first user interaction
   const enterFullscreen = () => {
@@ -101,6 +103,7 @@ export const DisplayKiosk: React.FC = () => {
       }
     };
 
+    fetchDataRef.current = fetchData;
     fetchData();
     const interval = setInterval(fetchData, 30000); // refresh every 30s
     return () => clearInterval(interval);
@@ -139,6 +142,10 @@ export const DisplayKiosk: React.FC = () => {
                   window.location.href = '/pair';
                 }
               }
+            }
+            // REQ-003: schedule เปลี่ยน → ดึงข้อมูลใหม่ทันที (ไม่ต้องรอ poll 30 วิ)
+            if (msg.type === 'SCHEDULE_CHANGED' && msg.payload?.screenId === screenId) {
+              fetchDataRef.current();
             }
             // Quick Post overlay
             if (msg.type === 'QUICK_POST' && msg.payload) {
@@ -218,7 +225,7 @@ export const DisplayKiosk: React.FC = () => {
           <KioskZone
             key={zone.id}
             zone={zone}
-            screenPlaylistId={screen.currentPlaylistId}
+            screenPlaylistId={data.effectivePlaylistId ?? screen.currentPlaylistId}
             playlists={playlists}
             mediaItems={mediaItems}
             currentTime={currentTime}

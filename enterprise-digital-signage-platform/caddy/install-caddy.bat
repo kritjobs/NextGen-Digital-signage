@@ -9,6 +9,19 @@ REM  to Expand-Archive and always failed.)
 REM ============================================================
 cd /d C:\signage\caddy
 
+REM ─── Must be Administrator (เขียน ProgramData + ติดตั้ง service) ───
+net session >nul 2>&1
+if errorlevel 1 (
+  echo.
+  echo  ERROR: Must run as ADMINISTRATOR!
+  echo  Right-click this file -^> Run as administrator
+  echo  (หรือ: Start menu -^> type cmd -^> right-click -^> Run as administrator
+  echo         then run:  cd C:\signage\caddy  ^&^&  install-caddy.bat)
+  echo.
+  pause
+  exit /b 1
+)
+
 echo === Step 1/6: Download Caddy (if missing/invalid) ===
 if exist caddy.exe (
   powershell -NoProfile -Command "$b=[IO.File]::ReadAllBytes((Join-Path $PWD 'caddy.exe'))[0..1]; if($b[0]-eq 0x4D -and $b[1]-eq 0x5A){exit 0}else{exit 1}"

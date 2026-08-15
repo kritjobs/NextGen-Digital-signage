@@ -63,7 +63,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**TV Player ใช้ tag-match playlist — preview ตรงกับจอจริง**)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ Dual Simulator + Quick Post ผ่าน WS — ผ่าน ✅**)
+- **Dual Simulator:** Admin Console (ซ้าย) + TV Player (ขวา) อยู่ด้วยกัน ข้อมูลจริง — **Quick Post ขึ้นจอ realtime ผ่าน WS:** `POST /api/quick-post` → broadcast `QUICK_POST` → overlay (bg-blue) โผล่บน TV Player ทันที — server log: `[WS] Connected (super_admin) Total: 2` + `POST /api/quick-post 200`
+- หมายเหตุ: ปุ่ม Quick Post ใน navbar ใช้ native `prompt()` (เครื่องมือ preview จับไม่ได้) — เทสผ่าน endpoint เดียวกัน (path เดียวกัน: POST → WS broadcast → player overlay) — ไม่มีการแก้โค้ด
+
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**TV Player ใช้ tag-match playlist — preview ตรงกับจอจริง**) 
 - **ปัญหา:** TV Player ใช้ `activeScreen.currentPlaylistId` (resolve เดิมคืน playlistId แค่ตอน schedule) → จอที่ได้ content จาก tag-match แสดงต่างจากจอจริง (DisplayKiosk ใช้ effectivePlaylistId)
 - **แก้:** server — `/api/schedules/resolve` + `SCHEDULE_CHANGED` broadcast คืน `layoutId`/`playlistId` ครบทุกรูปแบบ (รวม tag_match); PlayerApp — state `tagMatch` → `scheduleOverride?.playlistId || tagMatch?.playlistId || currentPlaylistId` (fallback เฉพาะไม่มี match) + activeLayout ลำดับ schedule → campaign → tag_match → base
 - **เทส:** integration #12 เพิ่ม assert resolve คืน tag_match+playlistId+layoutId — **14/14 ผ่าน**; typecheck + build ผ่าน; dev server restart (รับ server.ts ใหม่)

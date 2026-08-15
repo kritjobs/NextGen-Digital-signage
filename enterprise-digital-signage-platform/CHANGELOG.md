@@ -5,6 +5,14 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.8] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจ Dual Simulator + Quick Post ผ่าน WS ✅)
+
+### Verified (dev preview)
+- **Dual Simulator:** Admin Console + TV Player แสดงคู่กัน (ข้อมูลจริง) — Quick Post ขึ้นจอแบบ realtime ผ่าน WS: `POST /api/quick-post` → server broadcast `QUICK_POST` → overlay แสดงบน TV Player ทันที (info banner 30 วิ) — server log ยืนยัน WS super_admin ×2 + POST 200
+- ไม่มีการแก้โค้ด (ตรวจเท่านั้น) — หมายเหตุ: ปุ่ม navbar ใช้ native prompt() ต้องเทสผ่าน endpoint ตรง
+
+---
+
 ## [0.4.7] — 2026-08-15  🤖 แก้ไขโดย Freebuff (TV Player ใช้ tag-match playlist — preview ตรงกับจอจริง)
 
 > เดิม TV Player ใช้ `currentPlaylistId` ของจอ → จอที่ได้ content จาก tag-match ต่างกัน preview vs จอจริง — แก้ให้ player ใช้ playlist/layout ที่ server จับคู่จาก tags

@@ -43,6 +43,10 @@ import { uploadRouter } from './src/routes/upload.js';
 import { slideshowRouter } from './src/routes/slideshows.js';
 import { aiRouter } from './src/routes/ai.js';
 import { UPLOAD_DIR } from './src/services/storage.js';
+import {
+  BACKUP_DIR, BACKUP_HOUR, BACKUP_RETENTION_DAYS,
+  listBackups, runBackup, deleteBackupFile, resolveBackupFile, startBackupScheduler,
+} from './src/services/backup.js';
 
 // ─── Config ──────────────────────────────────────────────────
 const __dirname = typeof __filename !== 'undefined'
@@ -1619,6 +1623,60 @@ async function startServer() {
       } catch (e) { next(e); }
     });
 
+  // ─── Backups (REQ-007) ──────────────────────────────────
+  // ต้องมาก่อน SPA fallback (app.get('*')) — ไม่งั้น route ไม่เคย match
+  app.get('/api/backups',
+    authenticate as any, requirePermission('read:backups') as any,
+    (_req, res, next) => {
+      try {
+        const list = listBackups();
+        res.json({
+          data: list,
+          config: {
+            dir: BACKUP_DIR,
+            retentionDays: BACKUP_RETENTION_DAYS,
+            scheduleHour: BACKUP_HOUR,
+          },
+          lastRun: list[0]?.createdAt ?? null,
+        });
+      } catch (e) { next(e); }
+    });
+
+  app.post('/api/backups/run',
+    authenticate as any, requirePermission('write:backups') as any,
+    async (req, res, next) => {
+      try {
+        const files = await runBackup();
+        await logAudit(req, 'create', 'backup', undefined, {
+          db: path.basename(files.db),
+          uploads: path.basename(files.uploads),
+        });
+        const list = listBackups();
+        res.status(201).json({ ok: true, files, lastRun: list[0]?.createdAt ?? null, data: list });
+      } catch (e) { next(e); }
+    });
+
+  app.get('/api/backups/:file/download',
+    authenticate as any, requirePermission('read:backups') as any,
+    (req, res, next) => {
+      try {
+        const full = resolveBackupFile(req.params.file);
+        if (!full) return res.status(404).json({ error: 'Backup file not found' });
+        res.download(full, req.params.file);
+      } catch (e) { next(e); }
+    });
+
+  app.delete('/api/backups/:file',
+    authenticate as any, requirePermission('write:backups') as any,
+    async (req, res, next) => {
+      try {
+        const removed = deleteBackupFile(req.params.file);
+        if (!removed) return res.status(404).json({ error: 'Backup file not found' });
+        await logAudit(req, 'delete', 'backup', req.params.file, {}, 'warning');
+        res.json({ ok: true });
+      } catch (e) { next(e); }
+    });
+
   if (!IS_PROD) {
     const vite = await createViteServer({
       server: { middlewareMode: true, hmr: process.env.DISABLE_HMR !== 'true' },
@@ -1713,6 +1771,10 @@ async function startServer() {
 
   // ตรวจทุก 30 วิ (รอบเดียวกับ scheduler ticker)
   setInterval(() => { void runMonitoringCheck(); }, 30_000);
+
+  // ─── Backup Scheduler (REQ-007) ──────────────────────────
+  // อัตโนมัติ 1 ครั้ง/วัน (BACKUP_HOUR) + ลบไฟล์เก่าเกิน retention
+  startBackupScheduler();
 
   // ─── Schedule Ticker (REQ-003) ───────────────────────────
   // ทุก 30 วิ: ตรวจว่า schedule ของแต่ละจอเปลี่ยนไปไหม → broadcast SCHEDULE_CHANGED

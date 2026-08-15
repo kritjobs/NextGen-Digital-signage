@@ -17,7 +17,8 @@ import {
   ShieldAlert,
   Presentation,
   Bot,
-  RotateCcw
+  RotateCcw,
+  DatabaseBackup
 } from 'lucide-react';
 import { useSignageStore } from '../store/useSignageStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -316,6 +317,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
             >
               <Presentation className="h-3.5 w-3.5 text-amber-400" />
               <span>Slideshow Studio</span>
+            </button>
+
+            <button
+              id="tab-backups"
+              onClick={() => setActiveAdminTab('backups')}
+              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                activeAdminTab === 'backups'
+                  ? 'bg-slate-800 text-amber-400 border border-slate-700 font-semibold'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              <DatabaseBackup className="h-3.5 w-3.5 text-amber-400" />
+              <span>Backup</span>
             </button>
 
             <button

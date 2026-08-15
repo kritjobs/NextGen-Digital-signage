@@ -12,6 +12,7 @@ import { RealtimeControlConsole } from './components/admin/RealtimeControlConsol
 import { AnalyticsTelemetry } from './components/admin/AnalyticsTelemetry';
 import { SlideshowStudio } from './components/admin/SlideshowStudio';
 import { AISettings } from './components/admin/AISettings';
+import { BackupManager } from './components/admin/BackupManager';
 import { PlayerApp } from './components/player/PlayerApp';
 import { DualSimulator } from './components/simulator/DualSimulator';
 import { LoginPage } from './components/LoginPage';
@@ -122,6 +123,7 @@ export default function App() {
             {activeAdminTab === 'telemetry' && <AnalyticsTelemetry />}
             {activeAdminTab === 'slideshows' && <SlideshowStudio />}
             {activeAdminTab === 'ai_settings' && <AISettings />}
+            {activeAdminTab === 'backups' && <BackupManager />}
           </div>
         )}
 

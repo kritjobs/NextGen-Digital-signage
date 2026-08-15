@@ -21,8 +21,8 @@ interface SignageStoreState {
   // Navigation & Mode
   viewMode: AppViewMode;
   setViewMode: (mode: AppViewMode) => void;
-  activeAdminTab: 'screens' | 'layouts' | 'playlists' | 'media' | 'schedules' | 'campaigns' | 'control' | 'telemetry' | 'slideshows' | 'ai_settings';
-  setActiveAdminTab: (tab: 'screens' | 'layouts' | 'playlists' | 'media' | 'schedules' | 'campaigns' | 'control' | 'telemetry' | 'slideshows' | 'ai_settings') => void;
+  activeAdminTab: 'screens' | 'layouts' | 'playlists' | 'media' | 'schedules' | 'campaigns' | 'control' | 'telemetry' | 'slideshows' | 'ai_settings' | 'backups';
+  setActiveAdminTab: (tab: 'screens' | 'layouts' | 'playlists' | 'media' | 'schedules' | 'campaigns' | 'control' | 'telemetry' | 'slideshows' | 'ai_settings' | 'backups') => void;
 
   // Loading state
   isLoading: boolean;

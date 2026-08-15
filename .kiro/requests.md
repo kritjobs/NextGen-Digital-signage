@@ -17,7 +17,7 @@
 - **REQ-004 — Offline-first ใน web player** — แคชเนื้อหาให้จอเล่นต่อได้เมื่อเน็ตหลุด (Android มี OfflineCacheService อยู่แล้ว)
 - ~~**REQ-005 — Proof of Play เข้าระบบจริง**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง
 - ~~**REQ-006 — 6-Level Priority Resolver ให้ครบ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — ระบบ priority เต็มรูปแบบ 6 ระดับ
-- **REQ-007 — Scheduled DB backup อัตโนมัติ** — pg_dump ผ่าน Task Scheduler + เก็บ 7 วัน
+- ~~**REQ-007 — Scheduled DB backup อัตโนมัติ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — backup DB + uploads อัตโนมัติ/ตามสั่ง ดาวน์โหลดได้จากหน้า Admin
 - ~~**REQ-008 — Monitoring/alerting**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — แจ้งเตือนเมื่อจอ offline
 - **REQ-009 — Automated tests** — integration test ของ security guard + pair/heartbeat
 - ~~**REQ-010 — Audit log admin**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — บันทึกการกระทำของ admin ย้อนหลัง
@@ -48,6 +48,23 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-007 — Backup อัตโนมัติ (DB + Uploads) ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**สำรองข้อมูล DB + ไฟล์มีเดีย เป็นไฟล์ ดาวน์โหลดได้จากหน้า Admin**
+
+- **เดิม:** ไม่มีระบบ backup เลย — ข้อมูลทั้งหมดอยู่ใน docker volume ของ prod (เสี่ยงข้อมูลหายถ้า volume เสีย)
+- **`src/services/backup.ts`:**
+  - DB dump แบบ **pure-JS (JSON ผ่าน pg)** — 21 ตารางทั้งหมด (screens/media/layouts/playlists/schedules/campaigns/telemetry/PoP/audit...) — ใช้ได้ทั้ง dev (Windows) และ prod (node:20-alpine ที่ไม่มี pg_dump)
+  - Uploads dump แบบ **ZIP** (`archiver@7` — CJS-compatible กับ bundle CJS, prod Node 20)
+  - **Retention** — ลบไฟล์เก่าเกิน `BACKUP_RETENTION_DAYS` (default 7 วัน)
+  - **Scheduler** — เช็คทุกชั่วโมง รันอัตโนมัติตอน `BACKUP_HOUR` (default 03:00) ถ้ายังไม่มี backup ของวันนั้น
+- **`server.ts`:** `GET /api/backups` (list + config), `POST /api/backups/run`, `GET /api/backups/:file/download`, `DELETE /api/backups/:file` — ทุก route วางก่อน SPA fallback + audit log (สร้าง/ลบ backup) + กัน path traversal
+- **`auth.ts`:** เพิ่ม permission `read:backups` + `write:backups` (admin)
+- **`BackupManager.tsx`:** หน้า **Backup** ใหม่ใน Navbar — การ์ด config (เวลาอัตโนมัติ/retention/จำนวนไฟล์) + ปุ่ม Run backup now + ตารางไฟล์ (ประเภท DB/Uploads, ขนาด, เวลา, ดาวน์โหลด/ลบ)
+- **`docker-compose.yml`:** mount `./backups:/app/backups` ให้ signage-app (+ env `BACKUP_DIR`/`BACKUP_RETENTION_DAYS`/`BACKUP_HOUR`) — ไฟล์ backup อยู่บน host `\10.70.0.1\c\signage\backups`
+- เทส: typecheck 0 error, build ผ่าน, **smoke test 14/14** (401, list+config, run → db JSON 21 ตาราง + zip PK, download attachment, delete, path traversal 404) + ยืนยัน UI (Run backup now ผ่าน UI → 2 ไฟล์โผล่ในตารางจริง)
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
 
 ### REQ-010 — Audit log admin ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

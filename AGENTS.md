@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.0]`)
+- **REQ-007 (Backup อัตโนมัติ DB + Uploads) เสร็จ** — `src/services/backup.ts` (DB dump pure-JS JSON ผ่าน pg 21 ตาราง + uploads zip archiver@7 + retention 7 วัน + scheduler 03:00) + routes `/api/backups` (list/run/download/delete + audit + กัน path traversal) + permission `read:backups`/`write:backups` + หน้า **Backup** ใน Navbar (`BackupManager.tsx`) + compose mount `./backups:/app/backups` — smoke test 14/14 + ยืนยัน UI — ยังไม่ deploy (`CHANGELOG.md` [0.3.0])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.9]`)
 - **REQ-010 (Audit log admin) เสร็จ** — `GET /api/audit-logs` (filter/limit) + permission `read:audit` + ส่วน Admin Audit Trail ในหน้า Analytics (ตารางเวลา/ผู้ใช้/action/IP/severity + ค้นหา) — smoke test 9/9 + ยืนยัน UI — ยังไม่ deploy (`CHANGELOG.md` [0.2.9])
 

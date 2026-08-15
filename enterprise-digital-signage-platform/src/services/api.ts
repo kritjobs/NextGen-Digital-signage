@@ -231,6 +231,14 @@ export const auditApi = {
   },
 };
 
+// ─── Backups (REQ-007) ─────────────────────────────────────
+export const backupApi = {
+  list: () => request<{ data: any[]; config: any; lastRun: string | null }>('/backups'),
+  run: () => request<{ ok: boolean; data: any[]; lastRun: string | null }>('/backups/run', { method: 'POST' }),
+  downloadUrl: (name: string) => `/api/backups/${encodeURIComponent(name)}/download`,
+  remove: (name: string) => request<{ ok: boolean }>(`/backups/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+};
+
 // ─── Slideshows ─────────────────────────────────────────────
 export const slideshowApi = {
   getAll:     () => request<{ data: any[]; total: number }>('/slideshows'),

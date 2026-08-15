@@ -20,7 +20,8 @@
 - ✅ **2026-08-15 (Freebuff):** REQ-011 Campaigns ฝั่ง server เสร็จ (CRUD API + แสดงผลบนจอระดับ campaign + rotation; smoke test 12/12 + เทส UI เต็มวงจร) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.7]
 - ✅ **2026-08-15 (Freebuff):** REQ-008 Monitoring & Alerting เสร็จ (ตรวจ heartbeat 30 วิ + webhook + `/api/monitoring/status` + banner/indicator ใน UI; smoke test 9/9) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.8]
 - ✅ **2026-08-15 (Freebuff):** REQ-010 Audit log admin เสร็จ (`/api/audit-logs` + ส่วน Admin Audit Trail ใน Analytics; smoke test 9/9) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.2.9]
-- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** offline-first (IndexedDB) ใน web player, backup อัตโนมัติ (REQ-007), tests (REQ-009)
+- ✅ **2026-08-15 (Freebuff):** REQ-007 Backup อัตโนมัติเสร็จ (DB dump JSON ผ่าน pg 21 ตาราง + uploads zip + retention 7 วัน + scheduler 03:00 + หน้า Backup ใน Admin + compose mount ./backups; smoke test 14/14) — ยังไม่ deploy — ดู `CHANGELOG.md` [0.3.0]
+- 🔧 **งานถัดไปที่แนะนำ (จาก roadmap):** offline-first (IndexedDB) ใน web player, tests (REQ-009)
 
 ---
 

@@ -45,6 +45,25 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.0] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-007 Backup อัตโนมัติ DB + Uploads)
+
+### Added
+- **Backup & Restore (REQ-007)** — สำรองข้อมูล DB + ไฟล์มีเดียเป็นไฟล์ ดาวน์โหลดได้จากหน้า Admin:
+  - `src/services/backup.ts` — ใหม่: DB dump แบบ pure-JS (JSON ผ่าน pg — 21 ตารางทั้งหมด, ใช้ได้ทั้ง dev/Windows และ prod/node:20-alpine ที่ไม่มี pg_dump) + Uploads zip (`archiver@7` CJS-compatible) + retention ลบเก่าเกิน `BACKUP_RETENTION_DAYS` (default 7) + scheduler รันอัตโนมัติตอน `BACKUP_HOUR` (default 03:00)
+  - `server.ts` — `GET /api/backups` (list + config), `POST /api/backups/run`, `GET /api/backups/:file/download` (attachment), `DELETE /api/backups/:file` — วางก่อน SPA fallback, audit log การสร้าง/ลบ, กัน path traversal
+  - `auth.ts` — permission `read:backups` + `write:backups` (admin+)
+  - `api.ts` — `backupApi` (list/run/downloadUrl/remove)
+  - `BackupManager.tsx` — ใหม่: หน้า **Backup** ใน Navbar — การ์ด config (เวลาอัตโนมัติ/retention/จำนวนไฟล์ DB-Uploads/ขนาดรวม) + ปุ่ม **Run backup now** + ตารางไฟล์ (ชื่อ/ประเภท badge/ขนาด/เวลาแบบไทย/ดาวน์โหลด/ลบ) + empty state
+  - `docker-compose.yml` — mount `./backups:/app/backups` ให้ signage-app + env `BACKUP_DIR`/`BACKUP_RETENTION_DAYS`/`BACKUP_HOUR` — backup อยู่บน host `\\10.70.0.1\\c\\signage\\backups` (โฟลเดอร์เดียวกับ postgres)
+
+### Verified
+- typecheck 0 error, build ผ่าน, smoke test 14/14 (401, list+config, run → db JSON 21 ตาราง/6 screens + zip PK 5MB, download attachment, delete, path traversal 404) + ยืนยัน UI (Run backup now ผ่าน UI → 2 ไฟล์โผล่ในตารางจริง)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+
+---
+
 ## [0.2.9] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-010 Audit log admin)
 
 ### Added

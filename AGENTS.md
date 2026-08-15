@@ -67,7 +67,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — โค้ดใหม่ขึ้นครบ ✅**)
 - redeploy ผ่าน — container ใหม่ (uptime ใหม่) + bundle มี UI ครบ (QR interact/โต้ตอบจอ/แคมเปญ/สำรองข้อมูล/Audit/จอไม่ตอบสนอง) — interact API บน prod https คืน `success:true` (QR Scan-to-Interact ใช้งานได้จริง) + campaigns route อยู่ (AUTH_REQUIRED = ต้อง login)
-- **พบ:** prod admin login (`admin@signage.local` / รหัสเดิม) ไม่ผ่าน — password ถูกเปลี่ยนบน prod แล้ว (รอเจ้าของระบบให้รหัสใหม่ หรือยืนยัน email)
+- **ไม่ใช่ปัญหา password:** login prod ปกติ (`admin@signage.local` / `Admin@2026!` ยังใช้ได้) — error ก่อนหน้าเป็น bug ในคำสั่งเทส (จับ field `token` ผิดเป็น `accessToken` → ส่ง Bearer undefined → TOKEN_INVALID) — campaigns/audit/monitoring บน prod ทำงานครบ
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**QR Scan-to-Interact — สแกน QR บนจอแล้วควบคุมจากมือถือ**)
 - Kiosk: QR badge มุมขวาล่าง (`/interact/:screenId`) + InteractPage (ส่งข้อความไม่ต้อง login, เปลี่ยน playlist/layout ต้อง admin) — backend มีอยู่แล้ว เติม UI — เทส end-to-end ผ่าน (ข้อความขึ้นจอผ่าน WS จริง) + integration 11/11 (`CHANGELOG.md` [0.4.0])

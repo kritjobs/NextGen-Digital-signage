@@ -153,8 +153,15 @@ export async function dbClose() {
 }
 
 // ─── Utils ───────────────────────────────────────────────────
+// ใช้ local date (ตรงกับ server's localDateStr) — toISOString() เป็น UTC จะเพี้ยน
+// ในช่วง 00:00-07:00 ตามเวลาไทย (local วันใหม่ แต่ UTC ยังเป็นวันเก่า) → schedule
+// ที่สร้างด้วย "วันนี้" จะถูกมองว่าเกิน endDate แล้วโดน skip
+// Fix: ใช้ getFullYear/getMonth/getDate เหมือน server.ts localDateStr
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
 export function todayDate() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
 export function nowHHMM() {

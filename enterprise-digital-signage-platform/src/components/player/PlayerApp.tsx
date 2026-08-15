@@ -20,12 +20,14 @@ import {
   Presentation
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { LayoutZone, MediaItem, Playlist, DigitalScreen, PriorityLevel, CampaignLayoutItem } from '../../types/signage';
 import { PairingQRCode } from './PairingQRCode';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
 import { analyticsApi } from '../../services/api';
 
 export const PlayerApp: React.FC = () => {
+  const { t } = useTranslation();
   const { 
     playerScreenId, 
     setPlayerScreenId, 
@@ -234,7 +236,7 @@ export const PlayerApp: React.FC = () => {
         <div className="absolute inset-0 z-50 bg-rose-950/95 flex flex-col items-center justify-center p-8 text-center text-white animate-pulse border-8 border-rose-500">
           <AlertOctagon className="h-24 w-24 text-rose-300 animate-bounce mb-4" />
           <span className="text-sm font-black tracking-widest uppercase bg-black/60 px-4 py-1 rounded border border-rose-400 text-rose-200">
-            🚨 EMERGENCY OVERRIDE BROADCAST
+            {t('player.emergencyOverride')}
           </span>
           <h1 className="text-3xl sm:text-5xl font-black mt-4 text-white tracking-tight drop-shadow-lg">
             {activeEmergency.title}
@@ -243,7 +245,7 @@ export const PlayerApp: React.FC = () => {
             {activeEmergency.message}
           </p>
           <div className="mt-8 text-xs font-mono text-rose-300 bg-rose-900/80 px-4 py-2 rounded-xl">
-            Triggered at {new Date(activeEmergency.triggeredAt).toLocaleTimeString()} • All zones overridden
+            {t('player.triggeredAt', { time: new Date(activeEmergency.triggeredAt).toLocaleTimeString() })}
           </div>
         </div>
       )}

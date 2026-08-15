@@ -23,12 +23,14 @@ import { useSignageStore } from './store/useSignageStore';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
 import { useBrandingStore } from './store/useBrandingStore';
+import { useTranslation } from './hooks/useTranslation';
 
 export default function App() {
   const { isAuthenticated, user, checkAuth } = useAuthStore();
   const { viewMode, activeAdminTab, isLoading, loadError, loadAllData, quickPost, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost } = useSignageStore();
   const { theme } = useThemeStore();
   const { footerText } = useBrandingStore();
+  const { t } = useTranslation();
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
 
   // Sync theme class on documentElement
@@ -101,8 +103,8 @@ export default function App() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-300 text-lg font-medium">Loading Digital Signage Platform...</p>
-          <p className="text-slate-500 text-sm mt-1">Welcome, {user?.displayName}</p>
+          <p className="text-slate-300 text-lg font-medium">{t('app.loading')}</p>
+          <p className="text-slate-500 text-sm mt-1">{t('app.welcome', { name: user?.displayName ?? '' })}</p>
         </div>
       </div>
     );
@@ -114,13 +116,13 @@ export default function App() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-rose-400 text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-white mb-2">Connection Error</h2>
+          <h2 className="text-xl font-bold text-white mb-2">{t('app.connectionError')}</h2>
           <p className="text-slate-400 mb-4">{loadError}</p>
           <button
             onClick={() => loadAllData()}
             className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg"
           >
-            Retry Connection
+            {t('app.retry')}
           </button>
         </div>
       </div>
@@ -197,12 +199,12 @@ export default function App() {
           <div className="flex items-center space-x-2">
             <span className={`font-bold ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{footerText}</span>
             <span>•</span>
-            <span>WebSocket Realtime Engine v4.2</span>
+            <span>{t('app.footerWs')}</span>
           </div>
           <div className="flex items-center space-x-4">
-            <span>WebSocket Port: 3000</span>
-            <span>4K Smart TV Ready</span>
-            <span className="text-cyan-400 font-semibold">● System Operational</span>
+            <span>{t('app.footerPort')}</span>
+            <span>{t('app.footer4k')}</span>
+            <span className="text-cyan-400 font-semibold">{t('app.systemOperational')}</span>
           </div>
         </div>
       </footer>

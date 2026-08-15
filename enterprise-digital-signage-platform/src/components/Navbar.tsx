@@ -23,6 +23,8 @@ import {
 import { useSignageStore } from '../store/useSignageStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { useBrandingStore } from '../store/useBrandingStore';
+import { useTranslation } from '../hooks/useTranslation';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { BrandingSettings } from './admin/BrandingSettings';
 
 interface NavbarProps {
@@ -41,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
   } = useSignageStore();
   const { theme, toggleTheme } = useThemeStore();
   const { platformName, platformSubtitle, logoUrl, primaryColor } = useBrandingStore();
+  const { t } = useTranslation();
   const [showBranding, setShowBranding] = useState(false);
 
   const activeEmergency = emergencyAlerts.find((a) => a.active);
@@ -68,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-lg tracking-tight">{platformName}</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/30 text-cyan-400">ENTERPRISE</span>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/30 text-cyan-400">{t('nav.enterprise')}</span>
               </div>
               <p className="text-[11px] text-slate-400 hidden sm:block">{platformSubtitle}</p>
             </div>
@@ -86,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span>Admin Console</span>
+              <span>{t('nav.adminConsole')}</span>
             </button>
 
             <button
@@ -99,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Tv className="h-3.5 w-3.5" />
-              <span>TV Player App</span>
+              <span>{t('nav.tvPlayer')}</span>
               <span className="ml-1 h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
             </button>
 
@@ -113,7 +116,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Monitor className="h-3.5 w-3.5" />
-              <span>Dual Simulator</span>
+              <span>{t('nav.dualSimulator')}</span>
             </button>
           </div>
 
@@ -122,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
             {/* Quick Post Button */}
             <button
               onClick={() => {
-                const msg = prompt('Quick Post message (sent to all screens):');
+                const msg = prompt(t('nav.quickPostPrompt'));
                 if (msg) {
                   fetch('/api/quick-post', {
                     method: 'POST',
@@ -134,7 +137,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               className={`p-2 rounded-lg border transition-all ${
                 theme === 'dark' ? 'bg-slate-800 border-slate-700 text-emerald-400 hover:bg-slate-700' : 'bg-white border-gray-300 text-emerald-600 hover:bg-gray-100'
               }`}
-              title="Quick Post — instant message to all screens"
+              title={t('nav.quickPost')}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-5 5v-5z"/></svg>
             </button>
@@ -145,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               className={`p-2 rounded-lg border transition-all ${
                 theme === 'dark' ? 'bg-slate-800 border-slate-700 text-violet-400 hover:bg-slate-700' : 'bg-white border-gray-300 text-violet-600 hover:bg-gray-100'
               }`}
-              title="White-Label Branding Settings"
+              title={t('nav.branding')}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 0 1-4-4V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a4 4 0 0 1-4 4zm0 0h12a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 0 1 2.828 0l2.829 2.829a2 2 0 0 1 0 2.828l-8.486 8.485M7 17h.01"/></svg>
             </button>
@@ -157,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
                   ? 'bg-slate-800 border-slate-700 text-yellow-400 hover:bg-slate-700' 
                   : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-100'
               }`}
-              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              title={theme === 'dark' ? t('nav.lightMode') : t('nav.darkMode')}
             >
               {theme === 'dark' ? (
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="5" strokeWidth="2"/><path strokeWidth="2" strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -166,18 +169,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               )}
             </button>
 
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Live WS Status */}
             <div className="hidden md:flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs">
               {wsConnected ? (
                 <>
                   <Wifi className="h-3.5 w-3.5 text-emerald-400" />
-                  <span className="text-slate-300">WS Live</span>
-                  <span className="text-[10px] text-slate-500">({onlineCount}/{screens.length} online)</span>
+                  <span className="text-slate-300">{t('nav.wsLive')}</span>
+                  <span className="text-[10px] text-slate-500">{t('nav.onlineCount', { online: onlineCount, total: screens.length })}</span>
                 </>
               ) : (
                 <>
                   <WifiOff className="h-3.5 w-3.5 text-amber-400" />
-                  <span className="text-amber-300">WS Offline</span>
+                  <span className="text-amber-300">{t('nav.wsOffline')}</span>
                 </>
               )}
             </div>
@@ -193,7 +199,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <ShieldAlert className="h-4 w-4 text-rose-400" />
-              <span>{activeEmergency ? 'EMERGENCY ACTIVE' : 'EMERGENCY ALERT'}</span>
+              <span>{activeEmergency ? t('nav.emergencyActive') : t('nav.emergencyAlert')}</span>
             </button>
           </div>
 
@@ -212,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Monitor className="h-3.5 w-3.5" />
-              <span>Screens Matrix</span>
+              <span>{t('nav.screensMatrix')}</span>
               <span className="px-1.5 py-0.2 rounded-full bg-slate-900 text-[10px] text-slate-400 border border-slate-700">{screens.length}</span>
             </button>
 
@@ -226,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Layers className="h-3.5 w-3.5" />
-              <span>Smart Layout Studio</span>
+              <span>{t('nav.smartLayout')}</span>
             </button>
 
             <button
@@ -239,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Film className="h-3.5 w-3.5" />
-              <span>Media Library</span>
+              <span>{t('nav.mediaLibrary')}</span>
             </button>
 
             <button
@@ -252,7 +258,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <ListVideo className="h-3.5 w-3.5" />
-              <span>Playlists</span>
+              <span>{t('nav.playlists')}</span>
             </button>
 
             <button
@@ -265,7 +271,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Calendar className="h-3.5 w-3.5" />
-              <span>Scheduler Engine</span>
+              <span>{t('nav.scheduler')}</span>
             </button>
 
             <button
@@ -278,7 +284,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <RotateCcw className="h-3.5 w-3.5 text-violet-400" />
-              <span>Campaigns</span>
+              <span>{t('nav.campaigns')}</span>
             </button>
 
             <button
@@ -291,7 +297,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Radio className="h-3.5 w-3.5 text-indigo-400" />
-              <span>Realtime Control</span>
+              <span>{t('nav.realtimeControl')}</span>
             </button>
 
             <button
@@ -304,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Activity className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Analytics & Telemetry</span>
+              <span>{t('nav.analytics')}</span>
             </button>
 
             <button
@@ -316,7 +322,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Presentation className="h-3.5 w-3.5 text-amber-400" />
-              <span>Slideshow Studio</span>
+              <span>{t('nav.slideshow')}</span>
             </button>
 
             <button
@@ -329,7 +335,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <DatabaseBackup className="h-3.5 w-3.5 text-amber-400" />
-              <span>Backup</span>
+              <span>{t('nav.backup')}</span>
             </button>
 
             <button
@@ -341,7 +347,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenEmergencyModal }) => {
               }`}
             >
               <Bot className="h-3.5 w-3.5 text-purple-400" />
-              <span>AI Config</span>
+              <span>{t('nav.aiConfig')}</span>
             </button>
           </div>
         )}

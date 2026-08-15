@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { LayoutZone, MediaItem, Playlist } from '../../types/signage';
+import { useTranslation } from '../../hooks/useTranslation';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
 
 interface DisplayData {
@@ -17,6 +18,7 @@ interface DisplayData {
 }
 
 export const DisplayKiosk: React.FC = () => {
+  const { t } = useTranslation();
   const [data, setData] = useState<DisplayData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -335,7 +337,7 @@ export const DisplayKiosk: React.FC = () => {
         <div className="absolute inset-0 z-[200] bg-rose-950/95 flex flex-col items-center justify-center p-8 text-center text-white animate-pulse border-8 border-rose-500">
           <div className="text-6xl mb-4 animate-bounce">🚨</div>
           <span className="text-sm font-black tracking-widest uppercase bg-black/60 px-4 py-1 rounded border border-rose-400 text-rose-200">
-            🚨 EMERGENCY OVERRIDE BROADCAST
+            {t('player.emergencyOverride')}
           </span>
           <h1 className="text-3xl sm:text-5xl font-black mt-4 text-white tracking-tight drop-shadow-lg">
             {emergency.title}
@@ -344,7 +346,7 @@ export const DisplayKiosk: React.FC = () => {
             {emergency.message}
           </p>
           <div className="mt-8 text-xs font-mono text-rose-300 bg-rose-900/80 px-4 py-2 rounded-xl">
-            Triggered at {new Date(emergency.triggeredAt || Date.now()).toLocaleTimeString()} • All zones overridden
+            {t('player.triggeredAt', { time: new Date(emergency.triggeredAt || Date.now()).toLocaleTimeString() })}
           </div>
         </div>
       )}

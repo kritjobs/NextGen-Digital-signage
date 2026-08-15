@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ShieldAlert, X, AlertOctagon, Flame, CloudLightning, Shield, Radio } from 'lucide-react';
 import { useSignageStore } from '../store/useSignageStore';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface EmergencyModalProps {
   isOpen: boolean;
@@ -9,35 +10,44 @@ interface EmergencyModalProps {
 
 export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose }) => {
   const { triggerEmergency, screens } = useSignageStore();
+  const { t, language } = useTranslation();
 
-  const [title, setTitle] = useState('FIRE EVACUATION WARNING');
-  const [message, setMessage] = useState('PLEASE EVACUATE THE BUILDING IMMEDIATELY. USE STAIRWELLS. DO NOT USE ELEVATORS.');
+  const [title, setTitle] = useState(t('emergency.fireDefaultTitle'));
+  const [message, setMessage] = useState(t('emergency.fireDefaultMsg'));
   const [type, setType] = useState<'fire' | 'weather' | 'lockdown' | 'custom'>('fire');
   const [severity, setSeverity] = useState<'critical' | 'warning' | 'info'>('critical');
   const [selectedTarget, setSelectedTarget] = useState<'all' | string>('all');
 
-  if (!isOpen) return null;
-
   const handleSelectPreset = (presetType: 'fire' | 'weather' | 'lockdown' | 'custom') => {
     setType(presetType);
     if (presetType === 'fire') {
-      setTitle('FIRE EVACUATION EMERGENCY');
-      setMessage('FIRE ALARM ACTIVATED. EVACUATE VIA NEAREST EMERGENCY EXIT IMMEDIATELY.');
+      setTitle(t('emergency.presetFireTitle'));
+      setMessage(t('emergency.presetFireMsg'));
       setSeverity('critical');
     } else if (presetType === 'weather') {
-      setTitle('SEVERE WEATHER SHELTER NOTICE');
-      setMessage('SEVERE STORM & TORNADO WARNING IN EFFECT. MOVE TO INTERIOR GROUND FLOOR SHELTERS.');
+      setTitle(t('emergency.presetWeatherTitle'));
+      setMessage(t('emergency.presetWeatherMsg'));
       setSeverity('warning');
     } else if (presetType === 'lockdown') {
-      setTitle('SECURITY LOCKDOWN IN EFFECT');
-      setMessage('SECURITY ANNOUNCEMENT: STAY IN COVERED CLASSROOMS OR OFFICES. LOCK DOORS.');
+      setTitle(t('emergency.presetLockdownTitle'));
+      setMessage(t('emergency.presetLockdownMsg'));
       setSeverity('critical');
     } else {
-      setTitle('SPECIAL SYSTEM NOTICE');
-      setMessage('PLEASE ATTEND ALL-HANDS MEETING IN MAIN AUDITORIUM.');
+      setTitle(t('emergency.presetCustomTitle'));
+      setMessage(t('emergency.presetCustomMsg'));
       setSeverity('info');
     }
   };
+
+  // Re-apply the current preset's translated text when the language changes
+  // (so an already-open modal updates live instead of keeping stale strings).
+  useEffect(() => {
+    if (!isOpen) return;
+    handleSelectPreset(type);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, isOpen]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,8 +72,8 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
               <ShieldAlert className="h-6 w-6 text-rose-400" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Trigger Live Emergency Override</h3>
-              <p className="text-xs text-rose-200">Overrides all screen playlists instantaneously via WebSocket</p>
+              <h3 className="text-base font-bold text-white">{t('emergency.modalTitle')}</h3>
+              <p className="text-xs text-rose-200">{t('emergency.modalSubtitle')}</p>
             </div>
           </div>
           <button 
@@ -78,7 +88,7 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
         <div className="p-5 space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-              1. Choose Preset Alert Template
+              {t('emergency.presetTemplate')}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
@@ -91,7 +101,7 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
                 }`}
               >
                 <Flame className="h-5 w-5 text-rose-400 mb-1" />
-                <span className="text-xs font-bold">Fire Evac</span>
+                <span className="text-xs font-bold">{t('emergency.presetFire')}</span>
               </button>
 
               <button
@@ -104,7 +114,7 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
                 }`}
               >
                 <CloudLightning className="h-5 w-5 text-amber-400 mb-1" />
-                <span className="text-xs font-bold">Weather</span>
+                <span className="text-xs font-bold">{t('emergency.presetWeather')}</span>
               </button>
 
               <button
@@ -117,7 +127,7 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
                 }`}
               >
                 <Shield className="h-5 w-5 text-purple-400 mb-1" />
-                <span className="text-xs font-bold">Lockdown</span>
+                <span className="text-xs font-bold">{t('emergency.presetLockdown')}</span>
               </button>
 
               <button
@@ -130,14 +140,14 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
                 }`}
               >
                 <Radio className="h-5 w-5 text-blue-400 mb-1" />
-                <span className="text-xs font-bold">Custom</span>
+                <span className="text-xs font-bold">{t('emergency.presetCustom')}</span>
               </button>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Alert Headline Title</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">{t('emergency.alertTitle')}</label>
               <input
                 type="text"
                 value={title}
@@ -148,7 +158,7 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-1">Broadcast Message Text</label>
+              <label className="text-xs font-semibold text-slate-300 block mb-1">{t('emergency.alertMessage')}</label>
               <textarea
                 rows={3}
                 value={message}
@@ -160,13 +170,13 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Target Screen Scope</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">{t('emergency.targetScope')}</label>
                 <select
                   value={selectedTarget}
                   onChange={(e) => setSelectedTarget(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
                 >
-                  <option value="all">🌐 ALL Enterprise Displays ({screens.length})</option>
+                  <option value="all">{t('emergency.allDisplays', { count: screens.length })}</option>
                   {screens.map((scr) => (
                     <option key={scr.id} value={scr.id}>
                       📺 {scr.name} ({scr.group})
@@ -176,15 +186,15 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Severity Level</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">{t('emergency.severity')}</label>
                 <select
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value as any)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
                 >
-                  <option value="critical">🔴 Critical (Flash Red Screen + Sound)</option>
-                  <option value="warning">🟠 Warning (Amber Caution Banner)</option>
-                  <option value="info">🔵 Info (Blue Notification)</option>
+                  <option value="critical">{t('emergency.severityCritical')}</option>
+                  <option value="warning">{t('emergency.severityWarning')}</option>
+                  <option value="info">{t('emergency.severityInfo')}</option>
                 </select>
               </div>
             </div>
@@ -195,14 +205,14 @@ export const EmergencyModal: React.FC<EmergencyModalProps> = ({ isOpen, onClose 
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800"
               >
-                Cancel
+                {t('emergency.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/40 transition-all cursor-pointer"
               >
                 <AlertOctagon className="h-4 w-4 text-white" />
-                <span>BROADCAST INSTANT OVERRIDE</span>
+                <span>{t('emergency.broadcast')}</span>
               </button>
             </div>
           </form>

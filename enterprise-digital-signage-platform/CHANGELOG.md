@@ -5,6 +5,27 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.14] — 2026-08-16  🤖 โดย Freebuff (i18n หลายภาษา — EN core + ไทย + 中文 + ขยายได้ ✅)
+
+### Added
+- **ระบบ i18n แบบ lightweight (zero dependency)** — `src/i18n/` + `useLanguageStore` + `useTranslation` hook:
+  - **ภาษาอังกฤษ (en) = แกนหลัก** — แหล่งที่มาของทุก translation key + fallback อัตโนมัติ
+  - ไทย (`th`) + จีน (`zh`) ครบทุกคีย์ — typed เป็น `Messages` → **compiler บังคับคีย์ครบ/ตรง** ทุกภาษา
+  - **เพิ่มภาษาใหม่แค่ 4 ขั้นตอน** (types.ts → translations/<code>.ts → index.ts) — switcher อ่านจาก `SUPPORTED_LANGUAGES` อัตโนมัติ — คู่มือใน `src/i18n/README.md`
+  - `translate(lang, key, {vars})` — interpolation `{var}` + fallback en → key (ไม่เคย crash)
+  - `LanguageSwitcher` (dropdown) ใน **Navbar + LoginPage** (เลือกได้ก่อน login) + จำ browser locale (th/zh) + persist `signage_language` + อัปเดต `<html lang>`
+- **แปลแล้ว:** Navbar (ทุก label/tooltip), LoginPage (ทั้งหน้า), App shell (loading/error/footer), EmergencyBanner + EmergencyModal (labels/presets/severity + re-sync ข้อความเมื่อเปลี่ยนภาษา), PlayerApp + DisplayKiosk (overlay ฉุกเฉิน)
+
+### Fixed
+- **🐛 เทส fail หลังเที่ยงคืน (timezone bug ในเทส)** — `todayDate()` ใช้ `toISOString()` (UTC) แต่ server ใช้ local date → ช่วง 00:00–07:00 ตามเวลาไทย (UTC ยังเป็นวันเก่า) schedule "วันนี้" ถูกมองว่าเกิน endDate → เทส 4/5/6/11/12 fail — แก้เป็น local date (`getFullYear/getMonth/getDate` ตรงกับ `localDateStr` ของ server) — **16/16 ผ่าน** (ตอน 01:xx local)
+
+### Verified (dev preview)
+- สลับ EN → ไทย → 中文 เห็นผลจริง: navbar (คอนโซลผู้ดูแล/管理控制台), footer, emergency button, `<html lang>` (th-TH/zh-CN), localStorage persist
+- Emergency Modal 中文 (触发实时紧急广播/选择预设警报模板/火灾疏散...), player overlay 中文 (紧急强制广播) ผ่าน WS จริง + เคลียร์ได้
+- typecheck 0 error + build ผ่าน + integration 16/16
+
+---
+
 ## [0.4.13] — 2026-08-16  🤖 โดย Freebuff (Regression รอบสุดท้าย — 5 เทสทั้งหมดของวันนี้ผ่านครบ ✅)
 
 ### Verified (dev preview — เทสซ้ำทุกวงจรที่ทำวันนี้ หลังแก้โค้ดครบ 0.4.11/0.4.12)

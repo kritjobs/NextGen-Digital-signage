@@ -65,6 +65,13 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-16 — 🤖 โดย Freebuff (**i18n หลายภาษา — EN core + ไทย + จีน + ขยายได้**)
+- **สถาปัตยกรรม:** `src/i18n/` (types/registry + translations/en·th·zh) + `useLanguageStore` (persist `signage_language` + `<html lang>`) + `useTranslation` hook (`t(key, {vars})` — fallback en → key ไม่ crash) + `LanguageSwitcher` ใน Navbar/LoginPage
+- **en = แกนหลัก** (source of truth ของคีย์) — th/zh typed เป็น `Messages` → **compiler บังคับคีย์ครบ** — เพิ่มภาษาใหม่ 4 ขั้นตอน (คู่มือ `src/i18n/README.md`)
+- แปล: Navbar/LoginPage/App shell/EmergencyBanner+Modal (re-sync เมื่อเปลี่ยนภาษา)/PlayerApp+DisplayKiosk overlay — เนื้อหาจาก server (ชื่อจอ/playlist) ยังเป็นภาษาที่กรอก — i18n แปล static labels
+- **เจอบั๊ก timezone ในเทส:** `todayDate()` ใช้ ISO UTC แต่ server ใช้ local date → ช่วง 00:00–07:00 ตามเวลาไทย schedule "วันนี้" ถูก skip → เทส 4/5/6/11/12 fail (ผ่านตอนบ่าย แต่ fail หลังเที่ยงคืน) — แก้เป็น local date → **16/16 ผ่าน**
+- typecheck 0 + build ผ่าน + preview ยืนยัน 3 ภาษา (nav/footer/modal/player overlay 中文) — ดู `CHANGELOG.md` [0.4.14]
+
 ### 2026-08-16 — 🤖 โดย Freebuff (**Regression รอบสุดท้าย — 5 เทสทั้งหมดของวันนี้ผ่านครบ**)
 - เทสซ้ำบน dev preview ครบทุกวงจรที่ทำวันนี้ (หลังแก้โค้ด 0.4.11/0.4.12) — **ผ่านหมด ไม่มีการแก้โค้ด**: ① Dual Simulator (Admin+TV Player คู่กัน) ② Quick Post realtime (POST → WS → overlay ทั้ง admin banner + player) ③ Emergency ครบวงจร (trigger แดงเต็ม canvas → ทุกจอ EMERGENCY → clear หายหมด) ④ Emergency เจาะจงจอ (scr-001 ไม่แดง / scr-002 แดง / kiosk /display/scr-002 แดงจาก display data → clear) ⑤ Quick Post เจาะจงจอ (scr-001 ไม่ขึ้น / scr-002 ขึ้น) — รายละเอียด `CHANGELOG.md` [0.4.13]
 

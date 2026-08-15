@@ -63,7 +63,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**กำหนดเนื้อหาใหม่ให้ scr-002 บน prod — พร้อมแสดงทันทีที่กลับ online ✅**)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Preview: ตรวจ TV Player — จอเมนูแสดง pl-cafeteria-menu ครบรอบ**)
+- **สร้าง dev mirror ของ prod:** `pl-cafeteria-menu` บน dev (med-004 เมนู + med-005 ticker + med-008 ประกาศ, approved) + ตั้ง `scr-002` dev `currentPlaylistId=pl-cafeteria-menu` (dev เดิมชี้ pl-lunch-menu)
+- **พบข้อเท็จจริง:** TV Player App ใช้ `activeScreen.currentPlaylistId` (ไม่ใช่ effectivePlaylistId จาก tag_match — resolve แบกแค่ schedule/campaign) → ต้องตั้ง currentPlaylistId ให้ตรงเอง (บน prod ก็ตั้งไว้แล้วแบบเดียวกัน)
+- **ตรวจผ่าน:** player จอ Cafeteria (CAFE-20) หมุนครบ 3 ประเภทในโซนเดียว (lay-menu-board): เมนู (campus-4.png) → ticker (NEWS TICKER…) → ประกาศ (VISITOR REGISTRATION NOTICE) — Buffer Cache 100% + ONLINE CLOUD SYNC — PoP ส่ง 201 ต่อเนื่อง
+
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**กำหนดเนื้อหาใหม่ให้ scr-002 บน prod — พร้อมแสดงทันทีที่กลับ online ✅**) 
 - **สร้าง `pl-cafeteria-menu`** (approved, 3 items: med-004 เมนู + med-005 ticker + med-008 ประกาศ) + ตั้ง tags `cafeteria`+`menu` ให้ scr-002 + ผูก `lay-menu-board` (ตั้ง tags คู่กัน → tag-match จับ layout+playlist พร้อมกัน)
 - **แก้ `sch-002`** เดิมชี้ playlist ว่าง (อนุบาลวันภาษาไทย 0 items) → ชี้ pl-cafeteria-menu + lay-menu-board (จ-ศ 11:00–18:00 จะโชว์เมนูไม่จอว่าง)
 - **ตรวจผ่าน 17/17:** display data scr-002 → `tag_match` + `effectivePlaylistId=pl-cafeteria-menu` + layout lay-menu-board + 3 items — จออื่นไม่ถูกแย่ง (scr-001 default, scr-004 pl-campus-events) — เหลือแค่ช่างเปิดจอกลับมา (docs/recover-scr002.md)

@@ -165,6 +165,7 @@ function mapLayout(l: any): LayoutTemplate {
     heightPx: l.heightPx || l.height_px || 1080,
     status: l.status || 'published',
     approvalStatus: l.approvalStatus || l.approval_status || 'approved',
+    tags: l.tags || [],
     zones: (l.zones || []).map((z: any) => ({
       id: z.id,
       name: z.name,

@@ -706,6 +706,27 @@ export const ScreensManager: React.FC = () => {
               </div>
             </div>
 
+            {/* REQ-TagMatch: tags สำหรับ auto-match */}
+            <div className="text-xs mt-3">
+              <label className="text-slate-400 block mb-1">🎯 Tags (จับคู่เนื้อหาอัตโนมัติ)</label>
+              <input
+                value={(inspectScreen.tags || []).join(', ')}
+                onChange={(e) => { const tags = e.target.value.split(',').map(t => t.trim()).filter(Boolean); updateScreen(inspectScreen.id, { tags } as any); setInspectScreen({ ...inspectScreen, tags }); }}
+                placeholder="cafeteria, menu, lobby..."
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-[11px]"
+              />
+              <p className="text-[10px] text-slate-500 mt-1">
+                จอจะได้เพลย์ลิสต์/layout ที่มี tag ตรงกันโดยอัตโนมัติ (จอใหม่ + ตั้ง tag → ได้เนื้อหาทันที ไม่ต้องสร้าง schedule)
+              </p>
+              {(() => {
+                const st = (inspectScreen.tags || []).map(t => t.toLowerCase());
+                const matchedPl = playlists.find(p => (p.tags || []).some(t => st.includes(t.toLowerCase())));
+                return matchedPl ? (
+                  <p className="text-[10px] text-cyan-400 mt-1">⚡ Auto-match: จะใช้เพลย์ลิสต์ "{matchedPl.name}" เมื่อไม่มี schedule</p>
+                ) : null;
+              })()}
+            </div>
+
             {/* Priority Explanation */}
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-[10px] text-slate-400 space-y-1 mt-3">
               <p className="font-semibold text-slate-300 text-xs mb-1.5">📋 ลำดับ Priority การแสดงผล:</p>

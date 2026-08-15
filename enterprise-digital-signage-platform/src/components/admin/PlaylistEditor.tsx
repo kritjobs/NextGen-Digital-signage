@@ -248,6 +248,16 @@ export const PlaylistEditor: React.FC = () => {
             <div>
               <h3 className="text-base font-bold text-white">{activePlaylist.name}</h3>
               <p className="text-xs text-slate-400">{activePlaylist.description || 'No description'}</p>
+              {/* REQ-TagMatch: tags สำหรับ auto-match กับจอ */}
+              <div className="flex items-center gap-2 mt-2">
+                <input
+                  value={(activePlaylist.tags || []).join(', ')}
+                  onChange={(e) => autoSave(activePlaylist.id, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })}
+                  placeholder="tags: cafeteria, menu, lobby... (จับคู่กับจออัตโนมัติ)"
+                  className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-[11px] text-cyan-300 w-72 focus:outline-none focus:border-cyan-500"
+                />
+                <span className="text-[10px] text-slate-500">🎯 จอที่มี tag ตรงจะได้เพลย์ลิสต์นี้อัตโนมัติ</span>
+              </div>
             </div>
             <div className="flex items-center gap-3 text-xs">
               {/* Save indicator */}

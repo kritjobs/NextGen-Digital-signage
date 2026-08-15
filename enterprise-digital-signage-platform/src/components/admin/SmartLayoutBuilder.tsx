@@ -1228,6 +1228,17 @@ export const SmartLayoutBuilder: React.FC = () => {
             </div>
           )}
 
+          {/* REQ-TagMatch: tags สำหรับ auto-match กับจอ */}
+          {activeLayout && layouts.length > 0 && (
+            <input
+              value={(activeLayout.tags || []).join(', ')}
+              onChange={(e) => updateLayout(activeLayout.id, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) } as any)}
+              placeholder="tags: lobby, menu..."
+              title="Tags สำหรับจับคู่จออัตโนมัติ (จอที่มี tag ตรงจะได้ layout นี้เมื่อไม่มี schedule)"
+              className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-[11px] text-cyan-300 w-44 focus:outline-none focus:border-cyan-500"
+            />
+          )}
+
           {/* Publish/Draft Badge + Toggle */}
           {activeLayout && layouts.length > 0 && (
             <button

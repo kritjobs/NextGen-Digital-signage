@@ -71,6 +71,13 @@
       "when": 1786798112609,
       "tag": "0009_rare_lily_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786802353185,
+      "tag": "0010_slim_doctor_strange",
+      "breakpoints": true
     }
   ]
 }

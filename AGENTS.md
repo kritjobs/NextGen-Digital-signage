@@ -65,6 +65,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Tag-Based Auto-Match + Ops: ล้าง prod**)
+- **Tag-Based Auto-Match:** `layouts` เพิ่ม `tags` (migration `0010`) — ตอนนี้ทุก entity มี tags — `resolveScreenContent()` จับคู่ playlist+layout จาก tags (case-insensitive) → `contentSource: tag_match` — จอใหม่ตั้ง tag ได้เนื้อหาทันที ไม่ต้องสร้าง schedule — broadcast เมื่อ tags เปลี่ยน — UI: 🎯 Tags ใน ScreensManager Configure (พร้อม ⚡ Auto-match hint) + PlaylistEditor + SmartLayoutBuilder — เทสจริง: จอใหม่ `scr-tagtest` (cafeteria+menu) → ได้ `Cafeteria Lunch Specials` อัตโนมัติ ✅ — integration **13/13** + typecheck + build + preview ผ่าน (`CHANGELOG.md` [0.4.3])
+- **Ops — ล้าง prod:** `scr-002` offline ตั้งแต่ 13 ส.ค. (หลัง REBOOT, IP เป็น docker bridge → จอถูกปิด/ถอดจริง — ตรวจทางกายภาพ); **ลบ 66 media rows ไฟล์หาย + 63 playlist_items** (เพลย์ลิสต์ `อนุบาลวันภาษาไทย` ใช้กับ scr-002 ที่ offline — ไม่กระทบจอที่รัน) — backup ก่อนล้าง
+- ต้อง **redeploy** 1 รอบเพื่อขึ้น prod (migration `0010` จะรันอัตโนมัติ — redeploy.bat แก้ไว้แล้ว)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — เปลี่ยนรหัส admin ขึ้น prod ✅**)
 - redeploy ผ่าน (container ใหม่) — **`POST /api/auth/change-password` ทำงานบน prod** (no-token 401, with-token + รหัสเดิมถูก 200) — login รหัสใหม่ปกติ (280-char token)
 - รหัส admin ใหม่ถูกต้องทั้ง prod + dev — default password ถูกถอนแล้ว (`CHANGELOG.md` [0.4.2])

@@ -5,6 +5,26 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.3] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Tag-Based Auto-Match + Ops: ล้าง prod)
+
+> จอ/เพลย์ลิสต์/layout จับคู่ด้วย tags อัตโนมัติ — จอใหม่ตั้ง tag → ได้เนื้อหาทันที (scale 1000+ จอ)
+
+### Added
+- **Tag-Based Auto-Match:**
+  - `layouts` เพิ่ม column `tags` (migration `0010`) — ตอนนี้ screens/playlists/schedules/slideshows/layouts มี tags ครบทุก entity
+  - **Server (`resolveScreenContent`):** จอที่ไม่มี schedule → จับคู่ playlist + layout จาก tags ตรงกัน (case-insensitive) → `contentSource: tag_match` — จอใหม่ตั้ง tag ได้เนื้อหาทันที ไม่ต้องสร้าง schedule
+  - **Push updates:** key ของ tag-match ต่างจาก default → broadcast `SCHEDULE_CHANGED` เมื่อ tags เปลี่ยน (จอเปลี่ยนเนื้อหาเรียลไทม์)
+  - **UI:** ScreensManager Configure — field 🎯 Tags + แสดง "⚡ Auto-match: จะใช้เพลย์ลิสต์ X" + ลำดับ priority; PlaylistEditor — tags input ใน info bar; SmartLayoutBuilder — tags ต่อ layout
+  - Seed: tags ตัวอย่างครบ (screens/layouts) + ตัวอย่างจริงใน dev DB
+- **Ops — ล้าง prod:**
+  - ตรวจ `scr-002` — offline ตั้งแต่ 13 ส.ค. (หลังส่ง REBOOT), IP เป็น docker bridge → จอถูกปิด/ถอดจริง — รอตรวจทางกายภาพ
+  - ตรวจ media บน prod: **66 rows ชี้ไฟล์ที่หายจากดิสก์ (0/14 ตรง)** — ลบ rows + playlist_items (เพลย์ลิสต์ `อนุบาลวันภาษาไทย` ใช้กับ scr-002 ที่ offline — ไม่กระทบจอที่รัน) — backup ไว้ก่อนล้าง
+
+### Tests
+- Integration test #11: จอที่มี tags → `tag_match` ได้ playlist ตรง tags; จอไม่มี tags → ไม่ match — **13/13 ผ่าน**
+
+---
+
 ## [0.4.2] — 2026-08-15  🤖 แก้ไขโดย Freebuff
 
 > 🔐 ยกเลิกรหัส default — admin password ต้องตั้งเอง + มีระบบเปลี่ยนรหัส

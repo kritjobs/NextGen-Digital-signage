@@ -468,3 +468,45 @@ test('10. Media Expiration + Embargo — จอไม่ได้รับ media
   }
 });
 
+test('11. Tag-Based Auto-Match — จอที่มี tags ได้ content ตรงกลุ่มอัตโนมัติ', async () => {
+  // สร้างจอเทสที่มี tags แต่ไม่ได้ตั้ง playlist/layout
+  const scId = tid('scr-tag');
+  const pairing = `TP${Date.now().toString(36).slice(-6).toUpperCase()}`;
+  const createdSc = await api.screens.create(token, {
+    id: scId, pairingCode: pairing,
+    name: '[TEST] Tag Auto-Match', group: 'Dining',
+    location: 'Test bench', orientation: 'landscape',
+    tags: ['cafeteria', 'menu'],
+  });
+  assert.equal(createdSc.status, 201, `create screen: ${JSON.stringify(createdSc.json)}`);
+
+  // display data ควร tag_match กับ playlist ที่มี tag cafeteria/menu
+  const gt = await api.display.generateToken(token, scId);
+  const dtoken = gt.json?.displayToken;
+  assert.ok(dtoken, 'ควรได้ displayToken');
+  const dd = await api.display.data(scId, dtoken);
+  assert.equal(dd.status, 200, `display data: ${JSON.stringify(dd.json)}`);
+  assert.equal(dd.json?.contentSource, 'tag_match', 'ควรเป็น tag_match');
+
+  const pl = (dd.json?.playlists ?? []).find((p) => p.id === dd.json?.effectivePlaylistId);
+  assert.ok(pl, 'ควรได้ playlist ที่ match');
+  const plTags = (pl.tags ?? []).map((t) => t.toLowerCase());
+  assert.ok(plTags.includes('cafeteria') || plTags.includes('menu'), `playlist tags ควรตรงกับจอ: ${plTags}`);
+
+  // จอที่ไม่มี tags → ไม่ tag_match
+  const plainSc = tid('scr-plain');
+  const createdPlain = await api.screens.create(token, {
+    id: plainSc,    pairingCode: 'TP' + Date.now().toString(36).slice(-6).toUpperCase() + 'B',
+    name: '[TEST] Plain Screen', group: 'Other',
+    location: 'Test', orientation: 'landscape',
+  });
+  assert.equal(createdPlain.status, 201);
+  const gt2 = await api.display.generateToken(token, plainSc);
+  const dd2 = await api.display.data(plainSc, gt2.json?.displayToken);
+  assert.notEqual(dd2.json?.contentSource, 'tag_match', 'จอที่ไม่มี tags ไม่ควร tag_match');
+
+  // cleanup
+  await api.screens.remove(token, scId);
+  await api.screens.remove(token, plainSc);
+});
+

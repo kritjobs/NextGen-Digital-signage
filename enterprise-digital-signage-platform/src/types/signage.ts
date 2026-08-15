@@ -153,6 +153,7 @@ export interface LayoutTemplate {
   heightPx: number;
   status: 'draft' | 'published' | 'archived';
   approvalStatus: 'pending' | 'approved' | 'rejected';
+  tags?: string[]; // REQ-TagMatch: จับคู่กับจออัตโนมัติ
   zones: LayoutZone[];
   createdAt: string;
   updatedAt: string;

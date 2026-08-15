@@ -18,6 +18,7 @@ export const playlists = pgTable('playlists', {
 // ─── 2. layouts (no foreign deps) ───────────────────────────
 export const layouts = pgTable('layouts', {
   id:          varchar('id', { length: 50 }).primaryKey(),
+  tags:        text('tags').array().notNull().default([]),
   name:        varchar('name', { length: 200 }).notNull(),
   description: text('description').notNull().default(''),
   orientation: varchar('orientation', { length: 20 }).notNull().default('landscape'),

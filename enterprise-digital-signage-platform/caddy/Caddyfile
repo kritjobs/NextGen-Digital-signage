@@ -1,0 +1,29 @@
+# ═══════════════════════════════════════════════════════════════
+# Caddy — HTTPS Reverse Proxy สำหรับ Signage (REQ-004)
+#
+# LAN (10.70.0.1) ไม่มี domain สาธารณะ → ใช้ `tls internal`
+# (Caddy ออก certificate ให้เองด้วย CA ในเครื่อง — ต้องติดตั้ง
+#  CA ที่อุปกรณ์จอ/เบราว์เซอร์ ดู caddy/TRUST-CA.md)
+#
+# ถ้ามี domain จริง (เช่น signage.mycompany.com + DDNS):
+#   - เปลี่ยน site address เป็น https://signage.mycompany.com
+#   - ลบบรรทัด `tls internal` ออก → Caddy ขอ Let's Encrypt ให้อัตโนมัติ
+#     (ไม่ต้องติดตั้ง CA เอง — ดีที่สุด แต่ต้องมี domain)
+# ═══════════════════════════════════════════════════════════════
+
+https://10.70.0.1 {
+	tls internal
+
+	# ส่งต่อไป app (signage-app พับลิช host port 3100)
+	reverse_proxy localhost:3100
+
+	# force HTTPS + HSTS
+	header {
+		Strict-Transport-Security "max-age=31536000"
+	}
+
+	# log
+	log {
+		output file C:/signage/caddy/caddy-access.log
+	}
+}

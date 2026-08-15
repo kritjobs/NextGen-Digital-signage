@@ -45,6 +45,19 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.5] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Ops: Caddy HTTPS สำหรับ LAN — REQ-004 เต็มรูปแบบ)
+
+### Added
+- **ชุดติดตั้ง HTTPS บน prod (LAN ไม่มี domain):** `caddy/Caddyfile` (`tls internal` — Caddy ออก cert เองด้วย CA ในเครื่อง) + `caddy/install-caddy.bat` (ดาวน์โหลด caddy.exe → เขียน Caddyfile → validate → ติดตั้ง Windows service → export root CA) + `caddy/TRUST-CA.md` (วิธีติดตั้ง CA บน Windows/Android TV + ทางเลือก Let's Encrypt ถ้ามี domain)
+- reverse proxy `localhost:3100` + HSTS + log — WebSocket ผ่าน Caddy ได้อัตโนมัติ
+- หลัง HTTPS ขึ้น: **Service Worker (REQ-004) ทำงานเต็มรูปแบบบน prod** — จอเล่นต่อได้ offline
+
+### Notes
+- ต้องติดตั้ง CA (`caddy-root-ca.crt`) ที่จอ/เบราว์เซอร์ก่อน (หรือใช้ Let's Encrypt ถ้ามี domain)
+- หลังติดตั้ง: อัปเดต `.env` → `APP_URL=https://10.70.0.1` (+ `CORS_ORIGIN`) แล้ว redeploy เพื่อให้ pairing/display URL ใช้ https
+
+---
+
 ## [0.3.4] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Ops: สคริปต์แก้ media URL บน prod)
 
 ### Added

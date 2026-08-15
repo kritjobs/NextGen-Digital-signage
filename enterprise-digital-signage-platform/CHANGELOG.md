@@ -5,6 +5,21 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.7] — 2026-08-15  🤖 แก้ไขโดย Freebuff (TV Player ใช้ tag-match playlist — preview ตรงกับจอจริง)
+
+> เดิม TV Player ใช้ `currentPlaylistId` ของจอ → จอที่ได้ content จาก tag-match ต่างกัน preview vs จอจริง — แก้ให้ player ใช้ playlist/layout ที่ server จับคู่จาก tags
+
+### Changed
+- **Server (`GET /api/schedules/resolve` + `SCHEDULE_CHANGED` broadcast):** คืน `layoutId` + `playlistId` ครบทุกรูปแบบ resolution (schedule/campaign/**tag_match**/default) — เดิมมีแค่ตอน schedule → TV Player อ่าน tag-match ไม่ได้
+- **`PlayerApp.tsx` (TV Player):** เพิ่ม state `tagMatch` (จาก resolve/WS เมื่อ `source=tag_match`) → `screenPlaylistId = scheduleOverride?.playlistId || tagMatch?.playlistId || currentPlaylistId` — ใช้ playlist ของ tag-match ก่อน, ตกเหลือ currentPlaylistId เฉพาะเมื่อไม่มี match; `activeLayout` ลำดับ: schedule → campaign → **tag_match** → baseLayout (tag_match อยู่ระดับ default)
+
+### Tests
+- Integration #12 เพิ่ม assert: resolve คืน `source=tag_match` + `playlistId` + `layoutId` หลัง approve — **14/14 ผ่าน**
+- เทสจริงใน preview (login admin → real data): scr-002 (currentPlaylistId=pl-lunch-menu) โชว์ content ของ **pl-cafeteria-menu** (เมนู → ticker) เพราะ tag_match ชนะ — ตรงกับจอจริง (display data ใช้ effectivePlaylistId)
+- typecheck 0 error + build ผ่าน — dev server restart เพื่อรับ server.ts ใหม่
+
+---
+
 ## [0.4.6] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจ scr-002 offline + คู่มือช่างกลับออนไลน์)
 
 ### Ops

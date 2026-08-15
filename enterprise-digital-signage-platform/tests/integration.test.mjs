@@ -563,6 +563,12 @@ test('12. Content Approval — content ยังไม่ approved ต้อง�
   assert.equal(dd2.json?.effectiveLayoutId ?? dd2.json?.layout?.id, layId, 'approved layout ใหม่ควรถูกใช้ใน tag_match');
   assert.equal(dd2.json?.effectivePlaylistId, plId, 'approved playlist ใหม่ควรถูกใช้ใน tag_match');
 
+  // resolve ต้องคืน tag_match + playlist/layout ด้วย (TV Player ใช้ตัวนี้แทน currentPlaylistId)
+  const resolve = await api.schedules.resolve(token, scId);
+  assert.equal(resolve.json?.source, 'tag_match', 'resolve ควรเห็น tag_match');
+  assert.equal(resolve.json?.playlistId, plId, 'resolve ควรคืน playlistId ที่ approved');
+  assert.equal(resolve.json?.layoutId, layId, 'resolve ควรคืน layoutId ที่ approved');
+
   // cleanup
   await api.screens.remove(token, scId);
   await api.playlists.remove(token, plId);

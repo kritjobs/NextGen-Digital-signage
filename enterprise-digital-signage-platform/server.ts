@@ -386,6 +386,9 @@ async function startServer() {
           lastScheduleState.set(s.id, key);
           broadcast('SCHEDULE_CHANGED', {
             screenId: s.id,
+            // layoutId/playlistId ครบทุกรูปแบบ — player ใช้ตอน tag_match (ตรงกับจอจริง)
+            layoutId: r.layoutId,
+            playlistId: r.playlistId,
             schedule: r.schedule
               ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId, priority: r.schedule.priority, priorityLevel: r.priorityLevel }
               : null,
@@ -976,6 +979,10 @@ async function startServer() {
         const r = await resolveScreenContent(screenId, new Date());
         res.json({
           screenId,
+          // layoutId/playlistId ของ resolution ครบทุกรูปแบบ (schedule/campaign/tag_match/default)
+          // — TV Player ใช้ตัวนี้แทน currentPlaylistId ตอน tag_match (preview ตรงกับจอจริง)
+          layoutId: r.layoutId,
+          playlistId: r.playlistId,
           schedule: r.schedule
             ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId, priority: r.schedule.priority, priorityLevel: r.priorityLevel }
             : null,

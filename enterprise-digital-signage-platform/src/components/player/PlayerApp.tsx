@@ -47,6 +47,9 @@ export const PlayerApp: React.FC = () => {
   const [quickPost, setQuickPost] = useState<{ message: string; style: string } | null>(null);
   // REQ-003/006: schedule ที่ active สำหรับจอนี้ (server-side resolution + 6-Level priority)
   const [scheduleOverride, setScheduleOverride] = useState<{ id: string; name: string; layoutId: string | null; playlistId: string | null; priority?: number; priorityLevel?: PriorityLevel } | null>(null);
+  // REQ-TagMatch: layout/playlist ที่ server จับคู่จาก tags (source=tag_match) —
+  // ใช้แทน currentPlaylistId เพื่อให้ preview ตรงกับจอจริง (display data ใช้ effectivePlaylistId)
+  const [tagMatch, setTagMatch] = useState<{ layoutId: string | null; playlistId: string | null } | null>(null);
 
   const playerRef = useRef<HTMLDivElement>(null);
   const activeScreenIdRef = useRef<string | null>(null);
@@ -98,6 +101,11 @@ export const PlayerApp: React.FC = () => {
       const l = layouts.find((x) => x.id === campaignLayoutId);
       if (l) return l;
     }
+    // tag_match อยู่ระดับ default (11-20) → ชนะ layout พื้นฐานของจอ
+    if (tagMatch?.layoutId) {
+      const l = layouts.find((x) => x.id === tagMatch.layoutId);
+      if (l) return l;
+    }
     return baseLayout;
   })();
 
@@ -115,6 +123,10 @@ export const PlayerApp: React.FC = () => {
         if (!cancelled) {
           setScheduleOverride(json.schedule || null);
           setCampaign(json.campaign || null);
+          // tag_match เท่านั้นที่ override playlist/layout ของจอ — อย่างอื่นใช้ currentPlaylistId
+          setTagMatch(json.source === 'tag_match'
+            ? { layoutId: json.layoutId ?? null, playlistId: json.playlistId ?? null }
+            : null);
         }
       } catch { /* ignore */ }
     };
@@ -161,11 +173,14 @@ export const PlayerApp: React.FC = () => {
               setQuickPost({ message: post.message, style: post.style || 'info' });
               setTimeout(() => setQuickPost(null), (post.duration || 30) * 1000);
             }
-            // REQ-003/011: schedule/campaign เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
+            // REQ-003/011/TagMatch: schedule/campaign/tag_match เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
             if (msg.type === 'SCHEDULE_CHANGED' && msg.payload?.screenId === activeScreenIdRef.current) {
               setScheduleOverride(msg.payload.schedule || null);
               setCampaign(msg.payload.campaign || null);
               setCampaignIndex(0);
+              setTagMatch(msg.payload.source === 'tag_match'
+                ? { layoutId: msg.payload.layoutId ?? null, playlistId: msg.payload.playlistId ?? null }
+                : null);
             }
           } catch {}
         };
@@ -245,7 +260,7 @@ export const PlayerApp: React.FC = () => {
             mediaItems={mediaItems}
             screenId={activeScreen.id}
             screenName={activeScreen.name}
-            screenPlaylistId={scheduleOverride?.playlistId || activeScreen.currentPlaylistId}
+            screenPlaylistId={scheduleOverride?.playlistId || tagMatch?.playlistId || activeScreen.currentPlaylistId}
             isMuted={activeScreen.isMuted}
             recordProofOfPlay={recordProofOfPlay}
             currentTime={currentTime}

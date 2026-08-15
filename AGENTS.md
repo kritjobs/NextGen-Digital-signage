@@ -63,7 +63,13 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Preview: ตรวจ TV Player — จอเมนูแสดง pl-cafeteria-menu ครบรอบ**)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**TV Player ใช้ tag-match playlist — preview ตรงกับจอจริง**)
+- **ปัญหา:** TV Player ใช้ `activeScreen.currentPlaylistId` (resolve เดิมคืน playlistId แค่ตอน schedule) → จอที่ได้ content จาก tag-match แสดงต่างจากจอจริง (DisplayKiosk ใช้ effectivePlaylistId)
+- **แก้:** server — `/api/schedules/resolve` + `SCHEDULE_CHANGED` broadcast คืน `layoutId`/`playlistId` ครบทุกรูปแบบ (รวม tag_match); PlayerApp — state `tagMatch` → `scheduleOverride?.playlistId || tagMatch?.playlistId || currentPlaylistId` (fallback เฉพาะไม่มี match) + activeLayout ลำดับ schedule → campaign → tag_match → base
+- **เทส:** integration #12 เพิ่ม assert resolve คืน tag_match+playlistId+layoutId — **14/14 ผ่าน**; typecheck + build ผ่าน; dev server restart (รับ server.ts ใหม่)
+- **พิสูจน์ใน preview (login admin → real data):** scr-002 ที่ `currentPlaylistId=pl-lunch-menu` โชว์ **pl-cafeteria-menu** (เมนู campus-4 → NEWS TICKER) เพราะ tag_match ชนะ — ตรงกับจอจริง (`CHANGELOG.md` [0.4.7])
+
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Preview: ตรวจ TV Player — จอเมนูแสดง pl-cafeteria-menu ครบรอบ**) 
 - **สร้าง dev mirror ของ prod:** `pl-cafeteria-menu` บน dev (med-004 เมนู + med-005 ticker + med-008 ประกาศ, approved) + ตั้ง `scr-002` dev `currentPlaylistId=pl-cafeteria-menu` (dev เดิมชี้ pl-lunch-menu)
 - **พบข้อเท็จจริง:** TV Player App ใช้ `activeScreen.currentPlaylistId` (ไม่ใช่ effectivePlaylistId จาก tag_match — resolve แบกแค่ schedule/campaign) → ต้องตั้ง currentPlaylistId ให้ตรงเอง (บน prod ก็ตั้งไว้แล้วแบบเดียวกัน)
 - **ตรวจผ่าน:** player จอ Cafeteria (CAFE-20) หมุนครบ 3 ประเภทในโซนเดียว (lay-menu-board): เมนู (campus-4.png) → ticker (NEWS TICKER…) → ประกาศ (VISITOR REGISTRATION NOTICE) — Buffer Cache 100% + ONLINE CLOUD SYNC — PoP ส่ง 201 ต่อเนื่อง

@@ -58,12 +58,11 @@
 - หน้า Admin → จอ → scr-002 → **สร้างลิงก์/QR** (หรือ `POST /api/display/generate-token`) — ผ่าน `https://10.70.0.1` เพื่อให้ URL เป็น `https://10.70.0.1/display/scr-002?token=...`
 - ⚠️ จอที่เคยผูก token เก่า (ก่อน 12 ส.ค. — JWT_SECRET เปลี่ยน) ต้องใช้ URL ใหม่นี้เสมอ
 
-### 4.2 กำหนดเนื้อหาใหม่ (สำคัญ — playlist เดิมว่างแล้ว)
-- ⚠️ `อนุบาลวันภาษาไทย` มี **0 รายการ** → จอจะขึ้น layout เปล่า — เลือกอย่างใดอย่างหนึ่ง:
-  - **เร็วสุด — Tag-Match:** ตั้ง tags ให้จอ scr-002 (เช่น `cafeteria` + `menu`) → ระบบจับคู่ playlist/layout ที่ approved มี tags ตรงกันให้อัตโนมัติ
-  - หรือสร้าง playlist ใหม่ (พร้อม media) → approve → ตั้งเป็น playlist ของจอ
-  - หรือเปิด schedule ใหม่/แก้ `sch-002` ให้อ้าง playlist ที่มีเนื้อหา
-- อย่าลืม: content ต้อง `approved + published` ถึงจะขึ้นจอ (Content Approval Workflow)
+### 4.2 กำหนดเนื้อหาใหม่ ✅ (ทำเสร็จแล้ว 15 ส.ค. 2026)
+- ✅ สร้าง **`pl-cafeteria-menu`** (approved, 3 items: เมนู + ticker + ประกาศ) + ตั้ง tags `cafeteria`+`menu` ให้ scr-002 + ผูก **`lay-menu-board`** (Full Screen Menu Board)
+- ✅ แก้ **`sch-002`** เดิมชี้ playlist ว่าง → ชี้ `pl-cafeteria-menu` + `lay-menu-board` (จ-ศ 11:00–18:00 โชว์เมนู ไม่จอว่าง)
+- ✅ ตรวจผ่าน: display data scr-002 → `tag_match` + `effectivePlaylistId=pl-cafeteria-menu` + layout lay-menu-board — จออื่นไม่ถูกแย่ง
+- หมายเหตุ: content ต้อง `approved + published` ถึงจะขึ้นจอ (Content Approval Workflow) — ถ้าจะเปลี่ยนเนื้อหาอีก ให้ทำ playlist ใหม่ + approve แล้วตั้งให้จอ/แก้ schedule
 
 ### 4.3 ตรวจว่าจอกลับมา online
 - หน้า Admin → จอทั้งหมด → scr-002 ควรเป็น **online** (จุดเขียว) + heartbeat สด

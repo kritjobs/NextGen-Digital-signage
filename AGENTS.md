@@ -63,6 +63,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**กำหนดเนื้อหาใหม่ให้ scr-002 บน prod — พร้อมแสดงทันทีที่กลับ online ✅**)
+- **สร้าง `pl-cafeteria-menu`** (approved, 3 items: med-004 เมนู + med-005 ticker + med-008 ประกาศ) + ตั้ง tags `cafeteria`+`menu` ให้ scr-002 + ผูก `lay-menu-board` (ตั้ง tags คู่กัน → tag-match จับ layout+playlist พร้อมกัน)
+- **แก้ `sch-002`** เดิมชี้ playlist ว่าง (อนุบาลวันภาษาไทย 0 items) → ชี้ pl-cafeteria-menu + lay-menu-board (จ-ศ 11:00–18:00 จะโชว์เมนูไม่จอว่าง)
+- **ตรวจผ่าน 17/17:** display data scr-002 → `tag_match` + `effectivePlaylistId=pl-cafeteria-menu` + layout lay-menu-board + 3 items — จออื่นไม่ถูกแย่ง (scr-001 default, scr-004 pl-campus-events) — เหลือแค่ช่างเปิดจอกลับมา (docs/recover-scr002.md)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ scr-002 offline + คู่มือช่างกลับออนไลน์**)
 - **scr-002 (`Cafeteria Digital Menu Board` — ตึก B ชั้น 2) offline ~2 วัน 4 ชม.** (heartbeat สุดท้าย 13 ส.ค. 19:04 ไทย, 3,096 นาที) — IP สุดท้าย `172.19.0.1` = Docker bridge (มาจากเครื่อง server ไม่ใช่จอ) → ยืนยันจอถูกปิด/ถอดสายจริง ต้องตรวจทางกายภาพ; `alertActive=false`; pairing `CAFE-20` ยังใช้ได้ไม่หมดอายุ; generate-token ใช้ได้
 - **เนื้อหา scr-002 ตอนกลับมา:** playlist `อนุบาลวันภาษาไทย` (pl-1786423885792) เหลือ **0 items** (ล้างไปรอบ 13 ส.ค.) + tags จอ `[]` → โซน content จะว่าง — ต้องกำหนดใหม่ (เร็วสุด: ตั้ง tags จอ cafeteria+menu → tag-match; หรือสร้าง playlist+approve; หรือแก้ sch-002) — `sch-002` active จ-ศ 11:00–18:00 เท่านั้น (ตอนนี้ resolve = default)
@@ -202,7 +207,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
 
-- [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` (หลังกลับ: กำหนดเนื้อหาใหม่ เพราะ playlist เดิมว่าง + ใช้ token ใหม่ — JWT_SECRET เปลี่ยน)
+- [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` — ✅ **เนื้อหาพร้อมแล้ว** (pl-cafeteria-menu + lay-menu-board + sch-002 แก้แล้ว — เปิดจอแล้วแสดงเลย) เหลือใช้ token ใหม่ (JWT_SECRET เปลี่ยน)
 - [x] **เปลี่ยนรหัส admin แล้ว** (2026-08-15) — ลบ default ทั้ง seed.ts/docs — วิธีเปลี่ยน: `change-admin-password.bat` หรือ `/api/auth/change-password`
 - [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`

@@ -12,6 +12,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - **พร้อมกลับ online:** pairing `CAFE-20` ยังใช้ได้ (ไม่หมดอายุ), generate-token ใช้ได้, โหมดระบบ HTTPS → URL `https://10.70.0.1/display/scr-002?token=...` + CA ตัวปัจจุบัน/หรือ native player
 - **⚠️ เนื้อหาที่ผูกว่าง:** playlist `อนุบาลวันภาษาไทย` (pl-1786423885792) = **0 items** (ล้างไปรอบ 13 ส.ค.) + จอ tags `[]` → หลังกลับ online โซน content จะว่าง — ต้องกำหนดใหม่ (เร็วสุด: ตั้ง tags จอ cafeteria+menu → tag-match; หรือ playlist ใหม่ + approve; หรือแก้ sch-002 ที่ active แค่ จ-ศ 11:00–18:00)
 - **ส่งงานช่าง:** `docs/recover-scr002.md` — checklist หน้างาน (เช็คไฟ/สาย/เน็ต → เปิด URL → ติดตั้ง CA ถ้าจำเป็น) + checklist Admin (สร้าง URL ใหม่ → กำหนดเนื้อหา → ตรวจ monitoring / `watch-screen-online.bat`)
+- **✅ กำหนดเนื้อหาใหม่ให้ scr-002 แล้ว (บน prod):** สร้าง `pl-cafeteria-menu` (approved, 3 items: med-004 เมนู + med-005 ticker + med-008 ประกาศ) + ตั้ง tags `cafeteria`+`menu` ให้จอ + ผูก `lay-menu-board` (ตั้ง tags คู่กัน — tag-match คืน layout+playlist พร้อมกัน) + แก้ `sch-002` (เดิมชี้ playlist ว่าง) → ตรวจ display data `tag_match` + `effectivePlaylistId=pl-cafeteria-menu` + layout lay-menu-board ผ่าน 17/17 — จออื่นไม่ถูกแย่ง content — **จอกลับมาเมื่อไหร่แสดงได้ทันที**
 
 ---
 

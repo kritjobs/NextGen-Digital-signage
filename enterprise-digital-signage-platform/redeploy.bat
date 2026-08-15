@@ -51,6 +51,18 @@ if errorlevel 1 (
   exit /b 1
 )
 
+REM หนึ่ง-shot migrate container อาจไม่ rerun ถ้ามัน exited แล้ว
+REM บังคับรัน migration ทุกครั้ง (กัน schema ตกค้างตอน deploy รอบใหม่)
+echo.
+echo  -- running migrate (ensuring schema is up to date) --
+docker compose run --rm signage-migrate
+if errorlevel 1 (
+  echo WARN: migrate reported an error - check output above.
+  pause
+  exit /b 1
+)
+echo OK: migrations up to date.
+
 echo.
 echo ========================================
 echo  STEP 5/6: Waiting for the app to answer

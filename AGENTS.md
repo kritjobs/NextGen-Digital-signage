@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**คู่มือสลับโหมด HTTP/HTTPS ทีละขั้น**)
+- `docs/screen-install-guide.md` ข้อ 6 ขยายเต็ม: เปิด mode.conf → แก้ (http/https) → รัน switch-mode.bat → URL ต่อโหมด → ตรวจ + ตารางแก้ปัญหาสลับโหมด (ไม่ต้องแก้โค้ด/redeploy)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Android TV: CA อัตโนมัติผ่าน native player + ADB**)
 - `android-player`: ฝัง Caddy CA ใน APK (`res/raw/caddy_root_ca.crt` + `network_security_config.xml` + manifest) → WebView trust HTTPS เอง ไม่ต้องติดตั้ง CA ที่จอ — build APK ผ่าน + ยืนยัน CA/NSC ใน APK — ⚠️ CA เปลี่ยนต้อง rebuild (`CHANGELOG.md` [0.3.9])
 - `caddy/push-ca-adb.bat`: ติดตั้ง CA ผ่าน ADB WiFi (จอที่ใช้ browser ทั่วไป) + อัปเดตคู่มือ (TRUST-CA.md / screen-install-guide / android-player README)

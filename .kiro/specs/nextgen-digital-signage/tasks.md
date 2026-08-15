@@ -24,6 +24,7 @@
 - ✅ **2026-08-15 (Freebuff):** REQ-009 Automated Integration Tests เสร็จ (`tests/` — node:test 10 ชุด ครอบคลุมทุก REQ + security + pair/heartbeat + SW; `npm run test:integration`; 10/10 ผ่าน) — ใช้ dev เท่านั้น — ดู `CHANGELOG.md` [0.3.1]
 - ✅ **2026-08-15 (Freebuff):** REQ-004 Offline-First Web Player เสร็จ (Service Worker + banner offline + auto-resume + `?simoffline=1`; integration 10/10 + เทส live ใน preview) — ⚠️ SW ต้อง HTTPS/localhost — ดู `CHANGELOG.md` [0.3.2]
 - 🎉 **กลุ่ม 3 (roadmap) ครบทั้งหมด:** REQ-003/004/005/006/007/008/009/010/011 เสร็จทุกงาน (REQ-001/002 = เดิม)
+- ✅ **2026-08-15 (Freebuff):** **Content Approval Workflow + Tag-Match คู่กัน ขึ้น prod แล้ว** — ตรวจ post-redeploy 30/30 ผ่าน (migration 0011 รันแล้ว, pending ถูกกรอง, approve ขึ้นทันที, reject กรองออก, audit ครบ) — ดู `CHANGELOG.md` [0.4.5]
 
 ---
 

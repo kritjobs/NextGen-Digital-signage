@@ -61,11 +61,13 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - ❌ **ห้าม** แก้ `.env` prod โดยไม่สำรองก่อน (backup เป็น `.env.backup-<เวลา>`)
 - ✅ หลังแก้โค้ด: รัน typecheck + build ให้ผ่าน แล้ว sync ผ่าน `sync-to-prod.ps1`
 
----
+---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-## 4. บันทึกการทำงานล่าสุด (Work Log)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — Content Approval + Tag-Match คู่กันบน prod ✅**)
+- **redeploy เสร็จ → ตรวจบน prod ผ่าน 30/30:** migration **0011 รันแล้ว** (playlists 5 + layouts มี `status`/`approval_status` — เพลย์ลิสต์เดิมทั้งหมด `approved` จาก migration UPDATE); **pending ถูกกรอง** (สร้าง playlist+layout ใหม่ → โดนบังคับ `pending` แม้ client ส่ง approved → ไม่ขึ้นจอ, effectivePlaylistId=null); **approve แล้วขึ้นทันที** (PATCH approve ทั้งคู่ → display data มี playlist ใหม่ + tag_match คืน effectivePlaylistId + layout ใหม่คู่กัน, contentSource=tag_match); **reject → กรองออกอีกครั้ง** + audit บันทึก `approval_approved`/`approval_rejected` ครบ; sanity scr-001 ได้ content ปกติ (default/lay-split-3zone) — ล้างข้อมูลเทสเรียบร้อย
+- สคริปต์ตรวจซ้ำได้: `.freebuff/verify-prod-approval.mjs` (login + สร้าง/ลบข้อมูลเทสเอง) — `CHANGELOG.md` [0.4.5]
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Content Approval Workflow + Tag-Match คู่กัน + Watch script**)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Content Approval Workflow + Tag-Match คู่กัน + Watch script**) 
 - **Content Approval:** playlists เพิ่ม `status`+`approval_status` (migration `0011`) — content ขึ้นจอได้ต่อเมื่อ approved+published — server กรอง display data / schedule (ข้ามไป priority ถัดไป) / tag-match — **สร้างใหม่ = pending เสมอ** (POST บังคับ, กัน client ส่ง approved) — `PATCH /api/playlists/:id/approve` (admin only + audit) — UI badge + Approve/Reject ใน PlaylistEditor + SmartLayoutBuilder — เทสจริง dev: pending ไม่ขึ้นจอ → approve แล้วขึ้นทันที ✅
 - **Tag-Match จับคู่คู่กัน:** `findTagMatchedContent` คืน layout + playlist พร้อมกัน (เดิม layout ชนะแล้วตัด playlist) + tie-break updatedAt — เทสจริง: จอ cafeteria+menu ได้ `lay-menu-board` + `pl-lunch-menu` คู่กัน ✅
 - **watch-screen-online.mjs/.bat:** เฝ้าดู scr-002 (poll `/api/monitoring/status`) → แจ้งเมื่อกลับ online (console + log + webhook) — `--once` + auto re-login

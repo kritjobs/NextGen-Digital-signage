@@ -5,6 +5,21 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.5] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจหลัง redeploy — Content Approval + Tag-Match คู่กันบน prod ✅)
+
+> redeploy เสร็จ (container ใหม่) → ตรวจบน prod จริงผ่าน **30/30** — migration 0011 รันแล้ว + pending ถูกกรอง + approve ขึ้นทันที + reject กรองออก + audit ครบ
+
+### Verified (บน prod — 10.70.0.1:3100)
+- **Migration 0011 รันแล้ว:** `playlists` (5 รายการ) + `layouts` มีคอลัมน์ `status` + `approval_status` — เพลย์ลิสต์เดิมทั้งหมดถูกตั้งเป็น `approved` (migration UPDATE ทำงาน) — หลักฐาน: `GET /playlists` / `GET /layouts` คืน field ครบ (ถ้า column ไม่มี → API error)
+- **Pending ถูกกรอง:** สร้าง playlist+layout ใหม่ (ส่ง `approvalStatus: approved` ใน body) → โดนบังคับเป็น `pending` เสมอ (POST บังคับ, กัน client ส่ง approved เอง) → ไม่ขึ้นจอ: ไม่อยู่ใน `playlists` payload, `effectivePlaylistId=null`, layout ไม่ถูกส่ง
+- **Approve แล้วขึ้นทันที:** `PATCH /api/playlists/:id/approve` + `/api/layouts/:id/approve` → `approved` → display data มี playlist ใหม่ + tag_match คืน `effectivePlaylistId` + layout ใหม่ **คู่กัน** (`contentSource: tag_match`)
+- **Reject → กรองออกอีกครั้ง** (พิสูจน์ filter ทำงานทั้ง 2 ทาง) — `approval_rejected` ถูกบันทึก audit
+- **Audit:** `approval_approved` (playlist+layout) + `approval_rejected` ปรากฏใน `/api/audit-logs`
+- **Sanity:** จอจริง scr-001 ยังได้ content ปกติ (default / lay-split-3zone) — ไม่ regression
+- ล้างข้อมูลเทสเรียบร้อย (screen/playlist/layout `[VERIFY]` ลบแล้ว ยืนยัน 404)
+
+---
+
 ## [0.4.3] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Tag-Based Auto-Match + Ops: ล้าง prod)
 
 > จอ/เพลย์ลิสต์/layout จับคู่ด้วย tags อัตโนมัติ — จอใหม่ตั้ง tag → ได้เนื้อหาทันที (scale 1000+ จอ)

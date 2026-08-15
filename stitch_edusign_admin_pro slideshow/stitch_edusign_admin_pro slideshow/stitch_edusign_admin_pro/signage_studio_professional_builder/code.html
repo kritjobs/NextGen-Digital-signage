@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Signage Slideshow Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#003640",
+                        "surface-tint": "#ddb8ff",
+                        "on-primary": "#490080",
+                        "primary": "#ddb8ff",
+                        "surface-bright": "#31394d",
+                        "outline": "#988ca0",
+                        "surface-variant": "#2d3449",
+                        "secondary-container": "#03b5d3",
+                        "primary-fixed": "#f0dbff",
+                        "primary-container": "#9333ea",
+                        "primary-fixed-dim": "#ddb8ff",
+                        "on-tertiary": "#402d00",
+                        "on-background": "#dae2fd",
+                        "surface": "#0b1326",
+                        "surface-container-lowest": "#060e20",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "background": "#0b1326",
+                        "on-tertiary-fixed": "#261a00",
+                        "on-error": "#690005",
+                        "tertiary": "#f9bd22",
+                        "inverse-primary": "#861fdd",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container": "#171f33",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#f6e6ff",
+                        "secondary-fixed": "#acedff",
+                        "tertiary-container": "#886500",
+                        "surface-dim": "#0b1326",
+                        "on-secondary-container": "#00424e",
+                        "surface-container-high": "#222a3d",
+                        "on-primary-fixed": "#2c0051",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#cfc2d7",
+                        "on-surface": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#5c4300",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-tertiary-container": "#ffeac4",
+                        "inverse-on-surface": "#283044",
+                        "error-container": "#93000a",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "tertiary-fixed-dim": "#f9bd22",
+                        "tertiary-fixed": "#ffdf9f",
+                        "on-primary-fixed-variant": "#6800b4",
+                        "outline-variant": "#4d4354",
+                        "inverse-surface": "#dae2fd",
+                        "secondary": "#4cd7f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "safe_margin": "24px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "toolbar_height": "64px",
+                        "sidebar_width": "320px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-md": ["Playfair Display"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-md": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .neon-glow {
+            box-shadow: 0 0 12px rgba(221, 184, 255, 0.4);
+        }
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: skewX(-20deg);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            100% { left: 200%; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface h-screen overflow-hidden flex flex-col font-body-md">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-sidebar_width h-toolbar_height border-b border-white/10 shadow-sm flex justify-between items-center px-gutter w-full bg-surface/10 backdrop-blur-xl z-50">
+<div class="flex items-center gap-4">
+<span class="font-display-md text-display-md text-on-surface">Digital Signage Pro</span>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="font-headline-sm text-headline-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Drafts</a>
+<a class="font-headline-sm text-headline-sm text-primary border-b-2 border-primary pb-1" href="#">Templates</a>
+<a class="font-headline-sm text-headline-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Analytics</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="bg-gradient-to-r from-primary to-secondary-container text-on-primary font-label-caps text-label-caps px-4 py-2 rounded shimmer hover:shadow-[0_0_15px_rgba(221,184,255,0.6)] transition-all">Live Preview</button>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-4 py-2 rounded">Publish</button>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary" data-icon="settings">settings</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/10">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A detailed headshot portrait of a professional graphic designer, cinematic lighting, sleek dark aesthetic, sharp focus, 8k resolution, photorealistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTNg1h8YzKe-AI3gkpVFQadM2ZgVLHsbmz5PPhQQTXxiakRGJfZ16zLfFenD16qW0r83KH3_uzcWXJTx--DyasVxnWetsps0xIMZGXqtY4zfOhLEjXq3F7asD7evYC95wKpQecb8RTeaJvH1KweA4lIkK2VRmr4HANUipXlRHnZ-qVLEYaIE1txAfJr103SyLbsfAOYISf9nMnuj33oQGV9Hr_Xjgw5CD-qWgPZaaT1Da99TCZwl-Y"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-toolbar_height">
+<!-- Left SideNavBar (Tools) -->
+<aside class="fixed left-0 top-0 h-screen w-sidebar_width bg-surface/10 backdrop-blur-xl border-r border-white/10 shadow-md flex flex-col py-safe_margin z-40">
+<div class="px-gutter mb-8">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded glass-panel flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+</div>
+<div>
+<h1 class="font-display-md text-display-md text-primary tracking-tighter">Signage Studio</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">V3.0 Pro</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto px-unit">
+<a class="flex items-center gap-4 p-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 mb-1" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="perm_media">perm_media</span>
+<span class="font-label-caps text-label-caps">Media</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded-lg text-primary bg-primary/20 shadow-[0_0_12px_rgba(221,184,255,0.4)] transition-all duration-300 mb-1" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="title" style="font-variation-settings: 'FILL' 1;">title</span>
+<span class="font-label-caps text-label-caps">Text</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 mb-1" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="music_note">music_note</span>
+<span class="font-label-caps text-label-caps">Music</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 mb-1" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="animation">animation</span>
+<span class="font-label-caps text-label-caps">Animation</span>
+</a>
+<a class="flex items-center gap-4 p-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 mb-1" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Layout</span>
+</a>
+</nav>
+<div class="px-gutter mt-auto">
+<button class="w-full py-3 rounded glass-panel text-primary font-label-caps text-label-caps hover:bg-white/5 border border-primary/30 transition-all">Upgrade to Enterprise</button>
+</div>
+</aside>
+<!-- Center Canvas Area -->
+<main class="flex-1 ml-sidebar_width mr-sidebar_width bg-surface-container-lowest relative p-safe_margin flex flex-col">
+<!-- Stage Canvas -->
+<div class="flex-1 flex items-center justify-center relative">
+<!-- Grid background pattern -->
+<div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CiAgPHBhdGggZD0iTTE5IDBMMjAgMHYyMEwxOSAyMEwxOSAwek0wIDE5TDIwIDE5TDIwIDIwTDAgMjBMMCAxOXoiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz4KPC9zdmc+')] opacity-50"></div>
+<div class="w-full max-w-5xl aspect-video glass-panel rounded-xl overflow-hidden relative shadow-2xl z-10 flex flex-col">
+<img alt="Luxury Hotel Lobby" class="absolute inset-0 w-full h-full object-cover opacity-80" src="https://lh3.googleusercontent.com/aida/AP1WRLtf5OTw6bv-vGODtQD8mjG4PHmWKXv-MirMiOY1kv08NpOu0tco-orWgHmsPwmgbCqinIu7V5FSE24LfwM_NJUHanfOCp1YGXpEYaVpNwYVCU7e15mafHim5ey0hHlb8b-PIGOmf2aFInMH8QxIExkDgzilWektab5Gln6GKL5pSx4WePWl3D-uLsyD7gg4_t_CQmd1HHk_MmesGk9DocAixhHr7EsEFvaK8u6mXqPtXAjhxVHCkwXa_D0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
+<!-- Canvas Content Overlay -->
+<div class="relative z-20 flex-1 flex flex-col justify-end p-8">
+<div class="glass-panel p-6 rounded-lg max-w-md border-l-4 border-primary">
+<h2 class="font-display-lg text-display-lg text-white mb-2">Grand Opening</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Experience unparalleled luxury at the new Grand Horizon Hotel.</p>
+</div>
+</div>
+<!-- Canvas Controls (Hover) -->
+<div class="absolute top-4 right-4 flex gap-2 z-20 opacity-0 hover:opacity-100 transition-opacity">
+<button class="w-8 h-8 glass-panel rounded flex items-center justify-center text-white hover:text-primary"><span class="material-symbols-outlined text-sm">zoom_in</span></button>
+<button class="w-8 h-8 glass-panel rounded flex items-center justify-center text-white hover:text-primary"><span class="material-symbols-outlined text-sm">aspect_ratio</span></button>
+</div>
+</div>
+</div>
+<!-- Timeline Bottom Anchored -->
+<div class="h-60 mt-safe_margin glass-panel rounded-t-xl p-4 flex flex-col">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Timeline</span>
+<div class="flex gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-primary">play_arrow</span>
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-primary">stop</span>
+</div>
+</div>
+<!-- Timeline Tracks -->
+<div class="flex-1 relative overflow-x-auto overflow-y-hidden bg-surface-container/50 rounded border border-white/5 flex flex-col gap-1 py-2">
+<!-- Playhead -->
+<div class="absolute top-0 bottom-0 left-1/3 w-0.5 bg-secondary z-20 shadow-[0_0_12px_rgba(76,215,246,1)]"></div>
+<!-- Track 1: Media -->
+<div class="h-12 w-[800px] bg-white/2 rounded ml-4 relative border border-white/5 flex items-center px-2 group">
+<div class="absolute left-2 w-32 h-8 glass-panel rounded flex items-center px-2 gap-2 cursor-pointer border-l-2 border-primary group-hover:border-primary-container transition-colors">
+<span class="material-symbols-outlined text-xs text-primary">image</span>
+<span class="font-label-caps text-label-caps text-xs truncate">Hotel_Intro.jpg</span>
+</div>
+<div class="absolute left-40 w-48 h-8 glass-panel rounded flex items-center px-2 gap-2 cursor-pointer border-l-2 border-outline">
+<span class="material-symbols-outlined text-xs text-outline">movie</span>
+<span class="font-label-caps text-label-caps text-xs truncate">Lobby_Pan.mp4</span>
+</div>
+</div>
+<!-- Track 2: Text -->
+<div class="h-12 w-[800px] bg-white/2 rounded ml-4 relative border border-white/5 flex items-center px-2">
+<div class="absolute left-10 w-40 h-8 glass-panel rounded flex items-center px-2 gap-2 cursor-pointer border-l-2 border-tertiary">
+<span class="material-symbols-outlined text-xs text-tertiary">title</span>
+<span class="font-label-caps text-label-caps text-xs truncate">Title_Text</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right SideNavBar (Theme Marketplace) -->
+<aside class="fixed right-0 top-toolbar_height h-[calc(100vh-64px)] w-sidebar_width bg-surface/10 backdrop-blur-xl border-l border-white/10 shadow-lg flex flex-col p-gutter overflow-y-auto z-40">
+<div class="mb-6">
+<h3 class="font-label-caps text-label-caps text-on-surface mb-1">Theme System</h3>
+<p class="font-headline-sm text-headline-sm text-tertiary">Browse Premium Styles</p>
+</div>
+<!-- Categories -->
+<div class="flex flex-col gap-2 mb-6">
+<button class="flex items-center justify-between p-2 rounded border-l-2 border-tertiary text-tertiary pl-2 bg-surface-container-high">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="diamond">diamond</span>
+<span class="font-label-caps text-label-caps">Luxury</span>
+</div>
+</button>
+<button class="flex items-center justify-between p-2 rounded text-on-surface-variant hover:bg-surface-container-high transition-all click:scale-98">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="business">business</span>
+<span class="font-label-caps text-label-caps">Corporate</span>
+</div>
+</button>
+<button class="flex items-center justify-between p-2 rounded text-on-surface-variant hover:bg-surface-container-high transition-all click:scale-98">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="palette">palette</span>
+<span class="font-label-caps text-label-caps">Vibrant</span>
+</div>
+</button>
+</div>
+<!-- Grid -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Theme Card 1 (Active) -->
+<div class="glass-panel rounded-lg overflow-hidden border-2 border-primary cursor-pointer relative group">
+<div class="h-24 bg-surface-container flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent"></div>
+<span class="font-display-md text-sm text-white relative z-10">Elegance</span>
+</div>
+<div class="p-2 bg-surface/40 flex justify-between items-center">
+<span class="font-label-caps text-[9px] text-on-surface">Applied</span>
+<span class="material-symbols-outlined text-primary text-xs" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Theme Card 2 (Pro) -->
+<div class="glass-panel rounded-lg overflow-hidden border border-tertiary cursor-pointer relative group">
+<div class="absolute top-1 right-1 z-20 flex gap-1">
+<span class="bg-tertiary text-on-tertiary px-1 py-0.5 rounded text-[8px] font-bold">PRO</span>
+<span class="material-symbols-outlined text-tertiary text-[10px]" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="h-24 bg-surface-container flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+<img alt="Prestige Theme Preview" class="absolute inset-0 w-full h-full object-cover opacity-60" data-alt="A sophisticated minimalist architectural rendering, dark mode, high contrast, elegant gold accents, 8k resolution, cinematic lighting, corporate setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfcl1imZWqLd-allWaco3MB3eQa7jdsNfqq236BT4Jia_8HIEuVwzgXgVf2HM_mlabZilrzQ7rC9u-NG0DQnpURkFN6H7JcxEfxj4Bs4qQCRRA3b2-d8OmqPt7s6A3xc10barTOquFdT72m7UQggojLRNncx4NaQ26on-WzSmXxIoPPats1K3KqODf53Z_PUkaHuT1c9nthL47CUus2fePWSlYhJEAFkT4jPcftcBsOfHpkv15wuCZ"/>
+<span class="font-display-md text-sm text-tertiary relative z-10">Prestige</span>
+</div>
+<div class="p-2 bg-surface/40">
+<span class="font-label-caps text-[9px] text-on-surface-variant">Prestige</span>
+</div>
+</div>
+<!-- Theme Card 3 (Free) -->
+<div class="border border-outline/30 rounded-lg overflow-hidden cursor-pointer relative group bg-surface-container-low hover:border-outline transition-colors">
+<div class="h-24 flex items-center justify-center relative overflow-hidden">
+<img alt="Corporate Theme Preview" class="absolute inset-0 w-full h-full object-cover opacity-40" data-alt="A clean, bright, modern corporate office space, wide angle, soft natural light, minimalist furniture, 8k resolution, professional presentation style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUOlM0C_oHqosxiC_3MSfd7MvMT-LvYerxBQZByKCwa3fOvmbCWY4nZZX7Wvua5t26_sxfeqRwtHKbniCA-wo6m1PB_0sXMbrXrsWag_x4hRX68Dp4M2UcgT-HWoFW8Vh3kqURp6jkL0q6X0ICrNUVS6fphAmO0RRvWeodbdZFmCHs-QCzM405-s6o4FFedMdvs5LmGFHbWXUcZ2v4apbqgscPLeIEIhnX9k8_8RKsTb8IJ4poQVYn"/>
+<span class="font-body-md text-sm text-white relative z-10">Standard</span>
+</div>
+<div class="p-2 bg-surface-container-highest">
+<span class="font-label-caps text-[9px] text-on-surface-variant">Standard</span>
+</div>
+</div>
+<!-- Theme Card 4 (Pro) -->
+<div class="glass-panel rounded-lg overflow-hidden border border-tertiary cursor-pointer relative group">
+<div class="absolute top-1 right-1 z-20 flex gap-1">
+<span class="bg-tertiary text-on-tertiary px-1 py-0.5 rounded text-[8px] font-bold">PRO</span>
+<span class="material-symbols-outlined text-tertiary text-[10px]" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="h-24 bg-surface-container flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+<div class="absolute inset-0 bg-gradient-to-tr from-secondary/30 to-primary/30"></div>
+<span class="font-display-md text-sm text-secondary relative z-10 italic">Noir</span>
+</div>
+<div class="p-2 bg-surface/40">
+<span class="font-label-caps text-[9px] text-on-surface-variant">Noir</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Signage - Fullscreen Player (Portrait)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#b2c5ff",
+                      "primary-container": "#0052cc",
+                      "secondary-container": "#00f1fe",
+                      "on-surface": "#e2e2e2",
+                      "tertiary-fixed-dim": "#ffb59b",
+                      "on-secondary-container": "#006a70",
+                      "surface-container-lowest": "#0e0e0e",
+                      "secondary-fixed": "#74f5ff",
+                      "inverse-on-surface": "#303030",
+                      "on-secondary-fixed-variant": "#004f54",
+                      "on-error": "#690005",
+                      "on-surface-variant": "#c3c6d6",
+                      "surface-container-low": "#1b1b1b",
+                      "surface": "#131313",
+                      "surface-tint": "#b2c5ff",
+                      "primary-fixed": "#dae2ff",
+                      "on-secondary-fixed": "#002022",
+                      "outline": "#8d90a0",
+                      "on-error-container": "#ffdad6",
+                      "outline-variant": "#434654",
+                      "error-container": "#93000a",
+                      "on-tertiary-fixed-variant": "#812800",
+                      "tertiary-container": "#a33500",
+                      "inverse-primary": "#0c56d0",
+                      "on-primary-container": "#c4d2ff",
+                      "surface-container-highest": "#353535",
+                      "secondary": "#ddfcff",
+                      "on-tertiary-container": "#ffc6b2",
+                      "surface-bright": "#393939",
+                      "on-background": "#e2e2e2",
+                      "on-tertiary-fixed": "#380d00",
+                      "surface-variant": "#353535",
+                      "on-tertiary": "#5b1a00",
+                      "tertiary": "#ffb59b",
+                      "primary": "#b2c5ff",
+                      "on-secondary": "#00363a",
+                      "on-primary": "#002b73",
+                      "tertiary-fixed": "#ffdbcf",
+                      "surface-dim": "#131313",
+                      "error": "#ffb4ab",
+                      "secondary-fixed-dim": "#00dbe7",
+                      "background": "#131313",
+                      "surface-container-high": "#2a2a2a",
+                      "surface-container": "#1f1f1f",
+                      "on-primary-fixed": "#001848",
+                      "on-primary-fixed-variant": "#0040a2",
+                      "inverse-surface": "#e2e2e2"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-gap": "24px",
+                      "gutter-large": "48px",
+                      "widget-padding": "40px",
+                      "margin-page": "64px"
+              },
+              "fontFamily": {
+                      "display-hero": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "display-title": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-hero": [
+                              "120px",
+                              {
+                                      "lineHeight": "140px",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-title": [
+                              "80px",
+                              {
+                                      "lineHeight": "96px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            /* 9:16 aspect ratio forcing for preview */
+            width: 1080px;
+            height: 1920px;
+            margin: 0 auto;
+            transform-origin: top center;
+            /* Scale down for easier viewing in standard browsers if needed, but actual dimensions remain 1080x1920 */
+            /* transform: scale(0.5); */ 
+            overflow: hidden;
+        }
+
+        .scrolling-ticker {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll-left 30s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Ticker overlay gradient for smooth fade at edges */
+        .ticker-mask {
+            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased flex flex-col w-full h-full p-margin-page relative box-border">
+<!-- Top 80%: Media Container -->
+<main class="w-full h-[80%] relative rounded-xl border border-white/10 overflow-hidden mb-gutter-large bg-surface-container-low flex flex-col justify-end">
+<!-- Background Media -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="A stunning, high-resolution establishing shot of a modern university campus courtyard during golden hour. The architecture is a mix of contemporary glass and steel with brutalist concrete elements, set against a deep twilight sky. The lighting is dramatic, casting long shadows, aligning perfectly with a high-contrast dark minimalism aesthetic. Subtle cyan and primary blue lighting accents highlight the pathways." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDReuZmpOdO7KKy-3sdvkYGpeuPxpsS5OE4pFmlwUcPvndekFNIE96hUGH-hPdAr0h6SWSlNSgHX45XtEr6ti1VVpBGtzYypVwYlJfKlWVnL6bCCPIuLrCD4xzolyU6IpxKqKrte0vTc2t8t8DOFG_m44p-JUStS3oA0J_QHqbjVRm9IBn5ZZ9b-5vLniiMa6NSjcyVUH8QF0r2zEYzY8-KvbtkEDnqr46OH-xQ2sRSP82nRgA89Kit')"></div>
+<!-- Dark overlay to ensure text legibility if needed, though mostly media focused -->
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent"></div>
+</div>
+<!-- Optional: Emergency/Alert Overlay Example (Hidden by default, shown for structure) -->
+<!-- 
+        <div class="absolute top-margin-page left-margin-page right-margin-page bg-error text-on-error p-stack-gap rounded-lg border border-white/10 z-50 flex items-center gap-4">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 48px;">warning</span>
+            <span class="font-headline-lg text-headline-lg">CAMPUS ALERT: Severe Weather Warning in Effect. Seek shelter immediately.</span>
+        </div>
+        -->
+<!-- Live Indicator (Inner Glow approach as per design system) -->
+<div class="absolute top-widget-padding right-widget-padding z-10 flex items-center gap-3">
+<div class="w-4 h-4 rounded-full bg-secondary-fixed-dim animate-pulse shadow-[0_0_15px_rgba(0,219,231,0.6)]"></div>
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim tracking-widest uppercase">Live</span>
+</div>
+<!-- Media Context/Title overlay -->
+<div class="relative z-10 p-widget-padding pb-stack-gap">
+<h1 class="font-display-title text-display-title text-on-background drop-shadow-md">Campus Connect</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[80%] mt-4">Discover the new engineering quad. Opening Fall 2024.</p>
+</div>
+</main>
+<!-- Bottom 20%: Info Bar & Footer -->
+<section class="w-full h-[20%] flex flex-col gap-stack-gap">
+<!-- Time and Weather Row -->
+<div class="flex-1 flex justify-between items-end bg-surface-container-lowest border-t-2 border-outline-variant p-widget-padding rounded-t-xl relative overflow-hidden">
+<!-- Left: Large Clock -->
+<div class="flex flex-col">
+<div class="flex items-baseline gap-2">
+<span class="font-display-hero text-display-hero text-primary tracking-tighter" id="hours-mins">14:32</span>
+<span class="font-headline-lg text-headline-lg text-on-surface-variant" id="seconds">45</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface-variant uppercase tracking-wider mt-2" id="date-string">THU, OCT 24 2024</span>
+</div>
+<!-- Right: Weather Widget -->
+<div class="flex items-center gap-stack-gap">
+<div class="flex flex-col text-right">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Current</span>
+<span class="font-display-title text-display-title text-on-background">72°</span>
+</div>
+<!-- High stroke iconography placeholder -->
+<span class="material-symbols-outlined text-secondary-fixed-dim" style="font-size: 96px; font-weight: 300;">partly_cloudy_day</span>
+</div>
+</div>
+<!-- Footer / Ticker Bar (From Shared Components) -->
+<footer class="h-24 docked full-width bottom-0 fixed bottom-0 left-0 w-full z-40 flex items-center px-margin-page overflow-hidden bg-surface-container-lowest border-t-2 border-outline-variant">
+<!-- Brand / Copyright Anchor -->
+<div class="flex items-center gap-6 pr-gutter-large border-r border-outline-variant h-full flex-shrink-0">
+<span class="font-display-hero text-display-hero text-primary text-[48px] leading-[48px]">CampusConnect</span>
+<span class="font-headline-lg text-headline-lg text-on-surface-variant text-[24px] leading-[24px] mt-2">© 2024 School Digital Signage</span>
+</div>
+<!-- Ticker Area -->
+<div class="flex-1 overflow-hidden ml-gutter-large h-full flex items-center ticker-mask relative">
+<!-- Status pip for ticker -->
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-secondary-fixed-dim animate-pulse z-10 shadow-[0_0_10px_rgba(0,219,231,0.5)] hidden"></div>
+<div class="w-full relative h-full flex items-center overflow-hidden">
+<div class="scrolling-ticker flex gap-32">
+<span class="font-headline-lg text-headline-lg text-on-background">Important: Main library closes at 8 PM today for maintenance.</span>
+<span class="font-headline-lg text-headline-lg text-on-background">Upcoming Event: Guest Lecture in the Science Center tomorrow at 10 AM.</span>
+<span class="font-headline-lg text-headline-lg text-on-background">Cafeteria Special: Taco Tuesday starting at 11:30 AM in the Student Union.</span>
+<!-- Repeat for smooth loop if needed, or rely on JS to duplicate -->
+<span class="font-headline-lg text-headline-lg text-on-background">Important: Main library closes at 8 PM today for maintenance.</span>
+</div>
+</div>
+</div>
+<!-- Optional static links from JSON -->
+<!-- 
+            <div class="flex items-center gap-8 pl-gutter-large ml-auto flex-shrink-0">
+                <a href="#" class="font-headline-lg text-headline-lg text-on-surface-variant hover:text-primary-fixed">Emergency Protocol</a>
+                <a href="#" class="font-headline-lg text-headline-lg text-on-surface-variant hover:text-primary-fixed">Privacy</a>
+            </div>
+            -->
+</footer>
+</section>
+<!-- Top App Bar (Hidden/Minimized for Fullscreen Player but structural requirement if present) -->
+<header class="hidden md:flex fixed top-0 right-0 p-margin-page z-50 bg-transparent text-secondary-fixed-dim font-label-caps text-label-caps docked full-width top-0 flat no shadows items-center justify-between w-full pointer-events-none">
+<!-- Empty to let canvas shine, but respects structural rules if needed -->
+</header>
+<script>
+        // Minimal script to update time for realism
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('hours-mins').textContent = `${hours}:${minutes}`;
+            document.getElementById('seconds').textContent = seconds;
+            
+            // Just for show, static date is fine for mockup, but this keeps it feeling live
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
+</body></html>

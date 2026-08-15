@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LUMINA SIGNAGE - Golden Hour Special</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#31312d",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#1c1c18",
+                        "on-primary": "#3c2f00",
+                        "surface-bright": "#393939",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-container": "#554300",
+                        "on-tertiary-container": "#464541",
+                        "on-primary-fixed": "#241a00",
+                        "secondary-fixed": "#e5e2e1",
+                        "primary-fixed-dim": "#e9c349",
+                        "on-surface": "#e4e2e1",
+                        "on-surface-variant": "#d0c5af",
+                        "surface-container-lowest": "#0e0e0e",
+                        "inverse-on-surface": "#303030",
+                        "surface": "#131313",
+                        "on-tertiary-fixed-variant": "#474743",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-low": "#1b1c1c",
+                        "background": "#131313",
+                        "primary": "#f2ca50",
+                        "secondary-container": "#474746",
+                        "surface-tint": "#e9c349",
+                        "on-background": "#e4e2e1",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-secondary": "#313030",
+                        "outline-variant": "#4d4635",
+                        "inverse-primary": "#735c00",
+                        "surface-container-high": "#2a2a2a",
+                        "tertiary-container": "#b5b3ae",
+                        "surface-container-highest": "#353535",
+                        "tertiary-fixed": "#e5e2dc",
+                        "secondary": "#c8c6c5",
+                        "tertiary-fixed-dim": "#c9c6c1",
+                        "on-error": "#690005",
+                        "surface-dim": "#131313",
+                        "primary-container": "#d4af37",
+                        "tertiary": "#d1cec9",
+                        "on-secondary-container": "#b7b5b4",
+                        "outline": "#99907c",
+                        "surface-variant": "#353535",
+                        "surface-container": "#1f2020",
+                        "primary-fixed": "#ffe088",
+                        "on-error-container": "#ffdad6",
+                        "inverse-surface": "#e4e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "24px",
+                        "margin-desktop": "80px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "title-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "title-lg": ["20px", { "lineHeight": "1.5", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "display-lg": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .progress-bar-fill {
+            animation: progress 8s linear infinite;
+        }
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        .slide-up-fade {
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .slide-up-fade-delay-1 { animation-delay: 0.2s; }
+        .slide-up-fade-delay-2 { animation-delay: 0.4s; }
+        
+        @keyframes slideUpFade {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .ken-burns {
+            animation: kenBurns 20s ease-out infinite alternate;
+        }
+        
+        @keyframes kenBurns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen w-screen overflow-hidden font-body-md antialiased selection:bg-primary selection:text-on-primary flex flex-col relative">
+<!-- Background Image with Ken Burns effect -->
+<div class="absolute inset-0 w-full h-full z-0 overflow-hidden bg-surface-container-lowest">
+<img alt="Golden Hour Special Background" class="w-full h-full object-cover ken-burns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1_LPILKesTLGiERpQSWFPqk1piw3hkoGOJMXHVAWdaJrETPKxC2ozBSrdR08BPqDg5zkVQ_6_zEdvC1X3-UcFcXr6X8Azcfr-HPxZ6NetS9RU84EtloXLSDL-Tr69mXGSmxIL5pLb-3ady-bl8C86fonii27yVXXCUQwgBq6exb1BTqhUfEVNsWjihcq7ycFIZ7MkuKrXmnj6dxVcmR72OnPGcYXQWGGKYrrClBRhpZtloaHNkd6O"/>
+<!-- Dramatic Vignette & Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent"></div>
+</div>
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile py-8 bg-transparent shadow-none backdrop-blur-xl bg-surface/20 border-b border-on-surface/10">
+<div class="font-display-lg-mobile md:font-display-lg tracking-tighter text-primary dark:text-primary scale-95 active:scale-90 transition-transform cursor-default">
+            LUMINA SIGNAGE
+        </div>
+<div class="font-title-lg text-title-lg text-primary dark:text-primary tracking-widest">
+            3 / 12
+        </div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col justify-end px-margin-mobile md:px-margin-desktop pb-[140px] z-10 relative">
+<div class="max-w-4xl slide-up-fade">
+<span class="inline-block px-4 py-2 mb-6 border border-primary text-primary font-label-sm text-label-sm tracking-widest uppercase backdrop-blur-md bg-surface/20 rounded-full">
+                Limited Time Offer
+            </span>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-6 uppercase tracking-tight slide-up-fade slide-up-fade-delay-1 drop-shadow-2xl">
+                GOLDEN HOUR SPECIAL
+            </h1>
+<p class="font-body-md text-body-md md:text-title-lg text-on-surface-variant max-w-2xl mb-10 slide-up-fade slide-up-fade-delay-2">
+                Experience unparalleled luxury as the sun sets. Enjoy exclusive access to our premium reserves and bespoke culinary creations, curated specifically for the twilight ambiance.
+            </p>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-10 py-5 rounded-full font-title-lg text-title-lg tracking-wide transition-all duration-300 hover:shadow-[0_0_30px_rgba(242,202,80,0.4)] slide-up-fade slide-up-fade-delay-2 active:scale-95 group flex items-center gap-3">
+                Discover More
+                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex flex-col md:flex-row justify-between items-end px-margin-mobile pb-12 bg-transparent shadow-none backdrop-blur-md bg-surface/10 border-t border-on-surface/10 opacity-100 transition-opacity duration-500">
+<!-- Progress Bar (Dynamic Element) -->
+<div class="absolute top-0 left-0 w-full h-[2px] bg-surface-container-high/50">
+<div class="h-full bg-primary progress-bar-fill shadow-[0_0_10px_rgba(242,202,80,0.8)]"></div>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface mb-4 md:mb-0 uppercase tracking-[0.2em]">
+            RESERVED ENTRANCE • PRIVATE EVENT
+        </div>
+<div class="flex gap-8 font-body-md text-body-md">
+<a class="text-on-surface/70 hover:text-primary transition-colors cursor-pointer" href="#">
+                Schedule
+            </a>
+<a class="text-on-surface/70 hover:text-primary transition-colors cursor-pointer" href="#">
+                Info
+            </a>
+</div>
+</footer>
+</body></html>

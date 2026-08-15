@@ -1,0 +1,39 @@
+# ─── Tool state (never commit) ───
+.freebuff/
+
+# ─── Dependencies ───
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Build output ───
+dist/
+build/
+coverage/
+
+# ─── Environment files (secrets — never commit) ───
+.env
+.env.*
+!.env.example
+
+# ─── Runtime data (exists on prod, synced separately via sync-to-prod.ps1) ───
+enterprise-digital-signage-platform/uploads/
+enterprise-digital-signage-platform/backups/
+
+# ─── Logs ───
+*.log
+npm-debug.log*
+bun-debug.log*
+build-log.txt
+
+# ─── Machine-specific (Android) ───
+local.properties
+.gradle/
+
+# ─── OS / editor ───
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

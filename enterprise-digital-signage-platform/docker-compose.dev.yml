@@ -1,0 +1,92 @@
+# ============================================================
+# NextGen Digital Signage — Development Docker Compose
+# ============================================================
+# ⚡ Hot reload + bind mount source code
+# รัน:  docker compose -f docker-compose.dev.yml up -d
+# หยุด: docker compose -f docker-compose.dev.yml down
+# ลบ data: docker compose -f docker-compose.dev.yml down -v
+# ============================================================
+
+services:
+
+  # ─── PostgreSQL (แยกจากระบบเก่า) ──────────────────────────
+  signage-postgres:
+    image: postgres:15-alpine
+    container_name: signage-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: signage_db
+      POSTGRES_USER: signage_admin
+      POSTGRES_PASSWORD: SignageSecure2026!
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - signage_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signage_admin -d signage_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - signage-network
+
+  # ─── Redis ─────────────────────────────────────────────────
+  signage-redis:
+    image: redis:7-alpine
+    container_name: signage-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - signage-network
+
+  # ─── App (dev mode + hot reload) ───────────────────────────
+  signage-app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: signage-app-dev
+    restart: unless-stopped
+    ports:
+      - "3100:3100"    # Express server
+      - "5173:5173"    # Vite HMR
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      APP_PORT: 3100
+      DATABASE_URL: postgresql://signage_admin:SignageSecure2026!@signage-postgres:5432/signage_db
+      REDIS_URL: redis://signage-redis:6379
+      CORS_ORIGIN: http://localhost:3100,http://localhost:5173
+      WS_PATH: /ws
+      DISABLE_HMR: "false"
+    networks:
+      - signage-network
+    depends_on:
+      signage-postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏳ Running migrations...' &&
+        npx tsx src/db/migrate.ts &&
+        echo '✅ Migrations done. Starting dev server...' &&
+        bun run dev
+      "
+
+volumes:
+  signage_pgdata:
+    name: signage_pgdata
+
+networks:
+  signage-network:
+    name: signage-network
+    driver: bridge

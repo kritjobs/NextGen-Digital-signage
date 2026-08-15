@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Signage - Split Screen Portrait</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#b2c5ff",
+                        "primary-container": "#0052cc",
+                        "secondary-container": "#00f1fe",
+                        "on-surface": "#e2e2e2",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "on-secondary-container": "#006a70",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary-fixed": "#74f5ff",
+                        "inverse-on-surface": "#303030",
+                        "on-secondary-fixed-variant": "#004f54",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#c3c6d6",
+                        "surface-container-low": "#1b1b1b",
+                        "surface": "#131313",
+                        "surface-tint": "#b2c5ff",
+                        "primary-fixed": "#dae2ff",
+                        "on-secondary-fixed": "#002022",
+                        "outline": "#8d90a0",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#434654",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "tertiary-container": "#a33500",
+                        "inverse-primary": "#0c56d0",
+                        "on-primary-container": "#c4d2ff",
+                        "surface-container-highest": "#353535",
+                        "secondary": "#ddfcff",
+                        "on-tertiary-container": "#ffc6b2",
+                        "surface-bright": "#393939",
+                        "on-background": "#e2e2e2",
+                        "on-tertiary-fixed": "#380d00",
+                        "surface-variant": "#353535",
+                        "on-tertiary": "#5b1a00",
+                        "tertiary": "#ffb59b",
+                        "primary": "#b2c5ff",
+                        "on-secondary": "#00363a",
+                        "on-primary": "#002b73",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-dim": "#131313",
+                        "error": "#ffb4ab",
+                        "secondary-fixed-dim": "#00dbe7",
+                        "background": "#131313",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container": "#1f1f1f",
+                        "on-primary-fixed": "#001848",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "inverse-surface": "#e2e2e2"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "stack-gap": "24px",
+                        "gutter-large": "48px",
+                        "widget-padding": "40px",
+                        "margin-page": "64px"
+                    },
+                    fontFamily: {
+                        "display-hero": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-title": ["Inter"]
+                    },
+                    fontSize: {
+                        "display-hero": ["120px", { lineHeight: "140px", letterSpacing: "-0.04em", fontWeight: "800" }],
+                        "headline-lg": ["48px", { lineHeight: "56px", fontWeight: "600" }],
+                        "body-lg": ["24px", { lineHeight: "36px", fontWeight: "400" }],
+                        "label-caps": ["16px", { lineHeight: "24px", letterSpacing: "0.1em", fontWeight: "700" }],
+                        "display-title": ["80px", { lineHeight: "96px", letterSpacing: "-0.02em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            /* 9:16 aspect ratio simulation for viewing in browser if needed, but primarily relying on absolute positioning */
+            background-color: #131313;
+            color: #e2e2e2;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .border-outline-subtle {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            animation: marquee 20s linear infinite;
+            white-space: nowrap;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-lg text-body-lg">
+<!-- TopAppBar -->
+<header class="bg-transparent docked full-width top-0 flat no shadows fixed right-0 p-margin-page z-50 flex justify-between items-center w-full pointer-events-none">
+<div class="font-display-title text-display-title text-primary pointer-events-auto">
+            CampusConnect
+        </div>
+<div class="flex items-center gap-stack-gap">
+<span class="material-symbols-outlined text-secondary-fixed-dim text-[48px] animate-pulse pointer-events-auto" data-icon="sync" style="font-variation-settings: 'FILL' 0;">sync</span>
+</div>
+</header>
+<!-- Main Content Area - Split Screen -->
+<main class="flex flex-col h-full w-full p-margin-page pb-[96px] gap-gutter-large relative z-10 box-border">
+<!-- Top 50% Media Container -->
+<section class="flex-1 min-h-0 relative border border-outline-subtle rounded-xl overflow-hidden bg-surface">
+<!-- Simulated Media Background -->
+<div class="bg-cover bg-center w-full h-full absolute inset-0 opacity-80" data-alt="A highly detailed cinematic shot of a modern university campus during golden hour. The scene features sleek architectural lines of a library building, bathed in warm, directional light against a deep blue sky. The aesthetic is high-contrast dark minimalism with vibrant architectural details popping out, emphasizing a premium, authoritative institutional feel." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCSdO085oBUI9SXysddaiM1cBkSIMOBQHd23A1gBhYgB2zbdxzTrEXHaOn6PKrPeKLMxznuNFHiMB7PIYlLA2psZJb7jBeLMu5z8ye71ZcpjI9URFRtfO-XeaEps3Fv1YLLHh4Ne7mOyrFZDbgVSprCOdFooJ6JlNwMg-x5iNWlwHzeDG2CWz2pC8aUBH2Kk9NYiFIxgTakGfLUe2ooWD740WcbcQhT5z5yUGJsxXIMk2Zxhi1Q62-A')"></div>
+<!-- Optional Overlay Info (e.g. weather/time widget in media corner) -->
+<div class="absolute bottom-widget-padding left-widget-padding bg-surface-container-low/80 backdrop-blur-md p-6 rounded-lg border border-outline-subtle flex items-center gap-6">
+<span class="material-symbols-outlined text-[80px] text-secondary-fixed-dim" style="font-variation-settings: 'FILL' 1;">partly_cloudy_day</span>
+<div class="flex flex-col">
+<span class="font-display-title text-display-title text-on-surface">72°</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">SEATTLE, WA</span>
+</div>
+</div>
+</section>
+<!-- Bottom 50% Schedule Widget -->
+<section class="flex-1 min-h-0 flex flex-col gap-stack-gap">
+<header class="flex justify-between items-end border-b-2 border-outline-variant pb-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Info Hub</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Live Updates</p>
+</div>
+<div class="text-right">
+<span class="font-display-title text-display-title leading-none block">10:42</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">AM PST</span>
+</div>
+</header>
+<!-- Schedule List -->
+<div class="flex flex-col gap-4 overflow-y-auto pr-4 custom-scrollbar h-full">
+<!-- Event Card 1 (Active/Now) -->
+<article class="bg-surface-container-high border-l-4 border-primary rounded-r-lg p-widget-padding flex items-start gap-stack-gap relative">
+<div class="absolute inset-0 border border-primary/20 rounded-r-lg pointer-events-none"></div>
+<div class="flex flex-col min-w-[200px]">
+<span class="font-headline-lg text-headline-lg text-primary">10:30 AM</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">UNTIL 12:00 PM</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Design Symposium Keynote</h3>
+<div class="flex items-center gap-4 text-secondary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<span class="font-body-lg text-body-lg">Main Auditorium</span>
+</div>
+</div>
+<span class="bg-primary text-on-primary font-label-caps text-label-caps px-4 py-2 rounded-full self-start">NOW</span>
+</article>
+<!-- Event Card 2 -->
+<article class="bg-surface-container-low border border-outline-subtle rounded-lg p-widget-padding flex items-start gap-stack-gap">
+<div class="flex flex-col min-w-[200px]">
+<span class="font-headline-lg text-headline-lg text-on-surface-variant">1:00 PM</span>
+<span class="font-label-caps text-label-caps text-outline">UNTIL 2:30 PM</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Engineering Capstone Presentations</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<span class="font-body-lg text-body-lg">Tech Building, Room 304</span>
+</div>
+</div>
+</article>
+<!-- Event Card 3 -->
+<article class="bg-surface-container-low border border-outline-subtle rounded-lg p-widget-padding flex items-start gap-stack-gap">
+<div class="flex flex-col min-w-[200px]">
+<span class="font-headline-lg text-headline-lg text-on-surface-variant">3:15 PM</span>
+<span class="font-label-caps text-label-caps text-outline">UNTIL 4:00 PM</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Campus Tour (Prospective Students)</h3>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<span class="font-body-lg text-body-lg">Starts at Student Union</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+</main>
+<!-- Footer Ticker -->
+<footer class="bg-surface-container-lowest docked full-width bottom-0 h-24 border-t-2 border-outline-variant flat no shadows fixed left-0 w-full z-40 flex items-center px-margin-page overflow-hidden">
+<div class="flex items-center gap-8 w-full">
+<div class="font-display-hero text-[32px] leading-none text-primary shrink-0">
+                © 2024 School Digital Signage
+            </div>
+<!-- Ticker Content -->
+<div class="flex-1 overflow-hidden relative h-full flex items-center">
+<div class="animate-marquee flex items-center gap-16 font-headline-lg text-headline-lg text-on-surface whitespace-nowrap">
+<span><span class="text-secondary-fixed-dim mr-4">ANNOUNCEMENT:</span> Main library will close early today at 6:00 PM for maintenance.</span>
+<span><span class="text-error mr-4">ALERT:</span> Fire drill scheduled for West Campus tomorrow morning at 10:00 AM.</span>
+<span><span class="text-secondary-fixed-dim mr-4">REMINDER:</span> Registration for Fall semester opens next Monday.</span>
+</div>
+</div>
+<!-- Static Links -->
+<div class="flex items-center gap-6 shrink-0 pl-8 border-l border-outline-variant">
+<span class="font-headline-lg text-[32px] leading-none text-on-surface-variant hover:text-primary-fixed transition-colors">Emergency Protocol</span>
+<span class="font-headline-lg text-[32px] leading-none text-on-surface-variant hover:text-primary-fixed transition-colors">Privacy</span>
+</div>
+</div>
+</footer>
+</body></html>

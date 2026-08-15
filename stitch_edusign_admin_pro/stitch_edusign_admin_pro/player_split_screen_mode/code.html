@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>School Digital Signage</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#380d00",
+                        "primary": "#b2c5ff",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary-fixed-dim": "#00dbe7",
+                        "on-background": "#e2e2e2",
+                        "on-secondary": "#00363a",
+                        "on-error": "#690005",
+                        "surface": "#131313",
+                        "on-surface": "#e2e2e2",
+                        "on-surface-variant": "#c3c6d6",
+                        "background": "#131313",
+                        "error": "#ffb4ab",
+                        "secondary": "#ddfcff",
+                        "on-primary": "#002b73",
+                        "tertiary-container": "#a33500",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#006a70",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "secondary-fixed": "#74f5ff",
+                        "surface-bright": "#393939",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "on-primary-fixed": "#001848",
+                        "on-secondary-fixed-variant": "#004f54",
+                        "primary-container": "#0052cc",
+                        "on-tertiary-container": "#ffc6b2",
+                        "surface-dim": "#131313",
+                        "surface-container-highest": "#353535",
+                        "surface-tint": "#b2c5ff",
+                        "on-secondary-fixed": "#002022",
+                        "surface-container-low": "#1b1b1b",
+                        "on-primary-container": "#c4d2ff",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1f1f1f",
+                        "primary-fixed": "#dae2ff",
+                        "surface-variant": "#353535",
+                        "tertiary-fixed": "#ffdbcf",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "secondary-container": "#00f1fe",
+                        "outline": "#8d90a0",
+                        "surface-container-high": "#2a2a2a",
+                        "inverse-on-surface": "#303030",
+                        "on-tertiary": "#5b1a00",
+                        "tertiary": "#ffb59b",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "inverse-surface": "#e2e2e2",
+                        "inverse-primary": "#0c56d0",
+                        "outline-variant": "#434654"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "widget-padding": "40px",
+                        "stack-gap": "24px",
+                        "gutter-large": "48px",
+                        "margin-page": "64px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "display-title": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["120px", { "lineHeight": "140px", "letterSpacing": "-0.04em", "fontWeight": "800" }],
+                        "label-caps": ["16px", { "lineHeight": "24px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-lg": ["24px", { "lineHeight": "36px", "fontWeight": "400" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "fontWeight": "600" }],
+                        "display-title": ["80px", { "lineHeight": "96px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .ticker-wrap {
+            overflow: hidden;
+            box-sizing: content-box;
+        }
+        .ticker-move {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 100%;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+            animation-name: ticker;
+            animation-duration: 30s;
+        }
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface w-screen h-screen overflow-hidden flex flex-col relative font-sans">
+<!-- Animated Background -->
+<!-- STITCH_SHADER_START:ANIMATION_17 class="absolute inset-0 w-full h-full z-0 opacity-30" -->
+<div class="absolute inset-0 w-full h-full z-0 opacity-30" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_17" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_17');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+varying vec2 v_texCoord;
+
+void main() {
+    vec2 uv = v_texCoord;
+    
+    // Slow, undulating ambient gradient to prevent burn-in
+    float noise1 = sin(uv.x * 2.0 + u_time * 0.2) * 0.5 + 0.5;
+    float noise2 = cos(uv.y * 3.0 - u_time * 0.3) * 0.5 + 0.5;
+    
+    vec3 color1 = vec3(0.06, 0.08, 0.12); // Deep surface
+    vec3 color2 = vec3(0.1, 0.12, 0.18);  // Slightly brighter indigo
+    
+    vec3 finalColor = mix(color1, color2, noise1 * noise2);
+    
+    // Add subtle vignette
+    float dist = distance(uv, vec2(0.5));
+    finalColor *= smoothstep(1.0, 0.2, dist * 0.8);
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_17 -->
+<!-- Top App Bar -->
+<header class="bg-transparent docked full-width top-0 z-50 fixed top-0 right-0 p-margin-page pointer-events-none w-full flex justify-between items-center h-[120px]">
+<div class="font-display-title text-display-title text-primary pointer-events-auto">CampusConnect</div>
+<div class="pointer-events-auto pulsing-sync-animation text-secondary-fixed-dim hover:opacity-80 flex items-center justify-center w-16 h-16 rounded-full bg-surface-container-high/50 border border-outline-variant/30 backdrop-blur-md">
+<span class="material-symbols-outlined" style="font-size: 32px;">sync</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex w-full relative z-10 pt-[120px] pb-24 px-margin-page gap-gutter-large">
+<!-- Left Media Container (70%) -->
+<section class="flex-[7] h-full relative rounded-xl border border-white/20 overflow-hidden bg-surface-container-lowest">
+<img class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-luminosity" data-alt="A high-quality, professional photograph of a high school pep rally in a large gymnasium. Students are cheering in the bleachers, wearing school colors. The lighting is bright and dynamic, capturing the energetic atmosphere. The image uses a high-contrast dark minimalism aesthetic with pure black framing elements and subtle blue glowing highlights to match the digital signage theme. The mood is spirited and exciting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjyOyefd_FgFtumYkklSiDMWT6C1HIs7iue0vYDL6Ypm2CZjnpQE6h8iu5d1ljp9gKtYAhUC_8HUb6yAS2qjOczvz4nSd2YAObaL011H7w62nvNQm2H8nWz2Oc56bqnnhYUdPNZaptP09tSCGsgq9d23rFdwS7WgLWzCd3u7NKYYnDD1Na7RH5dFG7QsDj7gDNV9AxBhN-PcjdzFRewt5nNKN4owmgkKKnfHzwbg0CbwBmfH9Mxnes"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-widget-padding">
+<div class="max-w-3xl">
+<span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 text-primary font-label-caps text-label-caps mb-4 backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+                        LIVE EVENT
+                    </span>
+<h2 class="font-display-title text-display-title text-on-surface mb-2 leading-tight">Annual Spring Pep Rally</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Main Gymnasium • Hosted by Student Council</p>
+</div>
+</div>
+</section>
+<!-- Right Sidebar (30%) -->
+<aside class="flex-[3] h-full flex flex-col gap-stack-gap">
+<!-- Widget Sidebar Header -->
+<div class="bg-surface-container-low border-l border-outline-variant p-widget-padding flex flex-col gap-2 rounded-xl border border-white/10 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+<h3 class="font-headline-lg text-headline-lg text-primary relative z-10">Info Hub</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant relative z-10">Live Updates</p>
+</div>
+<!-- Events List -->
+<div class="flex-1 bg-surface-container-low rounded-xl border border-white/10 p-widget-padding flex flex-col gap-stack-gap overflow-hidden relative">
+<div class="flex items-center justify-between border-b border-white/10 pb-4">
+<h4 class="font-headline-lg text-headline-lg text-on-surface text-[32px] leading-10">Today's Events</h4>
+<span class="material-symbols-outlined text-on-surface-variant">calendar_today</span>
+</div>
+<div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
+<!-- Event Item -->
+<div class="flex gap-4 p-4 rounded-lg bg-surface-container-high/50 border border-white/5 hover:bg-surface-container-high transition-colors duration-300">
+<div class="w-16 flex flex-col items-center justify-center border-r border-white/10 pr-4">
+<span class="font-headline-lg text-headline-lg text-primary text-[24px]">2:00</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">PM</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">Pep Rally</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Main Gym
+                            </span>
+</div>
+</div>
+<!-- Event Item -->
+<div class="flex gap-4 p-4 rounded-lg bg-surface-container-high/50 border border-white/5 hover:bg-surface-container-high transition-colors duration-300">
+<div class="w-16 flex flex-col items-center justify-center border-r border-white/10 pr-4">
+<span class="font-headline-lg text-headline-lg text-primary text-[24px]">4:00</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">PM</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">Science Fair Setup</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Cafeteria
+                            </span>
+</div>
+</div>
+<!-- Event Item -->
+<div class="flex gap-4 p-4 rounded-lg bg-surface-container-high/50 border border-white/5 hover:bg-surface-container-high transition-colors duration-300">
+<div class="w-16 flex flex-col items-center justify-center border-r border-white/10 pr-4">
+<span class="font-headline-lg text-headline-lg text-primary text-[24px]">6:30</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">PM</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<span class="font-body-lg text-body-lg text-on-surface font-semibold">Varsity Basketball</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                Away @ North High
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Weather Widget (Small) -->
+<div class="bg-surface-container-lowest border border-white/20 p-6 rounded-xl flex items-center justify-between relative overflow-hidden h-32">
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-[64px] text-secondary-fixed-dim" style="font-variation-settings: 'FILL' 1;">partly_cloudy_day</span>
+<div class="flex flex-col">
+<span class="font-headline-lg text-headline-lg text-on-surface leading-none">72°</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1">Partly Cloudy</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2 text-right">
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+                         H: 45% <span class="material-symbols-outlined text-[16px]">humidity_percentage</span>
+</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+                         W: 12mph <span class="material-symbols-outlined text-[16px]">air</span>
+</span>
+</div>
+</div>
+</aside>
+</main>
+<!-- Bottom Ticker / Footer -->
+<footer class="bg-surface-container-lowest border-t-2 border-outline-variant docked full-width bottom-0 h-24 fixed bottom-0 left-0 w-full z-40 flex items-center overflow-hidden">
+<!-- Clock Anchor -->
+<div class="h-full bg-surface-container-highest px-8 flex items-center justify-center border-r-2 border-outline-variant z-20 flex-shrink-0 min-w-[200px]">
+<div class="font-headline-lg text-headline-lg text-primary tabular-nums" id="live-clock">
+                1:45 <span class="text-[24px] text-on-surface-variant ml-1">PM</span>
+</div>
+</div>
+<!-- Scrolling Ticker -->
+<div class="flex-1 h-full flex items-center ticker-wrap bg-surface-container-lowest">
+<div class="ticker-move font-headline-lg text-headline-lg text-on-surface-variant">
+<span class="mx-12 text-primary">•</span> Reminder: Early dismissal tomorrow at 1:30 PM for staff development. 
+                <span class="mx-12 text-primary">•</span> Congratulations to the Debate Team for winning the regional championship! 
+                <span class="mx-12 text-primary">•</span> Cafeteria Special Today: Taco Tuesday with churros for dessert.
+                <span class="mx-12 text-primary">•</span> Please return all overdue library books by Friday.
+            </div>
+</div>
+<!-- Static Links/Copyright -->
+<div class="h-full bg-surface-container-lowest px-8 flex items-center gap-8 border-l-2 border-outline-variant z-20 flex-shrink-0">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary-fixed uppercase tracking-wider" href="#">Emergency Protocol</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary-fixed uppercase tracking-wider" href="#">Privacy</a>
+<span class="font-label-caps text-label-caps text-outline ml-4">© 2024 School Digital Signage</span>
+</div>
+</footer>
+<script>
+        // Simple clock update script
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) {
+                clockEl.innerHTML = `${hours}:${minutes} <span class="text-[24px] text-on-surface-variant ml-1">${ampm}</span>`;
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body></html>

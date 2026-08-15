@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Signage Pro - Vibrant Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#003640",
+                        "surface-tint": "#ddb8ff",
+                        "on-primary": "#490080",
+                        "primary": "#ddb8ff",
+                        "surface-bright": "#31394d",
+                        "outline": "#988ca0",
+                        "surface-variant": "#2d3449",
+                        "secondary-container": "#03b5d3",
+                        "primary-fixed": "#f0dbff",
+                        "primary-container": "#9333ea",
+                        "primary-fixed-dim": "#ddb8ff",
+                        "on-tertiary": "#402d00",
+                        "on-background": "#dae2fd",
+                        "surface": "#0b1326",
+                        "surface-container-lowest": "#060e20",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "background": "#0b1326",
+                        "on-tertiary-fixed": "#261a00",
+                        "on-error": "#690005",
+                        "tertiary": "#f9bd22",
+                        "inverse-primary": "#861fdd",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container": "#171f33",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#f6e6ff",
+                        "secondary-fixed": "#acedff",
+                        "tertiary-container": "#886500",
+                        "surface-dim": "#0b1326",
+                        "on-secondary-container": "#00424e",
+                        "surface-container-high": "#222a3d",
+                        "on-primary-fixed": "#2c0051",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#cfc2d7",
+                        "on-surface": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#5c4300",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-tertiary-container": "#ffeac4",
+                        "inverse-on-surface": "#283044",
+                        "error-container": "#93000a",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "tertiary-fixed-dim": "#f9bd22",
+                        "tertiary-fixed": "#ffdf9f",
+                        "on-primary-fixed-variant": "#6800b4",
+                        "outline-variant": "#4d4354",
+                        "inverse-surface": "#dae2fd",
+                        "secondary": "#4cd7f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "safe_margin": "24px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "toolbar_height": "64px",
+                        "sidebar_width": "320px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-md": ["Playfair Display"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-md": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Glassmorphism utility classes */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-popover {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(40px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Shimmer Animation */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 3s infinite;
+        }
+
+        /* Neon Glow */
+        .neon-glow-primary {
+            text-shadow: 0 0 10px rgba(221, 184, 255, 0.7), 0 0 20px rgba(221, 184, 255, 0.5);
+        }
+        .neon-glow-secondary {
+            text-shadow: 0 0 10px rgba(76, 215, 246, 0.7), 0 0 20px rgba(76, 215, 246, 0.5);
+        }
+        
+        .timeline-track {
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.02) 10px, rgba(255,255,255,0.02) 20px);
+        }
+
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden antialiased font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 right-0 left-sidebar_width h-toolbar_height border-b border-white/10 shadow-sm bg-surface/10 backdrop-blur-xl z-50 flex justify-between items-center px-gutter w-full transition-all duration-300">
+<div class="flex items-center gap-6">
+<h1 class="font-display-md text-display-md text-on-surface tracking-tight truncate">Digital Signage Pro</h1>
+<div class="hidden md:flex gap-1 items-center">
+<a class="px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 font-label-caps text-label-caps" href="#">Drafts</a>
+<a class="px-3 py-2 rounded-lg text-primary border-b-2 border-primary pb-1 font-label-caps text-label-caps" href="#">Templates</a>
+<a class="px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors hover:bg-white/5 font-label-caps text-label-caps" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+<button class="px-4 py-2 rounded bg-surface-container-high text-on-surface border border-white/10 hover:bg-white/5 transition-colors font-label-caps text-label-caps hidden sm:block">Live Preview</button>
+<button class="px-4 py-2 rounded bg-gradient-to-r from-primary-container to-secondary-container text-white font-label-caps text-label-caps hover:shadow-[0_0_15px_rgba(221,184,255,0.5)] transition-all relative overflow-hidden group">
+<span class="relative z-10">Publish</span>
+<div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 ease-in-out"></div>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-white/10 ml-2">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A close up, high resolution portrait of a professional individual against a neutral dark grey studio background. Soft, flattering cinematic lighting highlights their features, suitable for a sleek SaaS user avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD9414-RoD8qLnEhWvi3xxjZS6t8oBEZUC2Cgm9K8DRU2iOCorA3Yy3H8A0ZQoHIag6FEs1ZO1ZC2CC0eXojm8KzU-nrjeA2JGVwyVvzO1FgXlJYz_n7bXfsDWLU_dwecKhp_pbL2mNQN-wlrkB5--IkGTdKEvum2gjNjHFKaqlH92cr9t8FTG1BV5ZpnoTW1s6GIYAlIXg1EYmKCngFyw1SHi59boec4pQWfmTZzIOU0n_qRTNEOp"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar (Left) -->
+<aside class="fixed left-0 top-0 h-screen w-sidebar_width border-r border-white/10 shadow-sm bg-surface/10 backdrop-blur-xl z-50 flex flex-col h-full py-safe_margin transition-all duration-300">
+<div class="px-gutter mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-surface shadow-lg">
+<span class="material-symbols-outlined font-bold">view_in_ar</span>
+</div>
+<div>
+<h2 class="font-display-md text-display-md text-primary tracking-tighter text-xl">Signage Studio</h2>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-70">V3.0 Pro</span>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">perm_media</span>
+<span class="font-label-caps text-label-caps">Media</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">title</span>
+<span class="font-label-caps text-label-caps">Text</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">music_note</span>
+<span class="font-label-caps text-label-caps">Music</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-primary bg-primary/20 shadow-[0_0_12px_rgba(221,184,255,0.4)] transition-all duration-150 scale-95" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">animation</span>
+<span class="font-label-caps text-label-caps">Animation</span>
+<div class="ml-auto w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(221,184,255,1)]"></div>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:bg-white/5 transition-all duration-300 group" href="#">
+<span class="material-symbols-outlined text-xl group-hover:text-primary transition-colors">dashboard</span>
+<span class="font-label-caps text-label-caps">Layout</span>
+</a>
+</nav>
+<div class="px-gutter mt-auto pt-6 border-t border-white/5">
+<!-- Animation Panel Content (Contextual to active state) -->
+<div class="glass-panel p-4 rounded-xl mb-6">
+<h3 class="font-label-caps text-label-caps text-on-surface mb-4 flex justify-between items-center">
+                    Active Effects
+                    <span class="material-symbols-outlined text-sm text-secondary animate-pulse">auto_awesome</span>
+</h3>
+<div class="space-y-3">
+<div class="bg-surface-container-high rounded p-3 border border-primary/30 flex justify-between items-center group cursor-pointer hover:border-primary transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">bolt</span>
+<span class="font-body-md text-sm text-primary">Energetic</span>
+</div>
+<div class="w-8 h-4 bg-primary-container rounded-full relative">
+<div class="absolute right-1 top-0.5 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-high rounded p-3 border border-secondary/30 flex justify-between items-center group cursor-pointer hover:border-secondary transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">layers</span>
+<span class="font-body-md text-sm text-secondary">Parallax</span>
+</div>
+<div class="w-8 h-4 bg-secondary-container rounded-full relative">
+<div class="absolute right-1 top-0.5 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full py-3 rounded-lg border border-primary/50 text-primary font-label-caps text-label-caps hover:bg-primary/10 transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-sm">workspace_premium</span>
+                Upgrade to Enterprise
+            </button>
+</div>
+</aside>
+<!-- SideNavBar (Right) - Marketplace / Themes -->
+<aside class="fixed right-0 top-toolbar_height h-[calc(100vh-toolbar_height-240px)] w-sidebar_width border-l border-white/10 shadow-lg bg-surface/10 backdrop-blur-xl z-40 flex flex-col p-gutter overflow-y-auto">
+<div class="mb-6">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-1">Theme System</h2>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-80">Browse Premium Styles</p>
+</div>
+<!-- Theme Tabs -->
+<div class="flex border-b border-white/10 mb-6">
+<button class="flex-1 pb-2 font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Luxury</button>
+<button class="flex-1 pb-2 font-label-caps text-label-caps border-b-2 border-tertiary text-tertiary">Marketplace</button>
+<button class="flex-1 pb-2 font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface transition-colors">Corporate</button>
+</div>
+<!-- Marketplace Items -->
+<div class="space-y-4 flex-1">
+<div class="glass-panel rounded-xl overflow-hidden group cursor-pointer border border-tertiary/20 hover:border-tertiary/60 transition-colors">
+<div class="h-24 bg-surface-container relative">
+<img alt="Neon Nights Theme Preview" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A stylized neon sign against a dark, moody background, glowing intensely with vibrant pinks, purples, and blues, creating a high-energy nightclub aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_B1tW02ips2u2AkHINaZenEOoKDE9r1VmQI61QqlndRUBSfKUxbEIArCTYc0vXdYHjF5C1OKy9CsUg1czfIUUjUr6hIq6oMpZfLTszsIVAOA3mGlK7p71wjRCl7ILYsiTavX5zjrAaneSikPcr6y1-7ioSysOijHk0KWxXmXSRjDbXxiPWqtZrM3jZxyWv1gMZfXMARxQ1nkdJnWyLIQioazpvrtTbwMglp8Y9nDh1SX3jVMkXbV3"/>
+<div class="absolute top-2 right-2 bg-background/80 backdrop-blur px-2 py-1 rounded font-label-caps text-[9px] text-tertiary border border-tertiary/50">PREMIUM</div>
+</div>
+<div class="p-3 bg-surface/50">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface">Neon Nights</h4>
+<span class="font-label-caps text-tertiary">$5.99</span>
+</div>
+<p class="text-[11px] text-on-surface-variant">High-impact nightclub visuals.</p>
+</div>
+</div>
+<div class="glass-panel rounded-xl overflow-hidden group cursor-pointer hover:bg-surface-container-high transition-all">
+<div class="h-24 bg-surface-container relative">
+<img alt="Flash Sale Theme Preview" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Dynamic typography and abstract 3D shapes representing a retail 'Flash Sale' event. The color palette features intense, vibrant warm tones like orange and yellow against a dark backdrop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYIcwPULwo1EQCzie2kw84gN923nmnQ99iKizLePS6LFIZXXwQVc4M7hpewxOYzd282BR4Dg2tPGGnfq1bMSvZJ1IcLNxkTDLzrFrx_WcsqaBLy9GLgn60BGILxv3wXA2qQRKSUot1Y991Tppe-O_bGtccvCsBOK2dcCOyNOg1vPapMC1oQdE8vSfaPguXg-2YSDHVYd5wT7EhouOj68yqhrDainMnx-c893FEl9b97EfEBP5Kc9L9"/>
+<div class="absolute top-2 right-2 bg-background/80 backdrop-blur px-2 py-1 rounded font-label-caps text-[9px] text-tertiary border border-tertiary/50">PREMIUM</div>
+</div>
+<div class="p-3 bg-surface/50">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface">Flash Sale</h4>
+<span class="font-label-caps text-tertiary">$3.99</span>
+</div>
+<p class="text-[11px] text-on-surface-variant">Urgency-driven retail layouts.</p>
+</div>
+</div>
+<div class="glass-panel rounded-xl overflow-hidden group cursor-pointer hover:bg-surface-container-high transition-all opacity-70">
+<div class="h-24 bg-surface-container relative flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant">beach_access</span>
+</div>
+<div class="p-3 bg-surface/50">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-body-md font-semibold text-on-surface">Summer Promo</h4>
+<span class="font-label-caps text-on-surface-variant">FREE</span>
+</div>
+<p class="text-[11px] text-on-surface-variant">Bright, airy retail templates.</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Stage (Canvas) -->
+<main class="fixed top-toolbar_height left-sidebar_width right-sidebar_width bottom-[240px] bg-surface-container-lowest p-safe_margin overflow-hidden flex items-center justify-center">
+<!-- Canvas Area -->
+<div class="relative w-full h-full max-w-5xl max-h-[800px] rounded-2xl overflow-hidden shadow-2xl border border-white/5 bg-black group">
+<!-- The Golden Hour Slide -->
+<img alt="Liquid Metal Texture" class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-screen transform scale-105 group-hover:scale-110 transition-transform duration-1000" src="https://lh3.googleusercontent.com/aida/AP1WRLua7tsaSjdNNiQ9pEACdO-aElZZBlf0X90OdXBXVMQekFCtv95PGjdNFHl0UzGgyQyIoXqi-UGuwfEGLOJag9OHYY10fbaIjAi9DlavbFl05bO7-JmKzkFM-frmjVkp9gZEVZvsRAilnBXXRl2tICvDkwpRARjdFP19vNjdFbG11qZcCN3hw9KZHztWgBTtvj5U1CQ9Nu4JuC0_GT7I2R6Bk3LQNqHvOPR9BJcuheC31nZUfznAAVh1cw"/>
+<!-- Overlays & Gradients for 'High Energy' -->
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/30 via-transparent to-secondary/30 mix-blend-overlay"></div>
+<div class="absolute inset-0 bg-black/20"></div>
+<!-- Typography & Content -->
+<div class="absolute inset-0 p-12 flex flex-col justify-end">
+<div class="max-w-2xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700 ease-out">
+<p class="font-label-caps text-label-caps text-secondary mb-4 tracking-[0.3em] uppercase neon-glow-secondary">Exclusive Premiere</p>
+<h1 class="font-display-lg text-display-lg text-white mb-6 leading-none neon-glow-primary mix-blend-plus-lighter" style="font-size: 5rem;">GOLDEN<br/>HOUR</h1>
+<div class="glass-panel inline-flex items-center gap-4 px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border-white/10">
+<span class="font-body-lg text-white">Starts at 10 PM</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+<span class="font-label-caps text-tertiary tracking-widest">VIP ENTRY</span>
+</div>
+</div>
+</div>
+<!-- Aspect Ratio Badge -->
+<div class="absolute top-4 right-4 glass-panel px-3 py-1.5 rounded-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">aspect_ratio</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">16:9 HD</span>
+</div>
+<!-- Canvas Controls Overlay (Visible on hover) -->
+<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-sm">
+<button class="w-12 h-12 rounded-full bg-primary/90 text-on-primary flex items-center justify-center hover:scale-110 transition-transform shadow-[0_0_20px_rgba(221,184,255,0.6)]">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="w-12 h-12 rounded-full glass-panel text-white flex items-center justify-center hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Timeline (Bottom) -->
+<footer class="fixed bottom-0 left-sidebar_width right-0 h-[240px] bg-surface-container border-t border-white/10 z-40 flex flex-col">
+<!-- Timeline Toolbar -->
+<div class="h-10 border-b border-white/5 flex items-center px-4 justify-between bg-surface/50">
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded text-on-surface-variant hover:text-white hover:bg-white/10 transition-colors"><span class="material-symbols-outlined text-sm">play_arrow</span></button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-white hover:bg-white/10 transition-colors"><span class="material-symbols-outlined text-sm">pause</span></button>
+<button class="p-1.5 rounded text-on-surface-variant hover:text-white hover:bg-white/10 transition-colors"><span class="material-symbols-outlined text-sm">stop</span></button>
+<div class="w-px h-4 bg-white/10 mx-2"></div>
+<span class="font-label-caps text-label-caps text-primary w-16 text-center">00:04:15</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">zoom_out</span>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-1/2 h-full bg-primary/50"></div>
+</div>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">zoom_in</span>
+</div>
+</div>
+<!-- Tracks Area -->
+<div class="flex-1 overflow-y-auto relative timeline-track">
+<!-- Playhead -->
+<div class="absolute left-1/3 top-0 bottom-0 w-[2px] bg-secondary z-20 shadow-[0_0_12px_rgba(76,215,246,0.8)] pointer-events-none">
+<div class="w-3 h-3 rotate-45 bg-secondary absolute -top-1.5 -left-[5px]"></div>
+</div>
+<!-- Track 1: Video -->
+<div class="h-16 border-b border-white/5 flex">
+<div class="w-32 bg-surface-container-high border-r border-white/5 flex items-center px-3 sticky left-0 z-10">
+<span class="material-symbols-outlined text-sm text-on-surface-variant mr-2">movie</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Media 1</span>
+</div>
+<div class="flex-1 relative flex items-center px-2">
+<div class="absolute left-4 right-1/4 h-10 rounded-md bg-gradient-to-r from-primary-container/40 to-primary-container/20 border border-primary/30 flex items-center px-3 overflow-hidden group">
+<div class="absolute inset-0 shimmer opacity-20"></div>
+<span class="font-label-caps text-label-caps text-primary-fixed truncate z-10 relative">Golden_Hour_Bg.mp4</span>
+</div>
+</div>
+</div>
+<!-- Track 2: Overlay/Effects -->
+<div class="h-16 border-b border-white/5 flex">
+<div class="w-32 bg-surface-container-high border-r border-white/5 flex items-center px-3 sticky left-0 z-10">
+<span class="material-symbols-outlined text-sm text-on-surface-variant mr-2">auto_awesome</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Effects</span>
+</div>
+<div class="flex-1 relative flex items-center px-2">
+<div class="absolute left-1/4 right-1/3 h-8 rounded-md bg-secondary-container/20 border border-secondary/30 flex items-center px-3">
+<span class="font-label-caps text-[10px] text-secondary truncate">Energetic Particle Glow</span>
+</div>
+</div>
+</div>
+<!-- Track 3: Text -->
+<div class="h-16 flex">
+<div class="w-32 bg-surface-container-high border-r border-white/5 flex items-center px-3 sticky left-0 z-10">
+<span class="material-symbols-outlined text-sm text-on-surface-variant mr-2">title</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Title</span>
+</div>
+<div class="flex-1 relative flex items-center px-2">
+<div class="absolute left-1/3 right-12 h-8 rounded-md glass-panel flex items-center px-3">
+<span class="font-label-caps text-[10px] text-white truncate">"GOLDEN HOUR"</span>
+</div>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

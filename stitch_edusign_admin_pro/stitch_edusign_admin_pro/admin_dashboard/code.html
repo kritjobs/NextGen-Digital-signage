@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartSchool Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "surface-tint": "#c0c1ff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-surface": "#e1e2eb",
+                        "surface-dim": "#10131a",
+                        "on-primary": "#1000a9",
+                        "tertiary-container": "#ca8100",
+                        "on-secondary-container": "#00424e",
+                        "on-primary-container": "#0d0096",
+                        "on-primary-fixed": "#07006c",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container-lowest": "#0b0e14",
+                        "outline": "#908fa0",
+                        "inverse-surface": "#e1e2eb",
+                        "primary-container": "#8083ff",
+                        "surface-bright": "#363940",
+                        "error-container": "#93000a",
+                        "secondary": "#4cd7f6",
+                        "secondary-container": "#03b5d3",
+                        "background": "#10131a",
+                        "on-tertiary-container": "#3e2400",
+                        "outline-variant": "#464554",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error": "#ffb4ab",
+                        "primary": "#c0c1ff",
+                        "surface-container-highest": "#32353c",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface": "#10131a",
+                        "on-secondary": "#003640",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#2e3037",
+                        "tertiary": "#ffb95f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary": "#472a00",
+                        "surface-variant": "#32353c",
+                        "primary-fixed": "#e1e0ff",
+                        "on-background": "#e1e2eb",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container-high": "#272a31",
+                        "surface-container-low": "#191c22",
+                        "secondary-fixed": "#acedff",
+                        "inverse-primary": "#494bd6",
+                        "on-surface-variant": "#c7c4d7",
+                        "surface-container": "#1d2026",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffddb8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "container-padding-desktop": "32px",
+                        "stack-md": "16px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "container-padding-tablet": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "code": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "code": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #0b0e14; color: #e1e2eb; font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(21, 25, 33, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .chart-grid {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="bg-surface dark:bg-surface font-body-md text-body-md fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-white/5 shadow-sm flex flex-col h-full py-stack-lg z-40 hidden md:flex">
+<div class="px-gutter mb-stack-lg">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A stylized, modern geometric logo for a smart school system, featuring abstract intersecting lines forming a stylized 'S' in vibrant indigo and cyan against a deep dark background. The logo feels high-tech, precise, and secure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkBCUZwSjwpLr2fDkr8Gj3mXgjYUS7VNnoFcARxoA8iThj0pQaVBGyrrKneFWJxuKT-OkUOavp1psfRtomgcl8vsZvR-tl2Y1J9fUk2fmSbcQo2uyvgO7GYls7XuCQSVRCPzbiJONL5U6yNLzqaN_Jz8MtCdTzJoibKo3WzbXQgZqlgcwlqvwtK-q1VVKMT0eS76qOJbE6Q2oOU6gFbtOrPTlPeQOVQESdUO-UXrUOciXNynFtP0Cx"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary leading-none">SmartSchool</h1>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">Admin Console</p>
+</div>
+</div>
+</div>
+<ul class="flex-1 overflow-y-auto px-unit space-y-1">
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-primary dark:text-primary bg-primary-container/10 border-r-2 border-primary scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">perm_media</span>
+<span>Media Library</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">playlist_add_check</span>
+<span>Playlist Builder</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Scheduling</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">monitor</span>
+<span>Screens</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings_remote</span>
+<span>Control Panel</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-r-full text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl font-label-md text-label-md fixed top-0 right-0 left-[280px] z-50 border-b border-white/10 shadow-md flex justify-between items-center h-16 px-gutter hidden md:flex">
+<div class="flex items-center gap-6">
+<span class="font-headline-md text-headline-md font-extrabold text-on-surface tracking-tight">SignageControl</span>
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-on-surface placeholder-on-surface-variant focus:ring-1 focus:ring-secondary w-64 text-sm transition-all focus:w-80" placeholder="Search devices, playlists..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full hover:bg-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-variant/50 flex items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="h-8 w-px bg-white/10 mx-2"></div>
+<div class="w-9 h-9 rounded-full overflow-hidden border border-white/20 ml-2">
+<img class="w-full h-full object-cover" data-alt="A professional headshot portrait of an IT administrator, taken in a dimly lit server room with soft, cool blue and magenta accent lights illuminating their face. They look focused and competent. High-end cinematic lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBokP741ELD_c0iKg0daBTB0Ma7HSlGp1WdILJFM4Yw1mUdJf8o3aRSUKl9VbJEkTBkpM_qpdiBtEM-LFOaVqNzCFNCC0PJi0jF7xHS870ktsVpMwqPYWGKAN6HwHXKP_5kCd9i1XQzvxYYK1ENC6MTUHgXR-Qrg8UTgCDuie1-bdnc3oEEkztqcjTV146t63XliqhYSOUZ7AjxsQWWm1vdfHDNkBVOj1DpIPa1SIhruXgjEeGygb6j"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[280px] mt-16 p-container-padding-desktop overflow-y-auto bg-surface-container-lowest">
+<div class="max-w-7xl mx-auto space-y-stack-lg">
+<!-- Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Good morning, Admin.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Campus digital signage overview for today.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-4 py-2 rounded border border-primary text-primary font-label-md text-label-md hover:bg-primary/10 transition-colors">
+                        Generate Report
+                    </button>
+<button class="px-4 py-2 rounded bg-primary text-on-primary font-bold font-label-md text-label-md hover:bg-primary-fixed transition-colors shadow-[0_0_15px_rgba(192,193,255,0.3)]">
+                        New Broadcast
+                    </button>
+</div>
+</div>
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="absolute -right-6 -top-6 w-24 h-24 bg-surface-variant rounded-full opacity-20 group-hover:scale-150 transition-transform duration-700"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">monitor</span>
+<span class="px-2 py-1 bg-surface-container rounded text-xs font-medium text-on-surface-variant">Total</span>
+</div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Total Screens</p>
+<p class="font-display-lg text-display-lg text-on-surface">24</p>
+</div>
+</div>
+<div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300 border-l-2 border-l-[#4ade80]">
+<div class="absolute -right-6 -top-6 w-24 h-24 bg-[#4ade80] rounded-full opacity-5 group-hover:scale-150 transition-transform duration-700"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="material-symbols-outlined text-[#4ade80]" style="font-variation-settings: 'FILL' 1;">wifi</span>
+<span class="px-2 py-1 bg-[#4ade80]/10 text-[#4ade80] rounded text-xs font-medium">92% Health</span>
+</div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Online</p>
+<p class="font-display-lg text-display-lg text-on-surface">22</p>
+</div>
+</div>
+<div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+<div class="absolute -right-6 -top-6 w-24 h-24 bg-tertiary rounded-full opacity-10 group-hover:scale-150 transition-transform duration-700"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">format_list_bulleted</span>
+<span class="px-2 py-1 bg-surface-container rounded text-xs font-medium text-on-surface-variant">Running</span>
+</div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Active Playlists</p>
+<p class="font-display-lg text-display-lg text-on-surface">8</p>
+</div>
+</div>
+<div class="glass-card rounded-xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300 border-l-2 border-l-error">
+<div class="absolute inset-0 bg-error/5 animate-pulse"></div>
+<div class="absolute -right-6 -top-6 w-24 h-24 bg-error rounded-full opacity-10 group-hover:scale-150 transition-transform duration-700"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="px-2 py-1 bg-error/20 text-error rounded text-xs font-medium animate-pulse">Action Req</span>
+</div>
+<div class="relative z-10">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Alerts</p>
+<p class="font-display-lg text-display-lg text-on-surface">2</p>
+</div>
+</div>
+</div>
+<!-- Main Dashboard Area (Bento Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Uptime Chart (Spans 2 cols) -->
+<div class="lg:col-span-2 glass-card rounded-xl p-6 flex flex-col min-h-[400px]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Screen Uptime <span class="text-on-surface-variant text-sm font-normal ml-2">Last 7 Days</span></h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 relative w-full h-full rounded border border-white/5 chart-grid p-4 flex flex-col justify-end">
+<!-- Simulated Chart -->
+<div class="absolute left-4 top-4 bottom-4 w-px bg-white/10"></div>
+<div class="absolute left-4 right-4 bottom-4 h-px bg-white/10"></div>
+<div class="flex justify-between items-end h-full w-full pl-8 pb-4 relative z-10 gap-2">
+<!-- Bars -->
+<div class="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t h-[95%] relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">99.9%</div>
+</div>
+<div class="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t h-[98%] relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">99.9%</div>
+</div>
+<div class="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t h-[92%] relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">95.4%</div>
+</div>
+<div class="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t h-[100%] relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">100%</div>
+</div>
+<div class="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t h-[85%] relative group border-t-2 border-error">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 text-error">85.2%</div>
+</div>
+<div class="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t h-[97%] relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">98.1%</div>
+</div>
+<div class="w-full bg-secondary/40 hover:bg-secondary/60 transition-colors rounded-t h-[99%] relative group border-t-2 border-secondary shadow-[0_0_15px_rgba(76,215,246,0.2)]">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-secondary text-secondary">99.8% (Today)</div>
+</div>
+</div>
+<div class="flex justify-between w-full pl-8 mt-2 text-xs text-on-surface-variant">
+<span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span class="text-secondary font-medium">Sun</span>
+</div>
+</div>
+</div>
+<!-- Right Column Stack -->
+<div class="flex flex-col gap-gutter">
+<!-- Content Usage Pie Chart -->
+<div class="glass-card rounded-xl p-6 flex-1">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6">Content Usage</h3>
+<div class="flex items-center justify-center relative py-4">
+<!-- Simulated Donut Chart using conic-gradient -->
+<div class="w-40 h-40 rounded-full flex items-center justify-center relative shadow-[0_0_30px_rgba(192,193,255,0.1)]" style="background: conic-gradient(from 0deg, #c0c1ff 0% 55%, #4cd7f6 55% 85%, #ffb95f 85% 100%);">
+<div class="w-32 h-32 bg-surface-container-lowest rounded-full absolute flex items-center justify-center shadow-inner">
+<div class="text-center">
+<span class="block text-2xl font-bold text-on-surface">142</span>
+<span class="text-xs text-on-surface-variant">Assets</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 space-y-3">
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-on-surface-variant">Video</span>
+</div>
+<span class="font-medium">55%</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="text-on-surface-variant">Image</span>
+</div>
+<span class="font-medium">30%</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-tertiary"></div>
+<span class="text-on-surface-variant">HTML Widget</span>
+</div>
+<span class="font-medium">15%</span>
+</div>
+</div>
+</div>
+<!-- Recent Activity Feed -->
+<div class="glass-card rounded-xl p-6 flex-1 flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Recent Activity</h3>
+<button class="text-xs text-primary hover:underline">View All</button>
+</div>
+<div class="space-y-4 flex-1 overflow-y-auto pr-2">
+<div class="flex gap-3 relative">
+<div class="absolute left-[15px] top-8 bottom-[-16px] w-px bg-white/10"></div>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-white/10 flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-on-surface">sync</span>
+</div>
+<div>
+<p class="text-sm text-on-surface">Main Lobby screen updated</p>
+<p class="text-xs text-on-surface-variant">2 mins ago • System</p>
+</div>
+</div>
+<div class="flex gap-3 relative">
+<div class="absolute left-[15px] top-8 bottom-[-16px] w-px bg-white/10"></div>
+<div class="w-8 h-8 rounded-full bg-error/20 border border-error/30 flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-error">campaign</span>
+</div>
+<div>
+<p class="text-sm text-on-surface">Emergency broadcast ended</p>
+<p class="text-xs text-on-surface-variant">45 mins ago • Admin</p>
+</div>
+</div>
+<div class="flex gap-3 relative">
+<div class="absolute left-[15px] top-8 bottom-[-16px] w-px bg-white/10"></div>
+<div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-primary">playlist_add</span>
+</div>
+<div>
+<p class="text-sm text-on-surface">'Morning Announcements' active</p>
+<p class="text-xs text-on-surface-variant">2 hrs ago • Scheduler</p>
+</div>
+</div>
+<div class="flex gap-3 relative">
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-white/10 flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-on-surface">power_off</span>
+</div>
+<div>
+<p class="text-sm text-on-surface">Cafeteria Screen 2 offline</p>
+<p class="text-xs text-on-surface-variant">3 hrs ago • System</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

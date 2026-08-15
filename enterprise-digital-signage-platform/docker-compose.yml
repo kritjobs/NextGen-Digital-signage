@@ -1,0 +1,147 @@
+# ============================================================
+# NextGen Digital Signage — Production Docker Compose
+# ============================================================
+# ⚡ ระบบแยก ISOLATED ทั้งหมดจาก thaihua-smart-school
+# รัน:  docker compose up -d --build
+# หยุด: docker compose down
+# ลบ data: docker compose down -v
+# ============================================================
+
+services:
+
+  # ─── PostgreSQL (แยกจากระบบเก่า) ──────────────────────────
+  signage-postgres:
+    image: postgres:15-alpine
+    container_name: signage-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"            # port 5433 บน host → ไม่ชน thaihua-postgres:5432
+    environment:
+      POSTGRES_DB: signage_db
+      POSTGRES_USER: signage_admin
+      POSTGRES_PASSWORD: ${SIGNAGE_DB_PASSWORD:-SignageSecure2026!}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - signage_pgdata:/var/lib/postgresql/data
+      - ./backups:/backups     # โฟลเดอร์ backup บน host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signage_admin -d signage_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - signage-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  # ─── Redis (แยกจากระบบเก่า) ────────────────────────────────
+  signage-redis:
+    image: redis:7-alpine
+    container_name: signage-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"            # port 6380 บน host → ไม่ชน thaihua-redis:6379
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - signage-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "3m"
+        max-file: "2"
+
+  # ─── Migration Runner (รันครั้งเดียวแล้ว exit) ────────────
+  signage-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: signage-migrate
+    command: >
+      sh -c "
+        echo '⏳ Waiting for PostgreSQL...' &&
+        sleep 3 &&
+        npx tsx src/db/migrate.ts &&
+        echo '✅ Migrations done!'
+      "
+    environment:
+      DATABASE_URL: postgresql://signage_admin:${SIGNAGE_DB_PASSWORD:-SignageSecure2026!}@signage-postgres:5432/signage_db
+    networks:
+      - signage-network
+    depends_on:
+      signage-postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # ─── Main Application ─────────────────────────────────────
+  signage-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: signage-app
+    image: signage-app:latest
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    environment:
+      NODE_ENV: production
+      APP_PORT: 3100
+      DATABASE_URL: postgresql://signage_admin:${SIGNAGE_DB_PASSWORD:-SignageSecure2026!}@signage-postgres:5432/signage_db
+      REDIS_URL: redis://signage-redis:6379
+      CORS_ORIGIN: http://localhost:3100
+      WS_PATH: /ws
+      # ⚠️ Secrets ต้องส่งผ่าน compose (container อ่าน .env ของ host ไม่ได้ — .env ถูกตัดออกจาก image)
+      # ถ้า JWT_SECRET ไม่ตั้งใน .env → docker compose จะ error ทันที (กัน deploy ผิดพลาด)
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env before deploy}
+      WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:-}
+      APP_URL: ${APP_URL:-http://localhost:3100}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - signage-network
+    depends_on:
+      signage-postgres:
+        condition: service_healthy
+      signage-migrate:
+        condition: service_completed_successfully
+    volumes:
+      - signage_uploads:/app/uploads
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+# ─── Volumes (Persistent Data) ──────────────────────────────
+volumes:
+  signage_pgdata:
+    name: signage_pgdata        # ชื่อชัดเจน ไม่ปนกับ thaihua
+  signage_uploads:
+    name: signage_uploads       # เก็บไฟล์ media ที่ upload
+
+# ─── Network (แยก ISOLATED จาก thaihua) ─────────────────────
+networks:
+  signage-network:
+    name: signage-network
+    driver: bridge

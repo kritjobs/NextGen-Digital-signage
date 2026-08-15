@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Digital Signage Player</string>
+    <string name="settings_title">Server Settings</string>
+    <string name="server_url_label">Server URL</string>
+    <string name="server_url_hint">http://192.168.1.100:3100</string>
+    <string name="test_connection">Test Connection</string>
+    <string name="save_and_launch">Save &amp; Launch Player</string>
+    <string name="connection_success">Connected successfully!</string>
+    <string name="connection_failed">Connection failed</string>
+    <string name="offline_mode">Offline Mode - Using cached content</string>
+    <string name="syncing">Syncing media...</string>
+    <string name="no_server_configured">No server configured. Press MENU to set up.</string>
+    <string name="device_admin_description">Enable kiosk mode to prevent accidental exit from Digital Signage Player.</string>
+</resources>

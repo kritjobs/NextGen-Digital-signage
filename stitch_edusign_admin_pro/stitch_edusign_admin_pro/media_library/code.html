@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartSchool Signage - Media Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "surface-tint": "#c0c1ff",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "on-surface": "#e1e2eb",
+                      "surface-dim": "#10131a",
+                      "on-primary": "#1000a9",
+                      "tertiary-container": "#ca8100",
+                      "on-secondary-container": "#00424e",
+                      "on-primary-container": "#0d0096",
+                      "on-primary-fixed": "#07006c",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "surface-container-lowest": "#0b0e14",
+                      "outline": "#908fa0",
+                      "inverse-surface": "#e1e2eb",
+                      "primary-container": "#8083ff",
+                      "surface-bright": "#363940",
+                      "error-container": "#93000a",
+                      "secondary": "#4cd7f6",
+                      "secondary-container": "#03b5d3",
+                      "background": "#10131a",
+                      "on-tertiary-container": "#3e2400",
+                      "outline-variant": "#464554",
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "error": "#ffb4ab",
+                      "primary": "#c0c1ff",
+                      "surface-container-highest": "#32353c",
+                      "on-tertiary-fixed": "#2a1700",
+                      "surface": "#10131a",
+                      "on-secondary": "#003640",
+                      "on-error": "#690005",
+                      "inverse-on-surface": "#2e3037",
+                      "tertiary": "#ffb95f",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-tertiary": "#472a00",
+                      "surface-variant": "#32353c",
+                      "primary-fixed": "#e1e0ff",
+                      "on-background": "#e1e2eb",
+                      "on-secondary-fixed": "#001f26",
+                      "surface-container-high": "#272a31",
+                      "surface-container-low": "#191c22",
+                      "secondary-fixed": "#acedff",
+                      "inverse-primary": "#494bd6",
+                      "on-surface-variant": "#c7c4d7",
+                      "surface-container": "#1d2026",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-fixed": "#ffddb8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-lg": "32px",
+                      "stack-sm": "8px",
+                      "container-padding-desktop": "32px",
+                      "stack-md": "16px",
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "container-padding-tablet": "24px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "code": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "code": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(21, 25, 33, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .media-card-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: linear-gradient(to top, rgba(11, 14, 20, 0.9) 0%, rgba(11, 14, 20, 0.4) 50%, rgba(11, 14, 20, 0) 100%);
+        }
+        
+        .group:hover .media-card-overlay {
+            opacity: 1;
+        }
+
+        .media-card-content {
+            transform: translateY(10px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .group:hover .media-card-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md text-body-md overflow-hidden">
+<!-- SideNavBar (from JSON) -->
+<nav class="bg-surface dark:bg-surface font-body-md text-body-md fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-white/5 shadow-sm flex flex-col h-full py-stack-lg z-40">
+<div class="px-gutter mb-stack-lg">
+<div class="flex items-center gap-unit">
+<span class="material-symbols-outlined text-[32px] text-primary" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary">SmartSchool</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Admin Console</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-unit">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-primary dark:text-primary bg-primary-container/10 border-r-2 border-primary scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">perm_media</span>
+<span>Media Library</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">playlist_add_check</span>
+<span>Playlist Builder</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Scheduling</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">monitor</span>
+<span>Screens</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings_remote</span>
+<span>Control Panel</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar (from JSON) -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl font-label-md text-label-md fixed top-0 right-0 left-[280px] z-50 border-b border-white/10 shadow-md flex justify-between items-center h-16 px-gutter">
+<div class="flex-1 flex items-center">
+<!-- Search Bar Left -->
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-highest border border-white/5 rounded-lg py-2 pl-10 pr-4 text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/20 transition-all font-body-md text-body-md placeholder:text-on-surface-variant/50" placeholder="Search media, tags, or IDs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-stack-md text-on-surface-variant">
+<button class="hover:text-primary transition-all duration-300 active:scale-95 transition-transform p-2 rounded-full hover:bg-surface-variant/20">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-primary transition-all duration-300 active:scale-95 transition-transform p-2 rounded-full hover:bg-surface-variant/20">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-white/10 ml-2">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A close-up portrait of a professional school IT administrator in a server room setting. The lighting is cool, technical, and slightly cinematic with a blue undertone. The mood is focused and capable, fitting an enterprise software environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp7yMz9Oz65kpPAAUfG5Zn-fCIDWf0dftQMY_IfJe7GtnVdVxHd9vCxdFy5awhTY9wUAmZHZZcn7sOWkHodT5001378qFYLmxWbaQBaC9cxz7DdUZGMc6oRnbgjJ-YLYCAgggbjruYcbS104vT6RdCYmt7ZsCV6wK_YmWKjET1s0Bg5UfjnbMNXUGz5QuNq2JgNCR8x1QwypV4_VgIohcNblGzs_aSQZZ4Q1EQdTNnr82oo0PHLFp5"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] mt-16 p-container-padding-desktop h-[calc(100vh-64px)] flex gap-gutter">
+<!-- Media Grid Section -->
+<div class="flex-1 flex flex-col h-full overflow-hidden glass-panel rounded-xl">
+<!-- Toolbar -->
+<div class="p-gutter border-b border-white/5 flex justify-between items-center">
+<div class="flex items-center gap-stack-sm">
+<button class="px-4 py-2 bg-surface-variant text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-2 border border-white/5 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filter
+                    </button>
+<div class="flex gap-2">
+<span class="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full font-label-md text-label-md text-[12px] flex items-center gap-1 cursor-pointer hover:bg-primary/20 transition-colors">
+                            Videos <span class="material-symbols-outlined text-[14px]">close</span>
+</span>
+</div>
+</div>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-md text-label-md font-bold flex items-center gap-2 hover:bg-primary-fixed transition-colors shadow-[0_0_20px_rgba(192,193,255,0.2)]">
+<span class="material-symbols-outlined">cloud_upload</span>
+                    Upload Media
+                </button>
+</div>
+<!-- Grid -->
+<div class="flex-1 overflow-y-auto p-gutter custom-scrollbar">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-stack-md">
+<!-- Media Card 1 (Video) -->
+<div class="group relative rounded-xl overflow-hidden aspect-video bg-surface-container-lowest border border-white/5 cursor-pointer">
+<img alt="Cafeteria B-Roll" class="w-full h-full object-cover" data-alt="A wide, bright cinematic shot of a modern high school cafeteria during lunch hour, used as b-roll footage. The lighting is natural and vibrant, filtering through large glass windows. The atmosphere is energetic but orderly. Colors are balanced and neutral." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnxVpuCgvWwq3ZD-TBXcShNXa7eVJGq1zOKw2oo5-iseL2HM76AsbmF_rLmpw4EriM4Kt7R7P8ozmNKtRbqksr7aFyQ9i95x8DQQ7mppJpy4S_R-Xr4lMgb3iN9uaxFIfs9JfGdWe8hg-Mc7VD5m3gJcQl9G95-Ky-dMqH_R3m6b_JiiasWDdGrSneJ2pr-ihuHZEsL30T6OSvUXAvjr5brJ50w0FCzh6DtI4vU27b20n1-4HUlFPI"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">movie</span>
+<span class="font-code text-code text-[12px] text-on-surface">0:45</span>
+</div>
+<div class="absolute inset-0 media-card-overlay p-4 flex flex-col justify-end">
+<div class="media-card-content">
+<h3 class="font-label-md text-label-md font-semibold text-white truncate">Cafeteria Promo Q3</h3>
+<div class="flex gap-2 mt-2">
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">Lunch</span>
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">Promo</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Media Card 2 (Image) -->
+<div class="group relative rounded-xl overflow-hidden aspect-video bg-surface-container-lowest border border-white/5 cursor-pointer ring-2 ring-primary">
+<img alt="Science Fair Poster" class="w-full h-full object-cover" data-alt="A polished, high-resolution graphic poster for a school science fair. The design features a glowing atom symbol against a dark blue cosmic background, with modern, clean typography holding the event details. The overall style is crisp and digital-first." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs0MXDs9cryOBayZ8VdmXr6UkQhh4HuvZBpbpejxUmWUhP9TVVw5rzG1BnJl7oqAOBqpxEDZDEjcFrQWwc3674yGykf36Q58aeNMxz86NThVNHbkthjhKhO_aA83uzYB4V7si6JFF5Vigko0_i7Rj35m8K-Dd1RVvhmKXumoHqv1dEcCwupYPmB_Ou7nQ7Y1WpcMkao-atmRgg3eK7fI9aeLe-r0R0_EYHOdIgL_F4mc8UQrMGcLE-"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary">image</span>
+<span class="font-code text-code text-[12px] text-on-surface">PNG</span>
+</div>
+<div class="absolute inset-0 media-card-overlay p-4 flex flex-col justify-end">
+<div class="media-card-content">
+<h3 class="font-label-md text-label-md font-semibold text-white truncate">Science Fair 2024</h3>
+<div class="flex gap-2 mt-2">
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">Event</span>
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">STEM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Media Card 3 (HTML Widget) -->
+<div class="group relative rounded-xl overflow-hidden aspect-video bg-surface-container-highest border border-white/5 cursor-pointer flex items-center justify-center relative">
+<div class="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')]"></div>
+<div class="text-center z-10">
+<span class="material-symbols-outlined text-[48px] text-secondary-container mb-2">partly_cloudy_day</span>
+<p class="font-headline-md text-headline-md font-bold text-on-surface">72°</p>
+</div>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 flex items-center gap-1 z-20">
+<span class="material-symbols-outlined text-[14px] text-secondary">html</span>
+<span class="font-code text-code text-[12px] text-on-surface">Widget</span>
+</div>
+<div class="absolute inset-0 media-card-overlay p-4 flex flex-col justify-end z-20">
+<div class="media-card-content">
+<h3 class="font-label-md text-label-md font-semibold text-white truncate">Campus Weather Widget</h3>
+<div class="flex gap-2 mt-2">
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">Live Data</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Media Card 4 (Video) -->
+<div class="group relative rounded-xl overflow-hidden aspect-video bg-surface-container-lowest border border-white/5 cursor-pointer">
+<img alt="Gym Safety Brief" class="w-full h-full object-cover" data-alt="A static shot framing an empty gymnasium floor with the school mascot painted proudly in the center. The gym is brightly lit with overhead fluorescent lights. The image feels institutional, vast, and quiet." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3nZovnPJPhQvBzhbTkHNXUJqSp6FdcjJ_t5qkCfm-iGU6ExZpS4IKjyBGf7yAJxe5vmH8GUQhnzR38xWejSFljp05nWaTElNDntSf1V0vOGdyrn0fYWE1DaubZn-fNaJyHc5EgWlE9YkYCPQY_fGY1LfUTov1fJURpihvyakwlfLnWvY5P-wN0zn9dv5lVqcVSB2hqRDoV6YiYp1QKM6iZwIBgCw0jCgR_0MgmOB8I93mZWEsV-QL"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-1 rounded-md border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">movie</span>
+<span class="font-code text-code text-[12px] text-on-surface">2:15</span>
+</div>
+<div class="absolute inset-0 media-card-overlay p-4 flex flex-col justify-end">
+<div class="media-card-content">
+<h3 class="font-label-md text-label-md font-semibold text-white truncate">Gym Safety Brief</h3>
+<div class="flex gap-2 mt-2">
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">Athletics</span>
+<span class="px-2 py-0.5 bg-surface-variant/80 rounded text-[10px] text-on-surface-variant border border-white/10">Mandatory</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Details Panel -->
+<div class="w-[340px] glass-panel rounded-xl h-full flex flex-col border border-white/5 overflow-hidden">
+<div class="p-4 border-b border-white/5 flex justify-between items-center bg-surface-container-lowest/50">
+<h2 class="font-label-md text-label-md font-bold text-on-surface">Asset Details</h2>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+<!-- Preview Image -->
+<div class="w-full aspect-video rounded-lg overflow-hidden border border-white/10 mb-4 bg-surface-container">
+<img alt="Science Fair Poster" class="w-full h-full object-cover" data-alt="A polished, high-resolution graphic poster for a school science fair. The design features a glowing atom symbol against a dark blue cosmic background, with modern, clean typography holding the event details. The overall style is crisp and digital-first." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHwSP0CsDUC4d4mjV6QdRJmpdfe3t5DYzvCV0lY1YZyvQctV7lVkLOsDHFkNPkp54uM8NMldLLOqaJ_XbsRREVZbFzRV_mm0F4oqq9URZyY9sIvs9t2zWGyrPaF9xMfkV0PKSNf9XzPs8DFmp6Ma7UPB0E5f_pFeojssMeehK66aFGOtYpbty9eqXmONUmAEQsiFhvELOvXGCB01F486QHCkVE5kY6SS2g5aTxVeE6Ks2xzJYrEPpL"/>
+</div>
+<!-- Info block -->
+<div class="mb-6">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile font-semibold text-on-surface mb-1">Science Fair 2024</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[14px]">science_fair_poster_v2_final.png</p>
+</div>
+<!-- Metadata Grid -->
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-surface-container-low p-3 rounded-lg border border-white/5">
+<p class="font-label-md text-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-1">Type</p>
+<p class="font-body-md text-body-md text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-tertiary">image</span> Image</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-white/5">
+<p class="font-label-md text-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-1">Resolution</p>
+<p class="font-body-md text-body-md text-on-surface">1920x1080</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-white/5">
+<p class="font-label-md text-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-1">Size</p>
+<p class="font-body-md text-body-md text-on-surface">4.2 MB</p>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-white/5">
+<p class="font-label-md text-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-1">Uploaded</p>
+<p class="font-body-md text-body-md text-on-surface">Oct 24, 2023</p>
+</div>
+</div>
+<!-- Tags -->
+<div class="mb-6">
+<p class="font-label-md text-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-2">Tags</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-variant rounded-full font-label-md text-label-md text-[12px] text-on-surface border border-white/5">Event</span>
+<span class="px-3 py-1 bg-surface-variant rounded-full font-label-md text-label-md text-[12px] text-on-surface border border-white/5">STEM</span>
+<button class="px-3 py-1 rounded-full font-label-md text-label-md text-[12px] text-on-surface-variant border border-dashed border-white/20 hover:border-white/40 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">add</span> Add
+                        </button>
+</div>
+</div>
+<!-- Status/Deployment -->
+<div class="bg-primary-container/5 border border-primary/20 rounded-lg p-3 mb-6">
+<p class="font-label-md text-label-md text-[11px] text-on-surface-variant uppercase tracking-wider mb-2">Deployment Status</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(76,215,246,0.6)]"></span>
+<span class="font-body-md text-body-md text-sm text-on-surface">Active on 4 Playlists</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="p-4 border-t border-white/5 flex gap-3 bg-surface-container-lowest/50">
+<button class="flex-1 py-2 rounded-lg border border-error/50 text-error hover:bg-error/10 font-label-md text-label-md transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+<button class="flex-[3] bg-surface-variant text-on-surface py-2 rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-colors border border-white/5 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span> Edit Details
+                </button>
+</div>
+</div>
+</main>
+<style>
+        /* Custom Scrollbar for dark mode */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</body></html>

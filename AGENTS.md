@@ -1,0 +1,131 @@
+# AGENTS.md — NextGen Digital Signage Workspace
+
+> ⭐ ไฟล์นี้คือ **จุดนัดพบกลาง** ระหว่าง AI agents (Freebuff, Kiro IDE, อื่นๆ) กับมนุษย์
+> - **อ่านก่อนเริ่มงานทุกครั้ง** — เพื่อเข้าใจบริบทและสถานะล่าสุด
+> - **อัปเดตทุกครั้งที่ทำงานเสร็จ** — เพื่อให้ agent ตัวถัดไปต่อจากตรงนี้ได้ทันที
+> - ตอบ/เขียนเอกสารเป็น **ภาษาไทย** (ตรงกับโปรเจค) ส่วนโค้ด/คำสั่งเป็นภาษาอังกฤษ
+
+---
+
+## 1. Workspace นี้คืออะไร
+
+Root: `C:\NextGen Digital Signature` — โปรเจค **Enterprise Digital Signage** (ระบบ Smart School Communication Platform
+ควบคุมจอหลายจอ realtime) + โปรโตไทป์ + เอกสารวิเคราะห์คู่แข่ง + Specs
+
+| โฟลเดอร์/ไฟล์ | คืออะไร |
+|---|---|
+| `enterprise-digital-signage-platform/` | ⭐ **โปรเจคหลัก** (React 19 + Vite + Zustand + Express + WS + PostgreSQL/Drizzle + Docker) |
+| `.kiro/specs/nextgen-digital-signage/` | Specs ต้นแบบ (requirements.md, architecture.md, design.md, tasks.md) — อ้างอิงโดย Kiro |
+| `enterprise-digital-signage-platform AI/` | รุ่นแรกจาก AI Studio (ต้นแบบเก่า ไม่ใช่ของจริง) |
+| `signage-studio-pro-Slideshow/`, `stitch_edusign_admin_pro*` | โปรโตไทป์ UI (mock data) |
+| `MASTER_Competitor_Analysis_Summary.md` ฯลฯ | วิเคราะห์คู่แข่ง + roadmap |
+
+---
+
+## 2. โปรเจคหลัก — ข้อมูลสำคัญ
+
+- **Tech stack:** React 19 / Vite 6 / Zustand 5 / Tailwind v4 / Express 4 / WebSocket (ws) / PostgreSQL (Drizzle) / Redis / Docker / Gemini AI
+- **Server:** `server.ts` (root ของโปรเจค) — REST API + WebSocket hub + auth (JWT) + RBAC + rate limit + SSRF guard
+- **DB schema:** `src/db/schema.ts` (15+ ตาราง) + migrations ใน `src/db/migrations/`
+- **Frontend:** Admin 10 tabs, Player multi-zone (15+ media types), Kiosk `/display/:id`, Pairing `/pair`
+- **Android Player:** `android-player/` (Kotlin WebView kiosk)
+
+### คำสั่งที่ใช้บ่อย (รันใน `enterprise-digital-signage-platform/`)
+```bash
+npm run typecheck   # หรือ: npx tsc --noEmit   ← ต้องผ่าน 0 errors เสมอ
+npm run build       # vite build + esbuild server.ts → dist/
+npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-service ครอง)
+```
+
+---
+
+## 3. สถานะระบบจริง (Production) — สำคัญมาก
+
+- **เครื่องจริง:** `10.70.0.1` (Windows) — โค้ดอยู่ `C:\signage` (เข้าถึงผ่าน SMB `\\10.70.0.1\c\signage`)
+- **รันด้วย Docker ทั้งหมด:** signage-app (:3100), signage-postgres (:5433), signage-redis (:6380), signage-migrate (one-shot)
+- **เครื่อง dev:** `10.10.0.63` — เข้า prod ได้ผ่าน SMB อย่างเดียว (ไม่มี SSH/WinRM)
+- **รหัส admin เริ่มต้น:** `admin@signage.local / Admin@2026!` (⚠️ ต้องเปลี่ยนหลัง deploy)
+
+### เครื่องมือ ops (ในโปรเจคหลัก — ใช้ที่เครื่อง prod หรือ dev ตามที่ระบุ)
+| ไฟล์ | ใช้ที่ไหน | ใช้ทำอะไร |
+|---|---|---|
+| `redeploy.bat` | prod | deploy รอบเดียวจบ (snapshot → down → build no-cache → up → ตรวจ) |
+| `check-deploy.bat` | prod | วินิจฉัยว่า container รันโค้ดใหม่หรือเก่า |
+| `rollback.bat snapshot/restore` | prod | เซฟ/ย้อนกลับโค้ดก่อน deploy |
+| `sync-to-prod.ps1` | dev | sync โค้ด dev → prod ผ่าน SMB (เทียบ SHA-256) |
+| `docs/deploy-security-guide.md` | ทั้งคู่ | คู่มือ deploy + checklist + rollback |
+
+### กฎเหล็ก (ห้ามละเมิดเด็ดขาด)
+- ❌ **ห้าม** `docker compose down -v` — ลบ database + uploads ถาวร
+- ❌ **ห้าม** deploy แบบไม่เห็น error — deploy.bat ซ่อน error ได้ ใช้ `redeploy.bat` หรือดู build-log.txt
+- ❌ **ห้าม** แก้ `.env` prod โดยไม่สำรองก่อน (backup เป็น `.env.backup-<เวลา>`)
+- ✅ หลังแก้โค้ด: รัน typecheck + build ให้ผ่าน แล้ว sync ผ่าน `sync-to-prod.ps1`
+
+---
+
+## 4. บันทึกการทำงานล่าสุด (Work Log)
+
+### 2026-08-12 — 🤖 แก้ไขโดย Kiro (`CHANGELOG.md` → `[0.2.2]`)
+- **REQ-002 (IP priority fix):** กลับลำดับ IP priority ใน `server.ts` — เดิม device IP > connection IP (spoof ได้) → ใหม่ connection IP > device IP (spoof ไม่ได้)
+- แก้ 2 จุด: pair endpoint + heartbeat endpoint
+- typecheck 0 errors, build ผ่าน — ยังไม่ deploy (ต้อง `redeploy.bat` ที่เครื่อง prod)
+
+### 2026-08-12 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.0]`)
+- **Security 6 จุด:** JWT_SECRET fail-fast, webhook ต้องมี token, WS กันปลอม, SSRF guard (media-proxy/RSS), Interact auth+rate limit, compose ส่ง secrets เข้า container
+- **Prod .env:** JWT_SECRET ใหม่ 64 hex + WEBHOOK_TOKEN 64 hex + NODE_ENV=production + ลบ UTF-8 BOM (backup: `.env.backup-20260812-181817`)
+- **Type errors 49 → 0** — Zod v4 fix, ขยาย types (contentData/SlideData/RealtimeCommand), ซิงค์ mock data, ลบ dead code
+- **Deploy ขึ้น prod สำเร็จ** — เทส live 7 จุดผ่าน (WS relay block, trigger 401/200, SSRF block ×2, health)
+- **เครื่องมือใหม่:** rollback.bat, check-deploy.bat, redeploy.bat, sync-to-prod.ps1, deploy-security-guide.md
+- **REQ-001 (IP/MAC จริง):** server เก็บ IP จริงจาก connection + Android ส่ง MAC จริง + UI โชว์ "—" แทน mock — ยังไม่ deploy (`CHANGELOG.md` [0.2.1])
+
+---
+
+## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
+
+- [ ] **Re-pair จอ** — JWT_SECRET เปลี่ยน → display token เก่าหมดอายุ → จอต้อง pairing ใหม่ (ตอนนี้ `connectedClients: 0`)
+- [ ] **เปลี่ยนรหัส admin** — `Admin@2026!` ยังเป็น default + โชว์ใน deploy.bat/seed.bat — ควรเปลี่ยน + ลบ comment นั้น
+- [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
+- [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
+- [ ] ฟีเจอร์จาก roadmap ที่ยังไม่ทำ (server-side scheduler, offline-first ใน web player, 6-Level Priority ให้ครบ ฯลฯ)
+
+---
+
+## 6. กติกาการทำงานร่วมกัน (Conventions)
+
+1. **อัปเดต 3 ไฟล์นี้ทุกครั้งที่ทำงานเสร็จ:**
+   - `enterprise-digital-signage-platform/CHANGELOG.md` (เพิ่ม entry version)
+   - `.kiro/specs/nextgen-digital-signage/tasks.md` (อัปเดตสถานะ)
+   - `AGENTS.md` (อัปเดต Work Log + Pending)
+2. **มาร์คผู้ทำชัดเจน:** งานที่ Freebuff ทำ → "แก้ไขโดย Freebuff", งานที่ Kiro ทำ → "แก้ไขโดย Kiro"
+3. **ภาษา:** ตอบ/เอกสารเป็นไทย, โค้ด/คอมเมนต์ในโค้ดเป็นอังกฤษ
+4. **คุณภาพ:** typecheck 0 errors เสมอ, ไม่ใช้ `as any` แก้ปัญหา, แก้ที่ต้นเหตุ
+5. **ความปลอดภัย:** ไม่เปิดเผย secret ในเอกสาร/แชท, ไม่แก้ไฟล์ prod ตรงๆ โดยไม่ผ่าน workflow
+6. **Kiro:** อ่าน specs ใน `.kiro/specs/nextgen-digital-signage/` ก่อนเริ่มฟีเจอร์ใหม่ — งานที่ทำต้องตรง requirements.md + design.md
+7. **Git (ตั้งแต่ 2026-08-15):** ทุกงานที่เสร็จต้อง commit — มาร์คผู้ทำใน commit message (`🤖 Freebuff` / `🤖 Kiro`) ห้าม commit `.env` / `uploads/` / `.freebuff/` (อยู่ใน .gitignore แล้ว) — git ใช้เป็นประวัติ + ย้อนกลับได้
+
+## 7. การรับไอเดีย/ความต้องการใหม่ (Requirement Intake) — สำคัญ
+
+> ผู้ใช้ (มนุษย์) มักมีไอเดียเพิ่มเติมทันทีกลางงาน — **ทุกไอเดียต้องผ่านกล่องรับของกลางเสมอ**
+
+### วงจรที่ถูกต้อง
+```
+1. ไอเดียใหม่ (มนุษย์พูด/พิมพ์)  →  เขียนลง .kiro/requests.md  (Open)
+2. Agent ตรวจ: ชนกับงานเดิมไหม? เปิดช่องโหว่ไหม? ต้องแก้ type/DB ไหม?
+3. อนุมัติ → ย้ายเข้า requirements.md (FR-20+) + tasks.md  →  เริ่ม implement
+4. เสร็จ → ลบออกจาก requests.md + อัปเดต CHANGELOG.md + AGENTS.md (Work Log)
+5. ถ้าเป็นระบบ prod → sync ผ่าน sync-to-prod.ps1 + ทดสอบตาม checklist
+```
+
+### กฎสำหรับ agent ทุกตัว
+- ❌ **ห้าม implement ไอเดียที่ยังไม่เขียนลง requests.md** (กันสองตัวทำคนละเวอร์ชัน)
+- ❌ **ห้ามแก้ requirements.md/design.md เองตามอำเภอใจ** — ต้องมีบันทึกใน requests.md ก่อน
+- ✅ ไอเดียที่ยังไม่ชัด → เขียนเป็นคำถามใน requests.md ให้มนุษย์ตอบ
+- ✅ งานที่ทำ → ต้องอัปเดต spec ให้ตรงโค้ดเสมอ (กัน spec กับโค้ดแยกกัน)
+
+### Git setup (2026-08-15 — 🤖 Freebuff)
+- ตั้ง repo ที่ workspace root — baseline commit มี AGENTS.md + .kiro + docs + โปรเจคหลัก + prototypes (exclude: .freebuff, node_modules, dist, .env, uploads, backups, logs)
+
+### บทบาท (Agreed 2026-08-12 — 🤖 Freebuff)
+- **มนุษย์ (เจ้าของระบบ):** พิมพ์คำสั่ง/ไอเดียในแชทเท่านั้น — **ไม่ต้องแก้ไฟล์เอง**
+- **Freebuff:** เลขาฯ + ผู้รับผิดชอบหลัก — รับคำสั่งจากแชท → เขียนลง requests.md → implement → อัปเดต spec/CHANGELOG/AGENTS.md → รายงานกลับเป็นไทย
+- **Kiro:** อ่านไฟล์กลาง (AGENTS.md + requests.md + specs) เพื่อรู้สถานะ — รับงานต่อจาก requests.md (In Progress/Open) หรือช่วยตรวจ/ทำคู่ขนานได้ แต่ต้องไม่ชนงานที่ Freebuff กำลังทำอยู่ (เช็คที่ requests.md ก่อนเสมอ)

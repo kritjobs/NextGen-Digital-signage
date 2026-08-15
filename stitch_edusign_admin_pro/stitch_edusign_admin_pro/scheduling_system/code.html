@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartSchool - Scheduling</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#acedff",
+                        "on-primary-container": "#0d0096",
+                        "error": "#ffb4ab",
+                        "outline": "#908fa0",
+                        "on-error": "#690005",
+                        "on-surface": "#e1e2eb",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-tertiary-container": "#3e2400",
+                        "inverse-surface": "#e1e2eb",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-tertiary": "#472a00",
+                        "tertiary-fixed": "#ffddb8",
+                        "outline-variant": "#464554",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "surface-tint": "#c0c1ff",
+                        "on-surface-variant": "#c7c4d7",
+                        "inverse-on-surface": "#2e3037",
+                        "on-secondary": "#003640",
+                        "on-error-container": "#ffdad6",
+                        "surface": "#10131a",
+                        "on-secondary-fixed": "#001f26",
+                        "secondary": "#4cd7f6",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "inverse-primary": "#494bd6",
+                        "background": "#10131a",
+                        "tertiary": "#ffb95f",
+                        "surface-variant": "#32353c",
+                        "secondary-container": "#03b5d3",
+                        "surface-container-low": "#191c22",
+                        "primary-container": "#8083ff",
+                        "surface-container-highest": "#32353c",
+                        "on-secondary-container": "#00424e",
+                        "on-background": "#e1e2eb",
+                        "surface-dim": "#10131a",
+                        "surface-container-high": "#272a31",
+                        "primary": "#c0c1ff",
+                        "tertiary-container": "#ca8100",
+                        "surface-container-lowest": "#0b0e14",
+                        "on-primary-fixed": "#07006c",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "surface-container": "#1d2026",
+                        "surface-bright": "#363940",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "error-container": "#93000a",
+                        "primary-fixed": "#e1e0ff",
+                        "on-primary": "#1000a9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "container-padding-tablet": "24px",
+                        "unit": "8px",
+                        "container-padding-desktop": "32px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "code": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "code": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0B0E14; color: #e1e2eb; }
+        .glass-panel { background: rgba(21, 25, 33, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .timeline-grid { display: grid; grid-template-columns: 80px repeat(24, 1fr); gap: 1px; background-color: rgba(255, 255, 255, 0.05); }
+        .timeline-header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .time-slot { background-color: #10131a; border-right: 1px dashed rgba(255, 255, 255, 0.05); min-height: 80px; position: relative; }
+        .time-slot:hover { background-color: rgba(192, 193, 255, 0.05); }
+        .event-block { position: absolute; top: 4px; bottom: 4px; border-radius: 4px; padding: 4px 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: grab; font-size: 12px; font-weight: 500; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); }
+        .event-block:active { cursor: grabbing; transform: scale(0.98); }
+        
+        .priority-emergency { background-color: rgba(255, 180, 171, 0.1); border-left: 3px solid #ffb4ab; color: #ffb4ab; animation: pulse-border 2s infinite; }
+        .priority-event { background-color: rgba(202, 129, 0, 0.1); border-left: 3px solid #ffb95f; color: #ffb95f; }
+        .priority-normal { background-color: rgba(192, 193, 255, 0.1); border-left: 3px solid #c0c1ff; color: #c0c1ff; }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255, 180, 171, 0.4); }
+            70% { box-shadow: 0 0 0 4px rgba(255, 180, 171, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 180, 171, 0); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0e14; }
+        ::-webkit-scrollbar-thumb { background: #32353c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #464554; }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex font-body-md">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-full py-stack-lg bg-surface dark:bg-surface fixed left-0 top-0 w-[280px] bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-white/5 shadow-sm z-40">
+<div class="px-gutter mb-stack-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center border border-primary/20">
+<img alt="School Logo" class="w-6 h-6 object-contain" data-alt="A sleek, minimalist vector logo icon representing a smart school network, featuring stylized interconnected nodes forming a shield shape, rendered in crisp white and electric indigo on a dark background, evoking high-tech education administration." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMLSghqQn15RiWFyGJijm1va7MeErPIWOoMcaZ2uDrCZC1y5q3a99UgKztjTGQXtBf1dCMTbFRR9i3OyvB-ugtnlLxCQhBWfChV2Nl8j_GCDlqUzWwJwXJw5UKocSCqCkO2-MfbaMJzN-IaEsEQy4M1XJjU1LIycOLNRVH5iS0jFUEhKeIAR2O85ik0eEdSrxEsKcdf3eXjA7BJa_5LkaomB3KFA3mpPPtkcKZuNH7PB440hQk7pYM"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary leading-tight">SmartSchool</h1>
+<p class="font-label-md text-label-md text-on-surface-variant text-[12px]">Admin Console</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1 px-3">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">perm_media</span>
+<span class="font-label-md text-label-md">Media Library</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">playlist_add_check</span>
+<span class="font-label-md text-label-md">Playlist Builder</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-primary bg-primary-container/10 border-r-2 border-primary hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-label-md text-label-md font-bold">Scheduling</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">monitor</span>
+<span class="font-label-md text-label-md">Screens</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings_remote</span>
+<span class="font-label-md text-label-md">Control Panel</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="px-3 mt-auto pt-4 border-t border-white/5">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 md:ml-[280px] flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-gutter bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-md z-30 shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-extrabold text-on-surface">SignageControl</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 transition-transform rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 transition-transform rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-white/10 overflow-hidden ml-2 cursor-pointer">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A small, professional headshot photo of an IT administrator, subtly lit in a dark high-tech environment, conveying competence and readiness, serving as a user profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgveDLRg4PkIQk5e_KSZjrfciqIb7BGiiRfmnF4ZmdlnhrmIz0CMz1rB0fW1I7BMsWGITb2TS-GqEixT8VMBtFfqZAPH4OOojP2iVau9HpnGaXtN_GRR9lI7nEEVY-E6RKaAPrxYTr6aGKjFKsLHa8q4SmMJvglxam6f5X2KedjS9uN2QAY9ENmMSya9hHN17OySmyY-7i2lwP9H4XZcyWt_nHDENWb3JNwsK0n74w6m49ZuGz0fMu"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-hidden flex flex-col p-container-padding-desktop gap-stack-lg">
+<!-- Header & Toolbar -->
+<div class="flex justify-between items-end shrink-0">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Master Schedule</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Manage content playback across all campus zones.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-3 rounded-lg bg-surface border border-primary text-primary font-label-md text-label-md hover:bg-primary/10 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                        Filter Groups
+                    </button>
+<button class="px-6 py-3 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary/90 transition-colors shadow-[0_0_20px_rgba(192,193,255,0.3)] flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        New Event
+                    </button>
+</div>
+</div>
+<!-- Dashboard Bento Grid -->
+<div class="flex-1 grid grid-cols-12 gap-gutter min-h-0">
+<!-- Left Column: Playlists & Tools (3 cols) -->
+<div class="col-span-3 flex flex-col gap-gutter min-h-0">
+<!-- Mini Calendar -->
+<div class="glass-panel rounded-xl p-4 shrink-0">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-on-surface text-[18px]">October 2023</h3>
+<div class="flex gap-1">
+<button class="p-1 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">chevron_left</span></button>
+<button class="p-1 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center font-label-md text-label-md text-on-surface-variant mb-2 text-[12px]">
+<div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center font-body-md text-body-md text-[14px]">
+<div class="p-1 text-on-surface-variant/30">28</div><div class="p-1 text-on-surface-variant/30">29</div><div class="p-1 text-on-surface-variant/30">30</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">1</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">2</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">3</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">4</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">5</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">6</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">7</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">8</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">9</div>
+<div class="p-1 rounded bg-primary text-on-primary font-bold cursor-pointer shadow-[0_0_10px_rgba(192,193,255,0.4)]">10</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer relative">11<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-tertiary rounded-full"></span></div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">12</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">13</div>
+<div class="p-1 rounded hover:bg-surface-variant cursor-pointer">14</div>
+</div>
+</div>
+<!-- Available Playlists (Draggable) -->
+<div class="glass-panel rounded-xl p-4 flex-1 flex flex-col min-h-0">
+<div class="flex justify-between items-center mb-4 shrink-0">
+<h3 class="font-headline-md text-headline-md text-on-surface text-[18px]">Playlists</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+</div>
+<div class="overflow-y-auto flex-1 space-y-2 pr-2">
+<!-- Draggable Items -->
+<div class="p-3 bg-surface border border-white/5 rounded-lg flex items-center gap-3 cursor-grab hover:border-primary/50 transition-colors group">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">campaign</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">Morning Announcements</p>
+<p class="text-[12px] text-on-surface-variant">00:15:00 • 8 Assets</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/50 text-[16px]">drag_indicator</span>
+</div>
+<div class="p-3 bg-surface border border-error/20 rounded-lg flex items-center gap-3 cursor-grab hover:border-error transition-colors group">
+<div class="w-8 h-8 rounded bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-error truncate">Fire Drill Override</p>
+<p class="text-[12px] text-error/70">Persistent • Override</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/50 text-[16px]">drag_indicator</span>
+</div>
+<div class="p-3 bg-surface border border-white/5 rounded-lg flex items-center gap-3 cursor-grab hover:border-primary/50 transition-colors group">
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center text-on-surface-variant group-hover:text-primary">
+<span class="material-symbols-outlined text-[18px]">restaurant</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-on-surface truncate">Cafeteria Menu (Fall)</p>
+<p class="text-[12px] text-on-surface-variant">Loop • 4 Assets</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/50 text-[16px]">drag_indicator</span>
+</div>
+<div class="p-3 bg-surface border border-tertiary/20 rounded-lg flex items-center gap-3 cursor-grab hover:border-tertiary transition-colors group">
+<div class="w-8 h-8 rounded bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]">sports_basketball</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-label-md text-tertiary truncate">Pep Rally Promo</p>
+<p class="text-[12px] text-tertiary/70">00:02:30 • 1 Asset</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant/50 text-[16px]">drag_indicator</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Timeline Grid (9 cols) -->
+<div class="col-span-9 glass-panel rounded-xl flex flex-col min-h-0 overflow-hidden relative">
+<!-- Toolbar -->
+<div class="h-14 border-b border-white/10 shrink-0 flex items-center justify-between px-4 bg-surface-container/50">
+<div class="flex gap-4">
+<div class="bg-surface rounded-lg p-1 flex border border-white/5">
+<button class="px-4 py-1.5 rounded-md bg-surface-variant text-on-surface font-label-md text-label-md text-[13px] shadow-sm">Timeline</button>
+<button class="px-4 py-1.5 rounded-md text-on-surface-variant hover:text-on-surface font-label-md text-label-md text-[13px]">Month</button>
+</div>
+</div>
+<div class="flex items-center gap-4 text-[13px] font-label-md">
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span> Normal</div>
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-tertiary"></span> Event</div>
+<div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error animate-pulse"></span> Emergency</div>
+</div>
+</div>
+<!-- Scrollable Timeline Area -->
+<div class="flex-1 overflow-auto relative">
+<!-- Time Header -->
+<div class="timeline-grid timeline-header sticky top-0 bg-surface/95 backdrop-blur z-20">
+<div class="p-2 border-r border-white/5 bg-surface font-label-md text-[11px] text-on-surface-variant flex items-end justify-end pr-3">Group</div>
+<!-- Generate 24 hours -->
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">06:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">07:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">08:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">09:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">10:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">11:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">12:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">13:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">14:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">15:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">16:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">17:00</div>
+<div class="p-2 text-[11px] text-on-surface-variant border-r border-white/5">18:00</div>
+<!-- Truncated for visual sim -->
+</div>
+<!-- Rows -->
+<div class="timeline-grid border-b border-white/5">
+<div class="p-3 border-r border-white/5 bg-surface/50 font-label-md text-[13px] text-on-surface sticky left-0 z-10 flex items-center">
+                                All Campus (Global)
+                            </div>
+<div class="time-slot col-span-12 relative">
+<!-- Event -->
+<div class="event-block priority-normal" style="left: 0%; width: 100%;">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">repeat</span>
+                                        Default Idle Loop
+                                    </div>
+</div>
+<div class="event-block priority-emergency z-10" style="left: 45%; width: 15%;">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                        Severe Weather Alert
+                                    </div>
+</div>
+</div>
+</div>
+<div class="timeline-grid border-b border-white/5">
+<div class="p-3 border-r border-white/5 bg-surface/50 font-label-md text-[13px] text-on-surface sticky left-0 z-10 flex items-center">
+                                Main Hallway
+                            </div>
+<div class="time-slot col-span-12 relative">
+<div class="event-block priority-normal" style="left: 10%; width: 20%;">
+                                    Morning Announcements
+                                </div>
+<div class="event-block priority-event" style="left: 60%; width: 30%;">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">sports_basketball</span>
+                                        Pep Rally Live Feed
+                                    </div>
+</div>
+</div>
+</div>
+<div class="timeline-grid border-b border-white/5">
+<div class="p-3 border-r border-white/5 bg-surface/50 font-label-md text-[13px] text-on-surface sticky left-0 z-10 flex items-center">
+                                Cafeteria
+                            </div>
+<div class="time-slot col-span-12 relative">
+<div class="event-block priority-normal" style="left: 40%; width: 35%;">
+                                    Lunch Menu Rotation
+                                </div>
+</div>
+</div>
+<!-- Empty Rows for grid extension -->
+<div class="timeline-grid border-b border-white/5"><div class="p-3 border-r border-white/5 bg-surface/50 sticky left-0 z-10 font-label-md text-[13px] text-on-surface">Library</div><div class="time-slot col-span-12"></div></div>
+<div class="timeline-grid border-b border-white/5"><div class="p-3 border-r border-white/5 bg-surface/50 sticky left-0 z-10 font-label-md text-[13px] text-on-surface">Gymnasium</div><div class="time-slot col-span-12"></div></div>
+<div class="timeline-grid border-b border-white/5"><div class="p-3 border-r border-white/5 bg-surface/50 sticky left-0 z-10 font-label-md text-[13px] text-on-surface">Staff Room</div><div class="time-slot col-span-12"></div></div>
+<!-- Current Time Indicator Line -->
+<div class="absolute top-0 bottom-0 w-px bg-secondary z-20 pointer-events-none" style="left: 38%;">
+<div class="absolute -top-1 -translate-x-1/2 bg-secondary text-on-secondary text-[10px] font-bold px-1 rounded">10:34</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

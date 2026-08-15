@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartSchool - Control Panel</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "surface-tint": "#c0c1ff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-surface": "#e1e2eb",
+                        "surface-dim": "#10131a",
+                        "on-primary": "#1000a9",
+                        "tertiary-container": "#ca8100",
+                        "on-secondary-container": "#00424e",
+                        "on-primary-container": "#0d0096",
+                        "on-primary-fixed": "#07006c",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container-lowest": "#0b0e14",
+                        "outline": "#908fa0",
+                        "inverse-surface": "#e1e2eb",
+                        "primary-container": "#8083ff",
+                        "surface-bright": "#363940",
+                        "error-container": "#93000a",
+                        "secondary": "#4cd7f6",
+                        "secondary-container": "#03b5d3",
+                        "background": "#10131a",
+                        "on-tertiary-container": "#3e2400",
+                        "outline-variant": "#464554",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error": "#ffb4ab",
+                        "primary": "#c0c1ff",
+                        "surface-container-highest": "#32353c",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface": "#10131a",
+                        "on-secondary": "#003640",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#2e3037",
+                        "tertiary": "#ffb95f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary": "#472a00",
+                        "surface-variant": "#32353c",
+                        "primary-fixed": "#e1e0ff",
+                        "on-background": "#e1e2eb",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container-high": "#272a31",
+                        "surface-container-low": "#191c22",
+                        "secondary-fixed": "#acedff",
+                        "inverse-primary": "#494bd6",
+                        "on-surface-variant": "#c7c4d7",
+                        "surface-container": "#1d2026",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffddb8"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "container-padding-desktop": "32px",
+                        "stack-md": "16px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "container-padding-tablet": "24px"
+                    },
+                    fontFamily: {
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "code": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "label-md": ["14px", { lineHeight: "20px", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
+                        "code": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(21, 25, 33, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .pulse-red {
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 180, 171, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 180, 171, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 180, 171, 0); }
+        }
+        .heartbeat-green {
+            animation: heartbeat-green 1.5s ease-in-out infinite both;
+        }
+        @keyframes heartbeat-green {
+            from { transform: scale(1); transform-origin: center center; animation-timing-function: ease-out; }
+            10% { transform: scale(0.91); animation-timing-function: ease-in; }
+            17% { transform: scale(0.98); animation-timing-function: ease-out; }
+            33% { transform: scale(0.87); animation-timing-function: ease-in; }
+            45% { transform: scale(1); animation-timing-function: ease-out; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md text-body-md overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] bg-surface dark:bg-surface text-primary dark:text-primary font-body-md text-body-md shadow-sm bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-white/5 flex flex-col py-stack-lg z-40">
+<div class="px-gutter mb-stack-lg flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-headline-md">S</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary leading-tight">SmartSchool</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Admin Console</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-unit">
+<ul class="flex flex-col gap-unit">
+<!-- Dashboard -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<!-- Media Library -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">perm_media</span>
+<span>Media Library</span>
+</a>
+</li>
+<!-- Playlist Builder -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">playlist_add_check</span>
+<span>Playlist Builder</span>
+</a>
+</li>
+<!-- Scheduling -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Scheduling</span>
+</a>
+</li>
+<!-- Screens -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">monitor</span>
+<span>Screens</span>
+</a>
+</li>
+<!-- Control Panel (Active) -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary dark:text-primary bg-primary-container/10 border-r-2 border-primary hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings_remote</span>
+<span class="font-bold">Control Panel</span>
+</a>
+</li>
+<!-- Analytics -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+</li>
+<!-- Settings -->
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar & Main Content Wrapper -->
+<div class="flex-1 ml-[280px] flex flex-col h-screen relative">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-[280px] z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-md flex justify-between items-center h-16 px-gutter text-primary dark:text-primary font-label-md text-label-md">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-extrabold text-on-surface">SignageControl</span>
+</div>
+<div class="flex items-center gap-6">
+<!-- Trailing Actions -->
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 transition-transform hover:bg-surface-variant/30">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 transition-transform hover:bg-surface-variant/30">
+<span class="material-symbols-outlined">apps</span>
+</button>
+</div>
+<!-- Profile Image -->
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-outline flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A macro shot of a sleek, dark metallic administrative badge with glowing subtle cyan accents, representing an IT administrator profile icon in a high-tech control room setting. Lighting is low-key with rim light highlighting the metallic texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKhTdMXEf8hGOjITkP_HKKcIJaco46IRGtRMcT9tkgTDW0GVdL5kPYntFk2F2gEBJ0QyKJb_KkQuX9lbol0fy0Bf2GRGLE9SRsHDcQiMsvDCOMapgxH-SOXd4Iyoov4SvH3RktnrthYFn2j4X3g1_c7CfZA4Y0WP0ctHLeJftJV07WldOxNC_wTqu90qnadk_hSPpFAPNzS4zXkSQKRGj3iHL4LA9W8_zdI1vrJsEeH1cM7d90Snkw"/>
+</div>
+</div>
+</header>
+<!-- Main Content (Canvas) -->
+<main class="flex-1 mt-16 p-container-padding-desktop overflow-y-auto bg-[url('placeholder')] bg-cover bg-center bg-no-repeat bg-fixed relative" data-alt="A highly detailed, futuristic digital wireframe map of a sprawling modern university campus, rendered in deep charcoal and indigo tones. The map is viewed from a top-down tactical perspective, featuring subtle glowing grid lines, glassmorphism overlays, and a sophisticated command-center aesthetic. The scene is illuminated by ambient, low-key cool lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAB4EhkQ-PpTxg73AzT0-2acqjzaFW7l39D2pV_N1_lEw3agq9qa-WGWbtx-zJ_aBiJ1bFcV_okUAnMJPFqTFPx5FBIC59s6JnExncEdWELotnZEpyJoXoimLDb8RkFVMxurdre3COpTXwQPxjniZUi6ZMXqyv0q6C8XM7VvEczMCZOnlEQMnQT-xQjSlV9Sj9FWA3dncbYYuzhBC-ZZv2rscDQlXCUVscy8I3h-OyhnINnofwd9f34')">
+<!-- Overlay to darken background image -->
+<div class="absolute inset-0 bg-background/85 backdrop-blur-sm z-0"></div>
+<div class="relative z-10 max-w-7xl mx-auto flex flex-col gap-gutter h-full">
+<!-- Top Row: Critical Actions Bento -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Emergency Broadcast (Spans 5 cols) -->
+<div class="lg:col-span-5 glass-card rounded-xl p-6 flex flex-col justify-between border-l-4 border-l-error">
+<div class="flex items-start justify-between mb-4">
+<div>
+<h2 class="font-headline-md text-headline-md text-error flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                    System Override
+                                </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Initiate campus-wide critical alert.</p>
+</div>
+</div>
+<button class="w-full h-16 mt-4 rounded-lg bg-error-container text-on-error-container font-headline-md text-headline-md font-bold uppercase tracking-wider flex items-center justify-center gap-3 hover:bg-error hover:text-on-error transition-colors duration-300 pulse-red">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">campaign</span>
+                            Emergency Broadcast
+                        </button>
+</div>
+<!-- Push Message (Spans 7 cols) -->
+<div class="lg:col-span-7 glass-card rounded-xl p-6 flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">chat</span>
+                            Push Instant Message
+                        </h2>
+<div class="flex-1 flex flex-col gap-4">
+<textarea class="w-full h-24 bg-surface-container-lowest border border-outline/30 rounded-lg p-3 text-on-surface font-body-md text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary/50 placeholder:text-outline-variant resize-none" placeholder="Enter message to display on all active screens..."></textarea>
+<div class="flex justify-between items-center mt-auto">
+<div class="flex items-center gap-2">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="form-checkbox bg-surface-container-lowest border-outline rounded text-primary focus:ring-primary focus:ring-offset-0 h-5 w-5" type="checkbox"/>
+<span class="font-label-md text-label-md text-on-surface-variant">Include Audio Chime</span>
+</label>
+</div>
+<button class="px-6 py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-bold flex items-center gap-2 hover:bg-primary-fixed transition-colors">
+                                    Send Message
+                                    <span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Status & System Commands -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter flex-1 min-h-[400px]">
+<!-- Live Status Map / List (Spans 9 cols) -->
+<div class="lg:col-span-9 glass-card rounded-xl p-6 flex flex-col relative overflow-hidden">
+<div class="flex justify-between items-center mb-4 relative z-10">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">satellite_alt</span>
+                                Live Screen Topology
+                            </h2>
+<div class="flex gap-4 font-label-md text-label-md">
+<span class="flex items-center gap-2 text-on-surface"><div class="w-3 h-3 rounded-full bg-[#4cd7f6] heartbeat-green"></div> 142 Online</span>
+<span class="flex items-center gap-2 text-on-surface"><div class="w-3 h-3 rounded-full bg-error"></div> 3 Offline</span>
+</div>
+</div>
+<!-- Simulated Map Area -->
+<div class="flex-1 bg-surface-container-lowest rounded-lg border border-outline/10 relative overflow-hidden">
+<!-- Placeholder for actual map rendering -->
+<div class="absolute inset-0 bg-[url('placeholder')] bg-cover bg-center opacity-40" data-alt="A minimalist, stylized vector map of a university campus overlaid on a deep dark blue background. The map features thin, glowing cyan lines delineating building footprints and pathways. The aesthetic is highly technical, resembling a tactical holographic display from a sci-fi command center, with soft ambient lighting highlighting specific zones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBA6OAKS8EKkCoxmRpaVKFEWjmUakjUAl7HcN17HzWogAfiMRfmCjWvfhHnIBHHT71hKOuYFB_NNMKhT6Gq1wBBdXVF4nRkO0rs7zkwY0AiVc5-GmQyTaqrC7PuTQ_T4AvdVpNMYwxFcZybUgQzt5FhcxP_9tKN1Qe06rVzZgV4BKTtMLjAA3KII555KagnibqvHbjEwXMQTO7D2hJmUKM8b61h7ZzvN0Khwvy4HrsS26tcq_TKxIkG')"></div>
+<!-- Simulated Nodes (Heartbeats) -->
+<div class="absolute top-[20%] left-[30%] w-4 h-4 rounded-full bg-secondary shadow-[0_0_15px_rgba(76,215,246,0.6)] heartbeat-green cursor-pointer group">
+<div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-surface-container-highest px-3 py-1 rounded text-xs whitespace-nowrap border border-white/10 z-50">North Hall - Lobby</div>
+</div>
+<div class="absolute top-[45%] left-[60%] w-4 h-4 rounded-full bg-secondary shadow-[0_0_15px_rgba(76,215,246,0.6)] heartbeat-green cursor-pointer group">
+<div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-surface-container-highest px-3 py-1 rounded text-xs whitespace-nowrap border border-white/10 z-50">Science Bldg - Atrium</div>
+</div>
+<div class="absolute top-[70%] left-[40%] w-4 h-4 rounded-full bg-secondary shadow-[0_0_15px_rgba(76,215,246,0.6)] heartbeat-green cursor-pointer group">
+<div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-surface-container-highest px-3 py-1 rounded text-xs whitespace-nowrap border border-white/10 z-50">Library - Main Floor</div>
+</div>
+<!-- Offline Node -->
+<div class="absolute top-[35%] left-[80%] w-4 h-4 rounded-full bg-error shadow-[0_0_15px_rgba(255,180,171,0.6)] cursor-pointer group animate-pulse">
+<div class="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-error-container text-on-error-container px-3 py-1 rounded text-xs whitespace-nowrap border border-error/30 z-50">Cafeteria - Screen 2 (Offline)</div>
+</div>
+</div>
+</div>
+<!-- System Commands (Spans 3 cols) -->
+<div class="lg:col-span-3 flex flex-col gap-4">
+<div class="glass-card rounded-xl p-5 flex-1 flex flex-col justify-center items-center text-center gap-4 hover:bg-surface-variant/20 transition-colors cursor-pointer group border border-outline/20 hover:border-primary/50">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl text-primary">sync</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">Force Sync</h3>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">Update all devices instantly</p>
+</div>
+</div>
+<div class="glass-card rounded-xl p-5 flex-1 flex flex-col justify-center items-center text-center gap-4 hover:bg-surface-variant/20 transition-colors cursor-pointer group border border-outline/20 hover:border-tertiary/50">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl text-tertiary">restart_alt</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">Global Restart</h3>
+<p class="font-label-md text-label-md text-on-surface-variant mt-1">Reboot entire fleet</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

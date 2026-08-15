@@ -1,0 +1,6 @@
+{
+  "name": "Enterprise Digital Signage Platform",
+  "description": "Enterprise cloud digital signage system featuring multi-screen management, smart layout builder, scheduling engine, player web app, media buffer engine, and realtime screen control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

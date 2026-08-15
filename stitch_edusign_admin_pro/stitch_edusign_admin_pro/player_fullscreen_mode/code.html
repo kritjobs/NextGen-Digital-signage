@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fullscreen Media Player</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "on-tertiary-fixed": "#380d00",
+                "primary": "#b2c5ff",
+                "surface-container-lowest": "#0e0e0e",
+                "secondary-fixed-dim": "#00dbe7",
+                "on-background": "#e2e2e2",
+                "on-secondary": "#00363a",
+                "on-error": "#690005",
+                "surface": "#131313",
+                "on-surface": "#e2e2e2",
+                "on-surface-variant": "#c3c6d6",
+                "background": "#131313",
+                "error": "#ffb4ab",
+                "secondary": "#ddfcff",
+                "on-primary": "#002b73",
+                "tertiary-container": "#a33500",
+                "error-container": "#93000a",
+                "on-secondary-container": "#006a70",
+                "tertiary-fixed-dim": "#ffb59b",
+                "secondary-fixed": "#74f5ff",
+                "surface-bright": "#393939",
+                "on-primary-fixed-variant": "#0040a2",
+                "on-primary-fixed": "#001848",
+                "on-secondary-fixed-variant": "#004f54",
+                "primary-container": "#0052cc",
+                "on-tertiary-container": "#ffc6b2",
+                "surface-dim": "#131313",
+                "surface-container-highest": "#353535",
+                "surface-tint": "#b2c5ff",
+                "on-secondary-fixed": "#002022",
+                "surface-container-low": "#1b1b1b",
+                "on-primary-container": "#c4d2ff",
+                "on-error-container": "#ffdad6",
+                "surface-container": "#1f1f1f",
+                "primary-fixed": "#dae2ff",
+                "surface-variant": "#353535",
+                "tertiary-fixed": "#ffdbcf",
+                "on-tertiary-fixed-variant": "#812800",
+                "secondary-container": "#00f1fe",
+                "outline": "#8d90a0",
+                "surface-container-high": "#2a2a2a",
+                "inverse-on-surface": "#303030",
+                "on-tertiary": "#5b1a00",
+                "tertiary": "#ffb59b",
+                "primary-fixed-dim": "#b2c5ff",
+                "inverse-surface": "#e2e2e2",
+                "inverse-primary": "#0c56d0",
+                "outline-variant": "#434654"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "widget-padding": "40px",
+                "stack-gap": "24px",
+                "gutter-large": "48px",
+                "margin-page": "64px"
+        },
+        "fontFamily": {
+                "display-hero": [
+                        "Inter"
+                ],
+                "label-caps": [
+                        "Inter"
+                ],
+                "body-lg": [
+                        "Inter"
+                ],
+                "headline-lg": [
+                        "Inter"
+                ],
+                "display-title": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "display-hero": [
+                        "120px",
+                        {
+                                "lineHeight": "140px",
+                                "letterSpacing": "-0.04em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "label-caps": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "letterSpacing": "0.1em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-lg": [
+                        "24px",
+                        {
+                                "lineHeight": "36px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-title": [
+                        "80px",
+                        {
+                                "lineHeight": "96px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+    .scrolling-text-container {
+        overflow: hidden;
+        white-space: nowrap;
+        width: 100%;
+    }
+    .scrolling-text {
+        display: inline-block;
+        padding-left: 100%;
+        animation: scroll-left 25s linear infinite;
+    }
+    @keyframes scroll-left {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+    .pulse-animation {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .5; transform: scale(1.1); }
+    }
+</style>
+</head>
+<body class="bg-background text-on-background h-screen w-screen overflow-hidden flex flex-col relative font-body-lg">
+<!-- Shader Background -->
+<!-- STITCH_SHADER_START:ANIMATION_17 class="absolute inset-0 w-full h-full -z-20" -->
+<div class="absolute inset-0 w-full h-full -z-20" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_17" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_17');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+varying vec2 v_texCoord;
+
+void main() {
+    vec2 uv = v_texCoord;
+    
+    // Slow, undulating ambient gradient to prevent burn-in
+    float noise1 = sin(uv.x * 2.0 + u_time * 0.2) * 0.5 + 0.5;
+    float noise2 = cos(uv.y * 3.0 - u_time * 0.3) * 0.5 + 0.5;
+    
+    vec3 color1 = vec3(0.06, 0.08, 0.12); // Deep surface
+    vec3 color2 = vec3(0.1, 0.12, 0.18);  // Slightly brighter indigo
+    
+    vec3 finalColor = mix(color1, color2, noise1 * noise2);
+    
+    // Add subtle vignette
+    float dist = distance(uv, vec2(0.5));
+    finalColor *= smoothstep(1.0, 0.2, dist * 0.8);
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_17 -->
+<!-- Main Media Area (Fullscreen) -->
+<div class="absolute inset-0 w-full h-full -z-10 p-margin-page flex">
+<div class="w-full h-full rounded-xl overflow-hidden border border-outline/20 shadow-[inset_0_0_20px_rgba(255,255,255,0.05)] relative bg-surface-container-lowest">
+<div class="bg-cover bg-center w-full h-full opacity-80 mix-blend-screen transition-opacity duration-1000 ease-in-out" data-alt="A vibrant, high-contrast photograph of a modern university campus bathed in golden hour sunlight. The architecture features sleek glass facades reflecting the sky, surrounded by lush green lawns and large, mature oak trees. The image uses a cinematic aspect ratio and is composed with striking deep shadows and bright highlights, fitting a premium dark mode digital signage display aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB81DEW8xMtuSTylDhGu7_YjGxj7xjoqsDMNVviK-Ff6TA--2M5447ayTGbHV4uQw_1nHw8wQBvgLeI87-vWmBXHWl3lo4gtj-zVFkW39MRAGgIjAQjGIHYqx8Rk52SNqSzL6858l8BB-vE0qVS0RV7oYWltMqQpAqB_f7nBob9uMnFZ06AbFycv2hxf0S8YOZNp93zRn_oW8VUH16Z0jUoBYLsWoL2M1v8JXRUQCoytpy5IGojtI0Q')"></div>
+<!-- Vignette for text legibility -->
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90 pointer-events-none"></div>
+</div>
+</div>
+<!-- Top AppBar (Sync Indicator & Logo) -->
+<header class="fixed top-0 right-0 p-margin-page z-50 flex justify-between items-center w-full pointer-events-none">
+<div class="font-display-title text-display-title text-primary drop-shadow-md bg-transparent flat no shadows w-full flex justify-between">
+<span class="tracking-tight text-white/90">CampusConnect</span>
+<div class="flex items-center gap-4 text-secondary-fixed-dim bg-transparent">
+<!-- Sync Indicator -->
+<div class="w-4 h-4 rounded-full bg-secondary-fixed-dim pulse-animation shadow-[0_0_12px_rgba(0,219,231,0.6)]"></div>
+<span class="material-symbols-outlined font-label-caps text-label-caps text-on-surface-variant hover:opacity-80 transition-opacity" style="font-variation-settings: 'FILL' 0;">sync</span>
+</div>
+</div>
+</header>
+<!-- Spacer to push ticker to bottom -->
+<div class="flex-grow"></div>
+<!-- Bottom Ticker Bar -->
+<footer class="fixed bottom-0 left-0 w-full z-40 flex items-center px-margin-page overflow-hidden h-32 bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/30 text-on-background">
+<div class="flex items-center gap-gutter-large w-full h-full">
+<!-- Clock Widget (Display-Hero proportion but scaled down for ticker) -->
+<div class="flex flex-col justify-center border-r border-outline-variant/50 pr-gutter-large shrink-0 h-full py-4">
+<div class="flex items-baseline gap-2">
+<span class="font-display-title text-display-title text-primary tracking-tighter leading-none" id="clock-time">10:34</span>
+<span class="font-headline-lg text-headline-lg text-on-surface-variant leading-none" id="clock-ampm">AM</span>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase mt-2 block" id="clock-date">OCTOBER 10</span>
+</div>
+<!-- Scrolling Text -->
+<div class="scrolling-text-container flex-grow h-full flex items-center">
+<div class="scrolling-text font-headline-lg text-headline-lg text-on-background font-semibold tracking-wide">
+                    Welcome back, students! Final exam schedules have been posted in the library. Good luck on your midterms! 
+                    <span class="text-primary mx-8">•</span> 
+                    Campus shuttle routes are operating on a delayed schedule due to weather.
+                    <span class="text-primary mx-8">•</span>
+                    New dining hall menu items available starting next week.
+                </div>
+</div>
+<!-- Weather/Quick Info Widget -->
+<div class="border-l border-outline-variant/50 pl-gutter-large shrink-0 h-full py-4 flex flex-col justify-center items-end">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[64px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">partly_cloudy_day</span>
+<span class="font-display-title text-display-title text-on-surface leading-none tracking-tighter">72°</span>
+</div>
+</div>
+</div>
+</footer>
+<script>
+    // Simple clock update
+    function updateClock() {
+        const now = new Date();
+        let hours = now.getHours();
+        let minutes = now.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        
+        document.getElementById('clock-time').textContent = hours + ':' + minutes;
+        document.getElementById('clock-ampm').textContent = ampm;
+        
+        const options = { month: 'long', day: 'numeric' };
+        document.getElementById('clock-date').textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+    }
+    
+    setInterval(updateClock, 1000);
+    // Initial call
+    // updateClock(); // Commented out to match static mockup visual
+</script>
+</body></html>

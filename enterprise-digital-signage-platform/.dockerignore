@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+coverage/
+
+# Environment files (never bake secrets into image)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# Documentation (not needed in container)
+docs/
+README.md
+CHANGELOG.md
+
+# Spec files
+.kiro/
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+e2e/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# OS
+.DS_Store

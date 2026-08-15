@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Luxury Hotel Signage Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#003640",
+                      "surface-tint": "#ddb8ff",
+                      "on-primary": "#490080",
+                      "primary": "#ddb8ff",
+                      "surface-bright": "#31394d",
+                      "outline": "#988ca0",
+                      "surface-variant": "#2d3449",
+                      "secondary-container": "#03b5d3",
+                      "primary-fixed": "#f0dbff",
+                      "primary-container": "#9333ea",
+                      "primary-fixed-dim": "#ddb8ff",
+                      "on-tertiary": "#402d00",
+                      "on-background": "#dae2fd",
+                      "surface": "#0b1326",
+                      "surface-container-lowest": "#060e20",
+                      "surface-container-low": "#131b2e",
+                      "surface-container-highest": "#2d3449",
+                      "background": "#0b1326",
+                      "on-tertiary-fixed": "#261a00",
+                      "on-error": "#690005",
+                      "tertiary": "#f9bd22",
+                      "inverse-primary": "#861fdd",
+                      "on-secondary-fixed": "#001f26",
+                      "surface-container": "#171f33",
+                      "on-error-container": "#ffdad6",
+                      "on-primary-container": "#f6e6ff",
+                      "secondary-fixed": "#acedff",
+                      "tertiary-container": "#886500",
+                      "surface-dim": "#0b1326",
+                      "on-secondary-container": "#00424e",
+                      "surface-container-high": "#222a3d",
+                      "on-primary-fixed": "#2c0051",
+                      "error": "#ffb4ab",
+                      "on-surface-variant": "#cfc2d7",
+                      "on-surface": "#dae2fd",
+                      "on-tertiary-fixed-variant": "#5c4300",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "on-tertiary-container": "#ffeac4",
+                      "inverse-on-surface": "#283044",
+                      "error-container": "#93000a",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "tertiary-fixed-dim": "#f9bd22",
+                      "tertiary-fixed": "#ffdf9f",
+                      "on-primary-fixed-variant": "#6800b4",
+                      "outline-variant": "#4d4354",
+                      "inverse-surface": "#dae2fd",
+                      "secondary": "#4cd7f6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "safe_margin": "24px",
+                      "unit": "8px",
+                      "gutter": "16px",
+                      "toolbar_height": "64px",
+                      "sidebar_width": "320px"
+              },
+              "fontFamily": {
+                      "label-caps": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "display-md": ["Playfair Display"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Playfair Display"],
+                      "display-lg-mobile": ["Playfair Display"]
+              },
+              "fontSize": {
+                      "label-caps": ["11px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "display-md": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "headline-sm": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        /* Level 2 Panel Inner Glow */
+        .glass-panel-l2 {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+        /* Active Icon Glow */
+        .icon-glow-primary {
+            text-shadow: 0 0 12px rgba(221,184,255,0.6);
+        }
+        /* Gradient Button Shimmer */
+        .shimmer-btn:hover {
+            box-shadow: 0 4px 20px -2px rgba(221,184,255,0.4);
+            filter: brightness(1.1);
+        }
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4d4354;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-hidden w-screen h-screen">
+<!-- Global App Canvas Area -->
+<div class="fixed inset-0 z-0">
+<div class="absolute inset-0 bg-surface/50 backdrop-blur-3xl z-10 pointer-events-none"></div>
+<!-- Background placeholder to simulate the visual context beneath the glass -->
+<div class="w-full h-full bg-cover bg-center" data-alt="A luxurious, high-end hotel lobby rendered in deep cinematic colors. The scene features rich dark navy and slate blue architectural elements, interspersed with glowing, elegant gold lighting fixtures. The atmosphere is sophisticated and modern, serving as a premium backdrop for a SaaS interface in dark mode. Smooth gradients and subtle bokeh effects create a sense of depth and luxury." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBMtNMpRjXAvSTMIH6PHmojBPicWD0W7j3xKY5A3v2WgrtrI86C6_cX3F0Czg1hkZmFgD5cywdIyXGKTra3adsC7ZlLbqE6yhKWAPLOMa0A4bNpe9I7qK8-LA7R7i6fwV8P742At_Ndhx4RBPSEB81hr8IURkW0aC-3F6GFpbbcSS3FajxM_l-YwWKuMGttpOI7ffOp2Aa_U4ROZ-URd63vePp4oOOsXzgYtsAuqPUx83R4IObGz6Re')"></div>
+</div>
+<!-- LEFT SIDEBAR: Tools -->
+<!-- Applying style_component_shape, style_bg_color, style_separation_logic, style_shadows_and_elevation, style_shell_layout -->
+<aside class="fixed left-0 top-0 h-screen w-sidebar_width bg-surface/10 backdrop-blur-xl border-r border-white/10 shadow-sm shadow-md flex flex-col h-full py-safe_margin z-20 glass-panel-l2">
+<!-- Header -->
+<div class="px-gutter mb-8">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center overflow-hidden border border-outline-variant">
+<img alt="Project Icon" class="w-full h-full object-cover" data-alt="A sleek, minimalist monogram logo for a premium signage application. Set against a dark navy background, the logo features razor-thin, geometric lines rendered in a soft, luminescent neon purple and glowing white. The design is abstract, modern, and perfectly suited for a high-end cinematic SaaS brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOP_U-YE1iHvVurrWlECiHkChCRsSxlqAaa-4fWzBB1LEIDnAa2CuAW-Cu0yVFePbJHfY1K_b5cVTPjsare5ARqyVUn2rDF_Euc-IPK83wmqADReQPZbuWh3iGQVmrX7DbH-4Ow7rQ293jNRO2ArhIHYPFRET6R4_rsIsa_Iwn2bMLpXRmzqO3XxRtFNjnqLehlI7lobveiV-lQTzs-U8EViAmOJsFAt-oUao7ldclBEC4n1HFkdup"/>
+</div>
+<div>
+<!-- style_brand_logo applied -->
+<h1 class="font-display-md text-display-md text-primary tracking-tighter">Signage Studio</h1>
+<!-- style_typography (Labels) applied -->
+<span class="font-label-caps text-label-caps text-on-surface-variant block mt-1">V3.0 Pro</span>
+</div>
+</div>
+<button class="w-full py-3 px-4 rounded-lg bg-surface-container border border-tertiary/30 text-tertiary font-label-caps text-label-caps flex items-center justify-center gap-2 hover:bg-tertiary/10 transition-colors">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                Upgrade to Enterprise
+            </button>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+<!-- Tab 1: Media (Active) -->
+<button class="w-full flex flex-col items-center justify-center py-4 rounded-xl scale-95 duration-150 text-primary bg-primary/20 shadow-[0_0_12px_rgba(221,184,255,0.4)]">
+<span class="material-symbols-outlined text-[24px] mb-2 icon-glow-primary" style="font-variation-settings: 'FILL' 1;">perm_media</span>
+<span class="font-label-caps text-label-caps">Media</span>
+</button>
+<!-- Tab 2: Text -->
+<button class="w-full flex flex-col items-center justify-center py-4 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all duration-300">
+<span class="material-symbols-outlined text-[24px] mb-2">title</span>
+<span class="font-label-caps text-label-caps">Text</span>
+</button>
+<!-- Tab 3: Music -->
+<button class="w-full flex flex-col items-center justify-center py-4 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all duration-300">
+<span class="material-symbols-outlined text-[24px] mb-2">music_note</span>
+<span class="font-label-caps text-label-caps">Music</span>
+</button>
+<!-- Tab 4: Animation -->
+<button class="w-full flex flex-col items-center justify-center py-4 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all duration-300">
+<span class="material-symbols-outlined text-[24px] mb-2">animation</span>
+<span class="font-label-caps text-label-caps">Animation</span>
+</button>
+<!-- Tab 5: Layout -->
+<button class="w-full flex flex-col items-center justify-center py-4 rounded-xl text-on-surface-variant hover:bg-white/5 transition-all duration-300">
+<span class="material-symbols-outlined text-[24px] mb-2">dashboard</span>
+<span class="font-label-caps text-label-caps">Layout</span>
+</button>
+</nav>
+</aside>
+<!-- TOP NAVBAR -->
+<!-- Applying style_component_shape, style_bg_color, style_separation_logic, style_shadows_and_elevation, style_shell_layout -->
+<header class="fixed top-0 right-0 left-sidebar_width h-toolbar_height bg-surface/10 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center px-gutter w-[calc(100%-320px)] z-20 glass-panel-l2">
+<div class="flex items-center gap-8 h-full">
+<!-- style_brand_logo applied -->
+<div class="font-display-md text-display-md text-on-surface hidden md:block">Digital Signage Pro</div>
+<!-- Navigation Links -->
+<nav class="flex h-full gap-6 ml-4">
+<!-- Drafts (Active closest intent for builder) -->
+<a class="h-full flex items-center font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1" href="#">Drafts</a>
+<a class="h-full flex items-center font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors hover:shimmer duration-500" href="#">Templates</a>
+<a class="h-full flex items-center font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors hover:shimmer duration-500" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Actions -->
+<button class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded">Live Preview</button>
+<button class="font-label-caps text-label-caps bg-gradient-to-r from-primary to-inverse-primary text-on-primary px-6 py-2 rounded-lg shimmer-btn transition-all">Publish</button>
+<div class="w-px h-6 bg-white/10 mx-2"></div>
+<!-- Icon Actions -->
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<!-- Profile -->
+<div class="w-8 h-8 rounded-full border border-white/20 overflow-hidden ml-2">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a creative director, styled in dark cinematic lighting. The subject is slightly in shadow with a subtle glowing edge-light in neon purple, perfectly fitting a high-end SaaS profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQlpWQCiWu21K0cSnLKte1odkTqROHBEz-VAl2HaaNWGrC9mHDwKLTYEAY7oQJXcKjEepiDDwPcuUfqSohMgGZ4auRWcDM4P39-jSu8IDzWKK6xcrot_pumHtLXgQXsebGNKu0qmlgrRQfYk5XQBP-DgBDZf46iWFVS6Y6-_8GB7C1NpGQ-N3tQtJu1jwn0R6l4XScwLLYTJSLAVpqx3Y_g0IHT-1NdGQIJL5kWosuy7qbAkv-n0mk"/>
+</div>
+</div>
+</header>
+<!-- MAIN CANVAS STAGE -->
+<!-- Positioned between sidebars and above timeline -->
+<main class="fixed top-toolbar_height left-sidebar_width right-sidebar_width h-[calc(100vh-64px-240px)] p-safe_margin z-10 flex items-center justify-center">
+<!-- The Presentation Slide Preview (16:9 Aspect Ratio Container) -->
+<div class="w-full max-w-5xl aspect-video bg-surface-container-lowest rounded-xl overflow-hidden relative shadow-2xl border border-white/10 glass-panel-l2 group">
+<!-- Slide Background Image -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A sweeping, wide-angle architectural shot of an ultra-luxury modern hotel lobby at dusk. The scene features soaring glass windows, polished ivory marble floors, and structural accents rendered in brushed gold. Warm, ambient cove lighting creates a sophisticated, serene mood. The composition is highly editorial and cinematic, designed to serve as a stunning visual backdrop for high-end digital signage." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDKxkaKEm5vNQY4gdHqZLyo4AwCdDDPqTvoF8gXXcBNRLf3Q8WDrj6knFwIGQu0B6pCrAZLy5ty2lKqmZhXUG9YhF_IkTRSdxT_jrrQ0y-iLaMzF820HOVrOmunnoyDENQ_GiRpNYUQf2mVSWSj1mwjqTj9kXFcQfiVADXNxtrfZaQhzd6v8Uc9S7kxAuMpg4WpyoWEHz0qzDGsAmouBzeYi7dGdmEpo-qVLOHwib9FaBMXBLQi7X2y')"></div>
+<!-- Subtle Vignette / Overlay for Text Readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+<!-- Slide Content (Elegant Text Overlays) -->
+<div class="absolute inset-0 p-12 flex flex-col justify-end text-center items-center">
+<div class="w-16 h-[2px] bg-tertiary mb-6 rounded-full shadow-[0_0_8px_#f9bd22]"></div>
+<h2 class="font-display-lg text-display-lg text-white drop-shadow-lg max-w-3xl leading-tight">
+                    Experience Unparalleled Luxury
+                </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-6 tracking-wide max-w-2xl">
+                    Discover a sanctuary of refined elegance and bespoke service in the heart of the metropolis.
+                </p>
+</div>
+<!-- Builder UI Overlays (Aspect Ratio Badge) -->
+<div class="absolute top-4 right-4 bg-surface/40 backdrop-blur-md border border-white/20 rounded px-3 py-1.5 flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-tertiary">aspect_ratio</span>
+<span class="font-label-caps text-label-caps text-on-surface">16:9 4K</span>
+</div>
+<!-- Playhead Indicator on Canvas (Hover Interaction) -->
+<div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex items-center justify-center">
+<div class="w-16 h-16 rounded-full bg-surface/20 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-[32px] text-white pl-1">play_arrow</span>
+</div>
+</div>
+</div>
+</main>
+<!-- RIGHT SIDEBAR: Theme System -->
+<!-- Applying style_component_shape, style_bg_color, style_separation_logic, style_shadows_and_elevation, style_shell_layout -->
+<aside class="fixed right-0 top-toolbar_height h-[calc(100vh-64px-240px)] w-sidebar_width bg-surface/10 backdrop-blur-xl border-l border-white/10 shadow-lg flex flex-col p-gutter overflow-y-auto z-20 glass-panel-l2">
+<!-- Header -->
+<div class="mb-6">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Theme System</h2>
+<p class="font-label-caps text-label-caps text-tertiary mt-1">Browse Premium Styles</p>
+</div>
+<!-- Navigation Tabs (Horizontal Scroll or Wrap) -->
+<div class="flex gap-2 overflow-x-auto pb-4 mb-4 border-b border-white/10 scrollbar-hide">
+<!-- Active Tab: Luxury -->
+<button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-surface-container-highest rounded-full border-l-2 border-tertiary text-tertiary transition-transform scale-98">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="font-label-caps text-label-caps">Luxury</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px]">beach_access</span>
+<span class="font-label-caps text-label-caps">Beach</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px]">business</span>
+<span class="font-label-caps text-label-caps">Corporate</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+<span class="font-label-caps text-label-caps">Marketplace</span>
+</button>
+</div>
+<!-- Theme Grid (Filtered for Luxury/Enterprise) -->
+<div class="grid grid-cols-1 gap-4 pb-12">
+<!-- Enterprise Theme Card -->
+<div class="relative rounded-xl overflow-hidden border border-tertiary bg-surface-container-low group cursor-pointer">
+<div class="h-32 w-full bg-cover bg-center" data-alt="A close-up macro texture shot of deep obsidian marble with intricate veins of liquid gold running through it. The lighting highlights the glossy surface and the metallic reflection of the gold, creating an extremely premium, rich, and high-contrast abstract background suitable for luxury branding." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAf7u5K31HGzAJz_m5KcY1JOPO_dIRMiAzIIpTeo_IZ8t_T0fPHSG6BxAbPZTckm-atVw6vTPLTB5EIevK8JAEdRqytheebXHnmge_XevJFxQZ9WhUx5xecq_B1pYwiRPCKaNqgOiBpS0uqtfp6zvZ912IHOmkiLYyq4Y6kKZL2QObp3HDoDOe9x3qun-OTMOUGPyEsSISFS-GT4eHMpVCyOBi-_ukAy2zJ17ySoeTAPbUa0lkTjo7t')"></div>
+<!-- Premium Badge -->
+<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded flex items-center gap-1 border border-tertiary/50">
+<span class="material-symbols-outlined text-[12px] text-tertiary">star</span>
+<span class="font-label-caps text-label-caps text-tertiary text-[9px]">Enterprise</span>
+</div>
+<div class="p-3 bg-surface-container/90 backdrop-blur-sm relative z-10">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold text-[15px]">Obsidian &amp; Gold</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[12px] mt-1">Refined serif typography.</p>
+</div>
+</div>
+<!-- Pro Luxury Theme Card -->
+<div class="relative rounded-xl overflow-hidden border border-white/10 hover:border-primary/50 bg-surface-container-low group cursor-pointer transition-colors">
+<div class="h-32 w-full bg-cover bg-center" data-alt="An abstract, soft-focus background featuring elegant folds of creamy ivory silk fabric. Subtle, warm lighting casts gentle shadows, giving the material a tactile, luxurious feel. Small, out-of-focus bokeh highlights in soft gold float in the background, creating a serene and sophisticated template preview." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAbs5nDfpuS64TUDHR5PSg1yIpRPsgMoFfaE8S-VuAxY5qqRGeV3e_eOtgwr5bbjjt0-c9ALJPUezXYDBYVUYitSH4cckjGf0scCr0VEr4SpCCXjhhuBAFHN5i9BdczOyZRvCslJQQvDNuPjyzK3WGdx6oxPv9lTqCtnSlrQ1GkJJITY08adCNgLXS_wku2bNMQXv2dQbY8wLC1XuzmAlJqEhTlVPvqUB-X1dcGWZqbW1v8YWlV6dfI')"></div>
+<!-- Premium Badge -->
+<div class="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded flex items-center gap-1 border border-primary/50">
+<span class="font-label-caps text-label-caps text-primary text-[9px]">Pro</span>
+</div>
+<div class="p-3 bg-surface-container/90 backdrop-blur-sm relative z-10">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold text-[15px]">Ivory Silk</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[12px] mt-1">Minimalist, light-mode elegant.</p>
+</div>
+</div>
+<!-- Default Luxury Theme Card -->
+<div class="relative rounded-xl overflow-hidden border border-white/10 hover:border-white/30 bg-surface-container-low group cursor-pointer transition-colors">
+<div class="h-32 w-full bg-cover bg-center" data-alt="A minimalist architectural detail showing a sleek, dark slate wall panel with a perfectly centered vertical strip of warm amber light. The composition is highly geometric and structured, exuding a sense of modern, austere luxury typical of high-end boutique hotels." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCXVBVgj8mco-_BvfE837UOORweCDYvXu23fkQJ7rtyIU187o_aScvadSa3g5s2up7oQbNXTzOV7QjK-N7_JlepQzFKwVSgFnARxTUimYfkTc37GriQJtTEQvsxNMuqc0t0nN50sXfFn31MYz5c7tsXfpoM_8Hvh6mG31rJC40ynX2iBlfmMoRPzm681DfO4iq3k8GbBKkiJKmqRk08SQIZs0jwXEBU5C6DIpnZrTnueqYPCjlAA-dG')"></div>
+<div class="p-3 bg-surface-container/90 backdrop-blur-sm relative z-10">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold text-[15px]">Slate Minimal</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[12px] mt-1">Clean sans-serif layouts.</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TIMELINE (Bottom Panel) -->
+<div class="fixed bottom-0 left-sidebar_width right-0 h-[240px] bg-surface-container-lowest border-t border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.5)] z-20 flex flex-col">
+<!-- Timeline Toolbar -->
+<div class="h-10 border-b border-white/5 flex items-center px-4 justify-between bg-surface-container-low/50">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-white transition-colors"><span class="material-symbols-outlined text-[18px]">undo</span></button>
+<button class="text-on-surface-variant hover:text-white transition-colors"><span class="material-symbols-outlined text-[18px]">redo</span></button>
+<div class="w-px h-4 bg-white/10 mx-2"></div>
+<button class="text-on-surface-variant hover:text-white transition-colors"><span class="material-symbols-outlined text-[18px]">content_cut</span></button>
+<button class="text-on-surface-variant hover:text-white transition-colors"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+</div>
+<!-- Playback Controls -->
+<div class="flex items-center gap-6">
+<span class="font-label-caps text-label-caps text-primary">00:12:45</span>
+<div class="flex items-center gap-3">
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[24px]">skip_previous</span></button>
+<button class="w-8 h-8 rounded-full bg-white text-surface flex items-center justify-center hover:scale-105 transition-transform"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span></button>
+<button class="text-on-surface-variant hover:text-white"><span class="material-symbols-outlined text-[24px]">skip_next</span></button>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">zoom_in</span>
+<div class="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
+<div class="w-1/2 h-full bg-outline"></div>
+</div>
+</div>
+</div>
+<!-- Tracks Area -->
+<div class="flex-1 relative overflow-x-auto overflow-y-hidden bg-surface">
+<!-- Playhead -->
+<div class="absolute top-0 bottom-0 left-[20%] w-[2px] bg-secondary z-10 shadow-[0_0_12px_#4cd7f6] pointer-events-none">
+<div class="absolute -top-1 -left-1.5 w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+<!-- Time Ruler -->
+<div class="h-6 border-b border-white/5 flex items-end text-[10px] text-on-surface-variant font-label-caps px-4 opacity-50">
+<div class="flex-shrink-0 w-32 border-l border-white/20 pl-1">00:00</div>
+<div class="flex-shrink-0 w-32 border-l border-white/20 pl-1">00:05</div>
+<div class="flex-shrink-0 w-32 border-l border-white/20 pl-1">00:10</div>
+<div class="flex-shrink-0 w-32 border-l border-white/20 pl-1">00:15</div>
+<div class="flex-shrink-0 w-32 border-l border-white/20 pl-1">00:20</div>
+</div>
+<!-- Track 1: Video -->
+<div class="h-16 border-b border-white/5 flex items-center px-4 bg-white/[0.02] relative group">
+<div class="absolute left-2 w-24 h-12 bg-primary-container/30 border border-primary/50 rounded flex items-center justify-center overflow-hidden">
+<span class="font-label-caps text-label-caps text-[9px] text-primary-fixed z-10 bg-black/40 px-1 rounded">Lobby_Pan.mp4</span>
+<div class="absolute inset-0 bg-cover bg-center opacity-30" data-alt="A blurry, fast-panning shot of a luxurious hotel corridor, capturing streaks of gold light and dark shadows. The image implies motion and cinematic flow within a high-end interior space." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgkHDt6wBGvbCrHLi9HU4RE1IaowmcPO8NK2QY4zLBONjnmpIr-zQnmoQwR64usmp9KoeoF1okqWQiOHpxdQHvlpF7kidIcZt20F_W6p_LjxW_v-q0f-mp0yvPkbS1v0oNMPpNkunyooDWnpOsWN-58ah-DcUkCirG-0-IvBcjSUxlaKqF0gZ11v4X30KuMKqOuyM5eJT2sdIO6koluKBEILnckwzwZ29AOlwXGQtPMcXgfK089MG-')"></div>
+</div>
+</div>
+<!-- Track 2: Text -->
+<div class="h-12 border-b border-white/5 flex items-center px-4 relative">
+<div class="absolute left-[10%] w-48 h-8 bg-tertiary-container/30 border border-tertiary/50 rounded flex items-center px-2">
+<span class="material-symbols-outlined text-[14px] text-tertiary mr-2">title</span>
+<span class="font-label-caps text-label-caps text-[9px] text-tertiary-fixed truncate">Experience Unparal...</span>
+</div>
+</div>
+<!-- Track 3: Audio -->
+<div class="h-16 flex items-center px-4 bg-white/[0.01] relative">
+<div class="absolute left-0 w-full h-10 bg-surface-variant/30 border border-white/10 rounded flex items-center px-2 overflow-hidden">
+<!-- Synthetic Waveform visualization via SVG pattern simulation -->
+<div class="w-full h-full flex items-center gap-[2px] opacity-40 pt-2">
+<div class="w-1 h-3 bg-secondary rounded-full"></div><div class="w-1 h-6 bg-secondary rounded-full"></div><div class="w-1 h-2 bg-secondary rounded-full"></div>
+<div class="w-1 h-8 bg-secondary rounded-full"></div><div class="w-1 h-4 bg-secondary rounded-full"></div><div class="w-1 h-7 bg-secondary rounded-full"></div>
+<div class="w-1 h-2 bg-secondary rounded-full"></div><div class="w-1 h-5 bg-secondary rounded-full"></div><div class="w-1 h-3 bg-secondary rounded-full"></div>
+<div class="w-1 h-3 bg-secondary rounded-full"></div><div class="w-1 h-6 bg-secondary rounded-full"></div><div class="w-1 h-2 bg-secondary rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

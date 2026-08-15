@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Announcement Mode - Portrait</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#b2c5ff",
+                    "primary-container": "#0052cc",
+                    "secondary-container": "#00f1fe",
+                    "on-surface": "#e2e2e2",
+                    "tertiary-fixed-dim": "#ffb59b",
+                    "on-secondary-container": "#006a70",
+                    "surface-container-lowest": "#0e0e0e",
+                    "secondary-fixed": "#74f5ff",
+                    "inverse-on-surface": "#303030",
+                    "on-secondary-fixed-variant": "#004f54",
+                    "on-error": "#690005",
+                    "on-surface-variant": "#c3c6d6",
+                    "surface-container-low": "#1b1b1b",
+                    "surface": "#131313",
+                    "surface-tint": "#b2c5ff",
+                    "primary-fixed": "#dae2ff",
+                    "on-secondary-fixed": "#002022",
+                    "outline": "#8d90a0",
+                    "on-error-container": "#ffdad6",
+                    "outline-variant": "#434654",
+                    "error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#812800",
+                    "tertiary-container": "#a33500",
+                    "inverse-primary": "#0c56d0",
+                    "on-primary-container": "#c4d2ff",
+                    "surface-container-highest": "#353535",
+                    "secondary": "#ddfcff",
+                    "on-tertiary-container": "#ffc6b2",
+                    "surface-bright": "#393939",
+                    "on-background": "#e2e2e2",
+                    "on-tertiary-fixed": "#380d00",
+                    "surface-variant": "#353535",
+                    "on-tertiary": "#5b1a00",
+                    "tertiary": "#ffb59b",
+                    "primary": "#b2c5ff",
+                    "on-secondary": "#00363a",
+                    "on-primary": "#002b73",
+                    "tertiary-fixed": "#ffdbcf",
+                    "surface-dim": "#131313",
+                    "error": "#ffb4ab",
+                    "secondary-fixed-dim": "#00dbe7",
+                    "background": "#131313",
+                    "surface-container-high": "#2a2a2a",
+                    "surface-container": "#1f1f1f",
+                    "on-primary-fixed": "#001848",
+                    "on-primary-fixed-variant": "#0040a2",
+                    "inverse-surface": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-gap": "24px",
+                    "gutter-large": "48px",
+                    "widget-padding": "40px",
+                    "margin-page": "64px"
+            },
+            "fontFamily": {
+                    "display-hero": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "display-title": ["Inter"]
+            },
+            "fontSize": {
+                    "display-hero": ["120px", {"lineHeight": "140px", "letterSpacing": "-0.04em", "fontWeight": "800"}],
+                    "headline-lg": ["48px", {"lineHeight": "56px", "fontWeight": "600"}],
+                    "body-lg": ["24px", {"lineHeight": "36px", "fontWeight": "400"}],
+                    "label-caps": ["16px", {"lineHeight": "24px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                    "display-title": ["80px", {"lineHeight": "96px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .aspect-9-16 {
+            aspect-ratio: 9 / 16;
+        }
+        .scrolling-text {
+            animation: scroll-left 20s linear infinite;
+        }
+        @keyframes scroll-left {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background m-0 p-0 overflow-hidden flex items-center justify-center min-h-screen">
+<!-- Portrait Container (9:16) -->
+<div class="aspect-9-16 w-full max-w-[1080px] h-[1920px] max-h-screen relative bg-surface-container-lowest border border-outline-variant overflow-hidden flex flex-col">
+<!-- Top App Bar equivalent logic (Simplified for Announcement Mode, just branding) -->
+<div class="w-full flex justify-between items-start p-margin-page absolute top-0 left-0 z-50">
+<div class="font-display-title text-display-title text-primary tracking-tighter">CampusConnect</div>
+<!-- Status Pip -->
+<div class="w-4 h-4 rounded-full bg-secondary-fixed-dim animate-pulse mt-4 border border-outline"></div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col items-center justify-center p-margin-page text-center z-10 space-y-gutter-large">
+<!-- Context Label -->
+<div class="font-label-caps text-label-caps text-primary border border-primary/20 px-6 py-2 rounded-full uppercase tracking-widest bg-primary/5">
+                Important Update
+            </div>
+<!-- Massive Headline -->
+<h1 class="font-display-hero text-display-hero text-on-surface leading-tight drop-shadow-xl w-[80%]">
+                SCHOOL<br/>ASSEMBLY
+            </h1>
+<!-- Subtext / Details -->
+<p class="font-headline-lg text-headline-lg text-on-surface-variant max-w-[80%] mt-stack-gap">
+                All students report to the main gymnasium immediately following 2nd period.
+            </p>
+<!-- Decorative / Technical Elements -->
+<div class="w-full max-w-md h-[2px] bg-outline-variant opacity-50 mt-gutter-large"></div>
+<div class="flex items-center space-x-6 text-on-surface-variant font-label-caps text-label-caps">
+<span class="material-symbols-outlined text-[32px]">location_on</span>
+<span>MAIN GYMNASIUM</span>
+<span class="text-outline-variant">|</span>
+<span class="material-symbols-outlined text-[32px]">schedule</span>
+<span>10:45 AM</span>
+</div>
+</main>
+<!-- Background Image/Texture with overlay for contrast -->
+<div class="absolute inset-0 z-0 pointer-events-none">
+<div class="w-full h-full bg-cover bg-center opacity-20 mix-blend-luminosity grayscale" data-alt="A dark, architectural photograph of a modern school gymnasium interior, empty and vast. High contrast lighting with spotlights piercing through the darkness, creating sharp geometric shadows on the polished floor. The scene is moody, cinematic, and emphasizes the scale of the space, using deep blacks and subtle highlights to fit a dark-mode tech aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBchLWRDshcdAmUv5rlnoADCMzSNZ8PpQNkEJQwarNA9BlUztKji5DhZYLaonExSB_MWDXZ61ax9hUaOTz2_tAv94d8wgKQwknYiPsWrL30CxtEURdEbPnyQMjInrF-ZuWzi4i-ra4Nkj4qaI6HEQXru8_eINgH4psxL8TGkeUOz9M2LiXrfQk0mF3mfxu56QTk6WyTQfdLRizIfrkm7oNntamou2Fq_h2v_BFH8bkYWdl9_2XZVmM5')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-surface-container-lowest"></div>
+</div>
+<!-- Footer / Ticker Bar -->
+<footer class="docked full-width bottom-0 h-24 bg-surface-container-lowest border-t border-outline-variant z-40 flex items-center px-margin-page overflow-hidden fixed w-full max-w-[1080px] absolute bottom-0">
+<!-- Ticker Area -->
+<div class="flex-grow overflow-hidden flex items-center h-full">
+<div class="scrolling-text whitespace-nowrap font-headline-lg text-headline-lg text-on-surface flex items-center space-x-gutter-large">
+<span>•</span>
+<span>Weather Alert: Heavy rain expected this afternoon</span>
+<span>•</span>
+<span>Cafeteria Menu: Taco Tuesday</span>
+<span>•</span>
+<span>Varsity Basketball game tonight at 7PM</span>
+</div>
+</div>
+<!-- Clock Widget Fixed on Right -->
+<div class="flex-shrink-0 flex flex-col items-end justify-center pl-gutter-large bg-surface-container-lowest border-l border-outline-variant h-full z-50">
+<div class="font-headline-lg text-headline-lg text-primary leading-none">09:42</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mt-1">THU, OCT 12</div>
+</div>
+</footer>
+</div>
+<script>
+        // Simple script to update the clock time (visual only, for realism if left running)
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            const timeStr = hours + ':' + minutes;
+            
+            // Only update if element exists to prevent errors
+            const timeEl = document.querySelector('.flex-shrink-0 .font-headline-lg');
+            if(timeEl) {
+                // In a real app this would update live, keeping static for design purposes, or uncomment to make it live
+                // timeEl.textContent = timeStr;
+            }
+        }
+        setInterval(updateTime, 1000);
+    </script>
+</body></html>

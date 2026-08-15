@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* ═══ Theme System (Light/Dark) ═══════════════════════════ */
+@layer base {
+  :root, .light {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-input: #f8fafc;
+    --bg-hover: #f1f5f9;
+    --border-primary: #e2e8f0;
+    --border-secondary: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --text-accent: #0891b2;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  .dark {
+    --bg-primary: #020617;
+    --bg-secondary: #0f172a;
+    --bg-tertiary: #1e293b;
+    --bg-card: #0f172a;
+    --bg-input: #020617;
+    --bg-hover: #1e293b;
+    --border-primary: #1e293b;
+    --border-secondary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-accent: #22d3ee;
+    --shadow-card: 0 4px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  /* Apply theme to all elements globally */
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
+  /* Override all slate-900/950 backgrounds in light mode */
+  .light .bg-slate-900,
+  .light .bg-slate-950,
+  .light .bg-slate-900\/80,
+  .light .bg-slate-900\/60 {
+    background-color: var(--bg-secondary) !important;
+  }
+
+  .light .bg-slate-800,
+  .light .bg-slate-800\/50,
+  .light .bg-slate-800\/30,
+  .light .bg-slate-950\/80,
+  .light .bg-slate-950\/60,
+  .light .bg-slate-950\/50 {
+    background-color: var(--bg-tertiary) !important;
+  }
+
+  /* Text colors in light mode */
+  .light .text-white,
+  .light .text-slate-100,
+  .light .text-slate-200 {
+    color: var(--text-primary) !important;
+  }
+
+  .light .text-slate-300,
+  .light .text-slate-400 {
+    color: var(--text-secondary) !important;
+  }
+
+  .light .text-slate-500,
+  .light .text-slate-600 {
+    color: var(--text-muted) !important;
+  }
+
+  /* Border colors in light mode */
+  .light .border-slate-700,
+  .light .border-slate-800,
+  .light .border-slate-700\/80,
+  .light .border-slate-700\/50,
+  .light .border-slate-800\/80 {
+    border-color: var(--border-primary) !important;
+  }
+
+  .light .border-slate-600,
+  .light .border-slate-600\/80 {
+    border-color: var(--border-secondary) !important;
+  }
+
+  /* Input fields in light mode */
+  .light input,
+  .light select,
+  .light textarea {
+    background-color: var(--bg-input) !important;
+    border-color: var(--border-secondary) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .light input::placeholder,
+  .light textarea::placeholder {
+    color: var(--text-muted) !important;
+  }
+
+  /* Cards and panels in light mode */
+  .light .rounded-2xl,
+  .light .glass-panel {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Accent colors remain the same in both themes */
+  .light .text-cyan-400 { color: #0891b2 !important; }
+  .light .text-cyan-300 { color: #06b6d4 !important; }
+  .light .bg-cyan-600 { background-color: #0891b2 !important; }
+  .light .bg-cyan-950 { background-color: #ecfeff !important; }
+  .light .border-cyan-800,
+  .light .border-cyan-700,
+  .light .border-cyan-500 { border-color: #06b6d4 !important; }
+
+  /* Violet accents */
+  .light .bg-violet-600 { background-color: #7c3aed !important; }
+
+  /* Fix modals/overlays - keep dark in light mode for contrast */
+  .light .fixed.inset-0.z-50 {
+    /* Modals keep their own styling */
+  }
+
+  /* Scrollbar in light mode */
+  .light ::-webkit-scrollbar {
+    width: 6px;
+  }
+  .light ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  .light ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+}
+
+@layer utilities {
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .animate-marquee {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 25s linear infinite;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  /* Hide scrollbar for clean UI */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+
+/* Ken Burns Effect for Slideshow */
+@keyframes kenburns {
+  0% { transform: scale(1) translate(0, 0); }
+  50% { transform: scale(1.08) translate(-1%, -1%); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+.animate-\[kenburns_20s_ease-in-out_infinite\] {
+  animation: kenburns 20s ease-in-out infinite;
+}

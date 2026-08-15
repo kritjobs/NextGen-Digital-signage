@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - SmartSchool Admin Console</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#acedff",
+                    "on-primary-container": "#0d0096",
+                    "error": "#ffb4ab",
+                    "outline": "#908fa0",
+                    "on-error": "#690005",
+                    "on-surface": "#e1e2eb",
+                    "on-tertiary-fixed": "#2a1700",
+                    "on-tertiary-container": "#3e2400",
+                    "inverse-surface": "#e1e2eb",
+                    "on-secondary-fixed-variant": "#004e5c",
+                    "on-tertiary": "#472a00",
+                    "tertiary-fixed": "#ffddb8",
+                    "outline-variant": "#464554",
+                    "secondary-fixed-dim": "#4cd7f6",
+                    "surface-tint": "#c0c1ff",
+                    "on-surface-variant": "#c7c4d7",
+                    "inverse-on-surface": "#2e3037",
+                    "on-secondary": "#003640",
+                    "on-error-container": "#ffdad6",
+                    "surface": "#10131a",
+                    "on-secondary-fixed": "#001f26",
+                    "secondary": "#4cd7f6",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "inverse-primary": "#494bd6",
+                    "background": "#10131a",
+                    "tertiary": "#ffb95f",
+                    "surface-variant": "#32353c",
+                    "secondary-container": "#03b5d3",
+                    "surface-container-low": "#191c22",
+                    "primary-container": "#8083ff",
+                    "surface-container-highest": "#32353c",
+                    "on-secondary-container": "#00424e",
+                    "on-background": "#e1e2eb",
+                    "surface-dim": "#10131a",
+                    "surface-container-high": "#272a31",
+                    "primary": "#c0c1ff",
+                    "tertiary-container": "#ca8100",
+                    "surface-container-lowest": "#0b0e14",
+                    "on-primary-fixed": "#07006c",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "surface-container": "#1d2026",
+                    "surface-bright": "#363940",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "error-container": "#93000a",
+                    "primary-fixed": "#e1e0ff",
+                    "on-primary": "#1000a9"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "gutter": "24px",
+                    "stack-lg": "32px",
+                    "container-padding-tablet": "24px",
+                    "unit": "8px",
+                    "container-padding-desktop": "32px",
+                    "stack-md": "16px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "code": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "code": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #0b0e14; color: #e1e2eb; font-family: 'Inter', sans-serif; }
+        .glass-panel { background: rgba(21, 25, 33, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #32353c; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface-container-lowest text-on-background min-h-screen flex font-body-md custom-scrollbar">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-surface dark:bg-surface fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-white/5 shadow-sm flex-col py-stack-lg z-40">
+<div class="px-gutter mb-stack-lg flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">monitor</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary leading-tight">SmartSchool</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Admin Console</p>
+</div>
+</div>
+<ul class="flex flex-col gap-1 px-3">
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">dashboard</span> Dashboard</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">perm_media</span> Media Library</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">playlist_add_check</span> Playlist Builder</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">calendar_today</span> Scheduling</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">monitor</span> Screens</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">settings_remote</span> Control Panel</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined">analytics</span> Analytics</a></li>
+<li><a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary dark:text-primary bg-primary-container/10 border-r-2 border-primary hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform font-body-md text-body-md" href="#"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span> Settings</a></li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-[280px] min-h-screen flex flex-col relative">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed top-0 right-0 left-0 md:left-[280px] z-50 border-b border-white/10 shadow-md flex justify-between items-center h-16 px-gutter font-label-md text-label-md text-primary dark:text-primary">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-all duration-300">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-extrabold text-on-surface">SignageControl</div>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search -->
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="bg-surface-container-high border border-white/10 rounded-full py-1.5 pl-10 pr-4 text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all font-body-md text-[14px] w-64 placeholder:text-on-surface-variant/50" placeholder="Search settings..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 transition-transform"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 transition-transform"><span class="material-symbols-outlined">apps</span></button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-white/10 overflow-hidden ml-2 cursor-pointer border-2 border-transparent hover:border-primary transition-all">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A small circular avatar showing a professional looking administrator wearing glasses in a modern office environment. High contrast, cool tones, subtle lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdm8PuZq2NZ-wybhOz49qRu68J5nGvwbdxdGMr_3-78V2mkxYfvVYxFqO8fWJj_uf0-KIkVweSCMBY33uWlaFqwW-7KMDeRFL78XymADA3CaGf1j9EaKmkyBA1uHEQdFHAC8qO5oIUY62Oe8pSXS-spRmEhQ_Tp0wGlBEm6yajD97a7cQZ7ZB68ifY6QCwwh6HDMYUZCi9shNE6YCs3LePPDNDP2Y69364R8TYm3bmtnwXQfKPsjdm"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Settings Canvas -->
+<main class="pt-24 pb-12 px-container-padding-tablet md:px-container-padding-desktop flex-1 max-w-[1200px] mx-auto w-full">
+<div class="mb-stack-lg">
+<h2 class="font-display-lg text-headline-lg-mobile md:text-display-lg text-on-surface mb-2">System Settings</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Configure organization details, branding, user access, and device defaults.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Col 1 & 2: Main Settings -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<!-- Organization Info -->
+<section class="glass-panel rounded-xl p-6">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">domain</span> Organization Info
+                        </h3>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-[13px] text-on-surface-variant">School / District Name</label>
+<input class="bg-surface border-b border-white/10 px-0 py-2 text-on-surface focus:outline-none focus:border-secondary focus:shadow-[0_1px_0_0_#4cd7f6] transition-all bg-transparent font-body-md" type="text" value="Westview High School District"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-[13px] text-on-surface-variant">Primary Contact Email</label>
+<input class="bg-surface border-b border-white/10 px-0 py-2 text-on-surface focus:outline-none focus:border-secondary focus:shadow-[0_1px_0_0_#4cd7f6] transition-all bg-transparent font-body-md" type="email" value="admin@westview.edu"/>
+</div>
+<div class="flex flex-col gap-2 sm:col-span-2">
+<label class="font-label-md text-[13px] text-on-surface-variant">Campus Address</label>
+<input class="bg-surface border-b border-white/10 px-0 py-2 text-on-surface focus:outline-none focus:border-secondary focus:shadow-[0_1px_0_0_#4cd7f6] transition-all bg-transparent font-body-md" type="text" value="1000 Educational Way, Springfield, ST 12345"/>
+</div>
+</div>
+<div class="mt-6 flex justify-end">
+<button class="bg-primary text-on-primary font-label-md text-label-md px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors shadow-[0_0_20px_rgba(192,193,255,0.15)]">Save Details</button>
+</div>
+</section>
+<!-- Branding -->
+<section class="glass-panel rounded-xl p-6">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">palette</span> Global Branding
+                        </h3>
+<div class="flex flex-col sm:flex-row gap-8">
+<!-- Logo Upload -->
+<div class="flex-1">
+<label class="font-label-md text-[13px] text-on-surface-variant block mb-3">Organization Logo</label>
+<div class="border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-surface-container-low/50 hover:bg-surface-container-high/50 transition-colors cursor-pointer group">
+<div class="w-16 h-16 mb-4 rounded-full bg-surface-variant flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[32px] text-on-surface-variant group-hover:text-primary transition-colors">cloud_upload</span>
+</div>
+<p class="font-body-md text-[14px] text-on-surface mb-1">Drag and drop or click to upload</p>
+<p class="font-body-md text-[12px] text-on-surface-variant">SVG, PNG, JPG (Max 2MB)</p>
+</div>
+</div>
+<!-- Colors -->
+<div class="flex-1">
+<label class="font-label-md text-[13px] text-on-surface-variant block mb-3">Signage Accent Colors</label>
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-4 bg-surface-container-low p-3 rounded-lg border border-white/5">
+<div class="w-8 h-8 rounded-md bg-[#0047AB] border border-white/10 shadow-inner"></div>
+<div class="flex-1">
+<div class="font-body-md text-[14px] text-on-surface">Primary Brand</div>
+<div class="font-code text-[12px] text-on-surface-variant">#0047AB</div>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low p-3 rounded-lg border border-white/5">
+<div class="w-8 h-8 rounded-md bg-[#FFD700] border border-white/10 shadow-inner"></div>
+<div class="flex-1">
+<div class="font-body-md text-[14px] text-on-surface">Secondary Brand</div>
+<div class="font-code text-[12px] text-on-surface-variant">#FFD700</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Col 3: Side Settings -->
+<div class="flex flex-col gap-6">
+<!-- Device Configuration -->
+<section class="glass-panel rounded-xl p-6">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">important_devices</span> Device Defaults
+                        </h3>
+<div class="flex flex-col gap-5">
+<!-- Toggle 1 -->
+<div class="flex items-center justify-between">
+<div>
+<div class="font-body-md text-[15px] text-on-surface">Auto-Update Firmware</div>
+<div class="font-body-md text-[12px] text-on-surface-variant">Apply patches nightly at 2AM</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<hr class="border-white/5"/>
+<!-- Toggle 2 -->
+<div class="flex items-center justify-between">
+<div>
+<div class="font-body-md text-[15px] text-on-surface">Energy Saving Mode</div>
+<div class="font-body-md text-[12px] text-on-surface-variant">Dim screens 30% after 8PM</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<hr class="border-white/5"/>
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-[13px] text-on-surface-variant">Default Screen Resolution</label>
+<select class="bg-surface-container-high border border-white/10 text-on-surface text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5 font-body-md">
+<option>1920x1080 (1080p)</option>
+<option>3840x2160 (4K)</option>
+<option>1280x720 (720p)</option>
+</select>
+</div>
+</div>
+</section>
+<!-- API Keys -->
+<section class="glass-panel rounded-xl p-6 relative overflow-hidden group">
+<!-- Abstract shader bg -->
+<div class="absolute inset-0 opacity-20 pointer-events-none mix-blend-screen">
+<div class="w-full h-full bg-gradient-to-br from-primary/10 to-transparent"></div>
+</div>
+<div class="relative z-10">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">key</span> API Access
+                            </h3>
+<p class="font-body-md text-[13px] text-on-surface-variant mb-5">Manage tokens for third-party integrations (SIS, Emergency Alerts).</p>
+<div class="bg-surface-container-low rounded-lg p-3 border border-white/5 flex items-center justify-between mb-4">
+<div>
+<div class="font-label-md text-[12px] text-on-surface-variant">Production Key</div>
+<div class="font-code text-[14px] text-on-surface mt-1 truncate max-w-[150px]">sk_live_8f92...</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2"><span class="material-symbols-outlined text-[20px]">content_copy</span></button>
+</div>
+<button class="w-full border border-primary text-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors bg-transparent">Generate New Key</button>
+</div>
+</section>
+</div>
+</div>
+<!-- Full Width Section: User Management -->
+<section class="glass-panel rounded-xl p-6 mt-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+<h3 class="font-headline-md text-[20px] font-semibold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">group</span> Role Management
+                    </h3>
+<button class="bg-surface-container-high border border-white/10 text-on-surface font-label-md text-[13px] px-4 py-2 rounded-lg hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">person_add</span> Invite User
+                    </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-white/10 font-label-md text-[12px] text-on-surface-variant uppercase tracking-wider">
+<th class="pb-3 px-4">User</th>
+<th class="pb-3 px-4">Role</th>
+<th class="pb-3 px-4">Last Active</th>
+<th class="pb-3 px-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-[14px]">
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+<td class="py-4 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[12px]">JD</div>
+<div>
+<div class="text-on-surface">John Doe</div>
+<div class="text-[12px] text-on-surface-variant">john@westview.edu</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md bg-primary-container/20 text-primary text-[12px] font-medium border border-primary/20">Super Admin</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">Just now</td>
+<td class="py-4 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
+<td class="py-4 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold text-[12px]">SM</div>
+<div>
+<div class="text-on-surface">Sarah Miller</div>
+<div class="text-[12px] text-on-surface-variant">sarah@westview.edu</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md bg-surface-variant text-on-surface-variant text-[12px] font-medium border border-white/10">Staff (Content Editor)</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">2 hours ago</td>
+<td class="py-4 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-white/[0.02] transition-colors group">
+<td class="py-4 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface flex items-center justify-center font-bold text-[12px]">MJ</div>
+<div>
+<div class="text-on-surface">Mike Johnson</div>
+<div class="text-[12px] text-on-surface-variant">mike@westview.edu</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<span class="px-2.5 py-1 rounded-md bg-surface-variant/50 text-on-surface-variant/80 text-[12px] font-medium border border-white/5">Viewer Only</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">3 days ago</td>
+<td class="py-4 px-4 text-right">
+<button class="text-on-surface-variant hover:text-on-surface opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+</body></html>

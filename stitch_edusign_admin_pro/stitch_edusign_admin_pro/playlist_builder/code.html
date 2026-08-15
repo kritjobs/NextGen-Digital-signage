@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Playlist Builder - SmartSchool Signage</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "surface-tint": "#c0c1ff",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-surface": "#e1e2eb",
+                        "surface-dim": "#10131a",
+                        "on-primary": "#1000a9",
+                        "tertiary-container": "#ca8100",
+                        "on-secondary-container": "#00424e",
+                        "on-primary-container": "#0d0096",
+                        "on-primary-fixed": "#07006c",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container-lowest": "#0b0e14",
+                        "outline": "#908fa0",
+                        "inverse-surface": "#e1e2eb",
+                        "primary-container": "#8083ff",
+                        "surface-bright": "#363940",
+                        "error-container": "#93000a",
+                        "secondary": "#4cd7f6",
+                        "secondary-container": "#03b5d3",
+                        "background": "#10131a",
+                        "on-tertiary-container": "#3e2400",
+                        "outline-variant": "#464554",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error": "#ffb4ab",
+                        "primary": "#c0c1ff",
+                        "surface-container-highest": "#32353c",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface": "#10131a",
+                        "on-secondary": "#003640",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#2e3037",
+                        "tertiary": "#ffb95f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary": "#472a00",
+                        "surface-variant": "#32353c",
+                        "primary-fixed": "#e1e0ff",
+                        "on-background": "#e1e2eb",
+                        "on-secondary-fixed": "#001f26",
+                        "surface-container-high": "#272a31",
+                        "surface-container-low": "#191c22",
+                        "secondary-fixed": "#acedff",
+                        "inverse-primary": "#494bd6",
+                        "on-surface-variant": "#c7c4d7",
+                        "surface-container": "#1d2026",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffddb8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "container-padding-desktop": "32px",
+                        "stack-md": "16px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "container-padding-tablet": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "code": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "code": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0B0E14; color: #e1e2eb; }
+        .glass-panel { background: rgba(21, 25, 33, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .timeline-track { background-image: repeating-linear-gradient(to right, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 40px); }
+        
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0e14; }
+        ::-webkit-scrollbar-thumb { background: #32353c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #464554; }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #c0c1ff;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(192, 193, 255, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #32353c;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-surface-container-lowest dark flex h-screen overflow-hidden antialiased">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface dark:bg-surface fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-white/5 shadow-sm flex flex-col h-full py-stack-lg z-40">
+<div class="px-gutter mb-stack-lg flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center border border-primary/30">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary leading-tight">SmartSchool</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Admin Console</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-unit">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">perm_media</span>
+<span class="font-label-md text-label-md">Media Library</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-primary bg-primary-container/10 border-r-2 border-primary hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">playlist_add_check</span>
+<span class="font-label-md text-label-md font-bold">Playlist Builder</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Scheduling</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">monitor</span>
+<span class="font-label-md text-label-md">Screens</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings_remote</span>
+<span class="font-label-md text-label-md">Control Panel</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/20 transition-colors duration-200 scale-98 active:opacity-80 transition-transform" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed top-0 right-0 left-[280px] z-50 shadow-md border-b border-white/10 flex justify-between items-center h-16 px-gutter">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-extrabold text-on-surface">SignageControl</span>
+<div class="h-6 w-[1px] bg-white/10 mx-2"></div>
+<div class="flex gap-6 font-label-md text-label-md">
+<!-- Search bar on left logic simulated via layout -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container-high border-none rounded-full py-1.5 pl-10 pr-4 text-sm text-on-surface focus:ring-1 focus:ring-primary focus:outline-none transition-all" placeholder="Search media..." type="text"/>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all duration-300 active:scale-95 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/10 cursor-pointer hover:border-primary transition-colors">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an IT administrator in a dimly lit, high-tech server room environment. The lighting highlights their focused expression with subtle cool blue tones reflecting from monitors. Shot with a shallow depth of field to isolate the subject, representing a modern enterprise tech persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy-Tp6svFL0LgDg-qVm2PjyQFA3CUKlWzmeDs9yDTvXBrtyYto04im2B4CdGNCNpFdt7BwyG1STniWN7Es7dhhTwTlMMfJj-F0YRdUWY4IOH0vIekhuL4caGSe-Yjyu1jTWsRMie2HzDG6_chHyXuIVA4AL3FS3klWBJxfVrv3dlZQNNawZCKgwuyR00rl4Ky3cSPmytD3XV2qL8lmC4sxg8Hn-5EdN7AA1pO8qfcodxRz_M42cU0u"/>
+</div>
+</div>
+</header>
+<!-- Main Application Area -->
+<main class="ml-[280px] mt-16 flex-1 flex flex-col h-[calc(100vh-64px)] w-[calc(100%-280px)] overflow-hidden">
+<!-- Top Section: Library & Preview -->
+<div class="flex-1 flex gap-gutter p-container-padding-desktop min-h-0">
+<!-- Media Library Panel (Draggable Items) -->
+<div class="w-80 flex flex-col glass-panel rounded-xl overflow-hidden flex-shrink-0">
+<div class="p-4 border-b border-white/10 flex justify-between items-center bg-surface-container-low/50">
+<h2 class="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">video_library</span> Media Library
+                    </h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+</div>
+<!-- Library Items Grid -->
+<div class="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-3">
+<!-- Media Item 1 -->
+<div class="bg-surface-container cursor-move rounded-lg overflow-hidden border border-white/5 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(192,193,255,0.1)] transition-all group">
+<div class="h-20 w-full relative bg-black">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A wide shot of a bustling university campus quad on a sunny day. Students are walking between modern buildings and manicured green lawns. The image has a slightly desaturated, cinematic quality suitable for corporate or educational background video. High resolution, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCm6k0H5fsAMHNnALqD9zySlaSZMk9ep_KBc7BMt3lm24fE7l4osLt4aP6QoQ9wpJDLJx0ZDAZaRYDjENT41RVeQOQ3YHSiGafAJUs-7pauCMK-hs7245lc_78c15Q1dD9uVjKUYKxKqbGHnep5F82XfVlqcct7LhGoLtN8IpDIY_0bKJSHHSpUn3i2M6VspD19sWwHlw7bgjKWhKjtkGsUlG1YOFAebqQfyS25nzsdey3_Hg-m4hdh"/>
+<div class="absolute bottom-1 right-1 bg-black/70 px-1 rounded text-[10px] font-code text-white">00:15</div>
+<span class="material-symbols-outlined absolute top-1 left-1 text-white/70 text-xs drop-shadow-md">movie</span>
+</div>
+<div class="p-2">
+<p class="font-label-md text-[11px] truncate text-on-surface" title="Campus_Tour_01.mp4">Campus_Tour_01.mp4</p>
+<p class="font-code text-[10px] text-on-surface-variant">1080p</p>
+</div>
+</div>
+<!-- Media Item 2 (Image) -->
+<div class="bg-surface-container cursor-move rounded-lg overflow-hidden border border-white/5 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(192,193,255,0.1)] transition-all group">
+<div class="h-20 w-full relative bg-black">
+<div class="w-full h-full bg-secondary-fixed-dim/20 flex items-center justify-center">
+<span class="font-headline-md text-secondary font-bold">INFO</span>
+</div>
+<div class="absolute bottom-1 right-1 bg-black/70 px-1 rounded text-[10px] font-code text-white">Image</div>
+<span class="material-symbols-outlined absolute top-1 left-1 text-white/70 text-xs drop-shadow-md">image</span>
+</div>
+<div class="p-2">
+<p class="font-label-md text-[11px] truncate text-on-surface" title="Exam_Schedule_Wk4.jpg">Exam_Schedule.jpg</p>
+<p class="font-code text-[10px] text-on-surface-variant">Static</p>
+</div>
+</div>
+<!-- Media Item 3 -->
+<div class="bg-surface-container cursor-move rounded-lg overflow-hidden border border-white/5 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(192,193,255,0.1)] transition-all group">
+<div class="h-20 w-full relative bg-black">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="Close up of a vibrant, high-contrast abstract digital art background. Deep purples, blues, and neon pinks swirling together in a fluid motion. The texture is smooth and glassy, perfect as an attention-grabbing atmospheric backdrop for digital signage. Sleek and modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-BhhONoxWso3g3xdPcvSHe-J5W9oBkZxu9AXK0YZs6NtaCynwqXzV_BJk5Yd0nbMlS6rXqCH4c0kp17wscSVw2gozzeif_3DJaKgc9083GGiZOz2s2u1Cs75GaxBwERtcV5ixJVpov7c9xeitb3MRBhcU4CVYbf1NhyJ4plOi3DxWNYP2lwiF7mllJFDbdgE20AfyzQ-QazRFgsUI2I-7HnD8Cmn_Ao6aVsZPX1tvDYEzQqsztNCi"/>
+<div class="absolute bottom-1 right-1 bg-black/70 px-1 rounded text-[10px] font-code text-white">00:30</div>
+<span class="material-symbols-outlined absolute top-1 left-1 text-white/70 text-xs drop-shadow-md">movie</span>
+</div>
+<div class="p-2">
+<p class="font-label-md text-[11px] truncate text-on-surface" title="Abstract_Loop.mp4">Abstract_Loop.mp4</p>
+<p class="font-code text-[10px] text-on-surface-variant">4K</p>
+</div>
+</div>
+<!-- Media Item 4 -->
+<div class="bg-surface-container cursor-move rounded-lg overflow-hidden border border-white/5 hover:border-primary/50 hover:shadow-[0_0_15px_rgba(192,193,255,0.1)] transition-all group">
+<div class="h-20 w-full relative bg-black">
+<div class="w-full h-full bg-error-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-3xl">warning</span>
+</div>
+<div class="absolute bottom-1 right-1 bg-black/70 px-1 rounded text-[10px] font-code text-white">Widget</div>
+<span class="material-symbols-outlined absolute top-1 left-1 text-white/70 text-xs drop-shadow-md">widgets</span>
+</div>
+<div class="p-2">
+<p class="font-label-md text-[11px] truncate text-on-surface" title="Emergency_Alert.wdg">Emergency_Alert</p>
+<p class="font-code text-[10px] text-on-surface-variant">Overlay</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Live Preview Area -->
+<div class="flex-1 flex flex-col gap-4 min-w-0">
+<!-- Toolbar above preview -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-md text-headline-md font-semibold text-on-surface">Morning Announcements Sequence</h2>
+<p class="font-code text-on-surface-variant text-sm">Target: Cafeteria &amp; Main Hall Displays • Res: 1920x1080</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded border border-primary text-primary font-label-md hover:bg-primary/10 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">preview</span> Preview Full
+                        </button>
+<button class="px-6 py-2 rounded bg-primary text-on-primary font-label-md font-bold hover:bg-primary-fixed-dim transition-colors shadow-[0_0_15px_rgba(192,193,255,0.2)] flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">save</span> Save Playlist
+                        </button>
+</div>
+</div>
+<!-- Preview Monitor -->
+<div class="flex-1 glass-panel rounded-xl flex flex-col overflow-hidden shadow-lg relative">
+<!-- Monitor Screen -->
+<div class="flex-1 bg-black relative flex items-center justify-center overflow-hidden">
+<!-- Simulated active media playing -->
+<img class="w-full h-full object-contain opacity-90" data-alt="A wide shot of a bustling university campus quad on a sunny day. Students are walking between modern buildings and manicured green lawns. The image has a slightly desaturated, cinematic quality suitable for corporate or educational background video. High resolution, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0-CMFolvyyJhqO7UxtLi3ji8NLgMXm9LeHIsL76fc5rK_XQLb9P8aKRFa6JYyhA-z1wWguUnocFk_JP5M_s7hU34Kvf-fqGminPUJFOvgzNQaN79FG5fmlBb3GB62zlhIYEgP70fycTZr6i_winDQSUxP9RsNYrB5j4WfQ-JlDYssBTMLh8iFzUedcKHJPxZGzTlx2BMTYPrQ-s_jXjrsFuRvMdEzRuCrMbfLUNmWNwCBP23QtqVB"/>
+<!-- Safe Area Overlay (Toggleable) -->
+<div class="absolute inset-[5%] border border-dashed border-white/20 pointer-events-none hidden md:block"></div>
+<!-- Playback Controls Overlay (bottom edge of monitor) -->
+<div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent flex items-center justify-center gap-6">
+<button class="text-white/80 hover:text-white"><span class="material-symbols-outlined">skip_previous</span></button>
+<button class="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center hover:bg-primary-fixed-dim transition-transform active:scale-95 shadow-[0_0_20px_rgba(192,193,255,0.4)]">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-white/80 hover:text-white"><span class="material-symbols-outlined">skip_next</span></button>
+</div>
+</div>
+<!-- Monitor Stats Bar -->
+<div class="h-10 border-t border-white/10 bg-surface-container-low px-4 flex items-center justify-between font-code text-xs text-on-surface-variant">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]"></span> Live Engine Active</span>
+<span>FPS: 60.0</span>
+</div>
+<div class="flex items-center gap-4">
+<span>00:00:12.45 / 00:02:45.00</span>
+<span class="material-symbols-outlined text-sm">volume_up</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Timeline & Inspector -->
+<div class="h-72 glass-panel border-t border-white/10 flex flex-col shrink-0">
+<!-- Timeline Toolbar -->
+<div class="h-12 bg-surface-container/50 border-b border-white/5 flex items-center justify-between px-4">
+<div class="flex items-center gap-4">
+<span class="font-label-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">linear_scale</span> Sequence
+                    </span>
+<div class="h-4 w-[1px] bg-white/10"></div>
+<div class="flex gap-1">
+<button class="p-1.5 rounded text-on-surface-variant hover:bg-white/5 hover:text-on-surface" title="Add Track"><span class="material-symbols-outlined text-sm">transcribe</span></button>
+<button class="p-1.5 rounded text-on-surface-variant hover:bg-white/5 hover:text-on-surface" title="Split at Playhead"><span class="material-symbols-outlined text-sm">content_cut</span></button>
+<button class="p-1.5 rounded text-on-surface-variant hover:bg-white/5 hover:text-on-surface" title="Delete"><span class="material-symbols-outlined text-sm">delete</span></button>
+</div>
+</div>
+<div class="flex items-center gap-4 font-label-md">
+<!-- Loop Toggle -->
+<label class="flex items-center gap-2 cursor-pointer group">
+<span class="text-sm text-on-surface-variant group-hover:text-on-surface">Loop Sequence</span>
+<div class="relative inline-block w-10 h-5 rounded-full bg-primary/20 transition-colors">
+<div class="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-primary transform translate-x-5 transition-transform shadow-[0_0_5px_rgba(192,193,255,0.5)]"></div>
+</div>
+</label>
+<div class="h-4 w-[1px] bg-white/10"></div>
+<!-- Zoom Slider -->
+<div class="flex items-center gap-2 w-32">
+<span class="material-symbols-outlined text-xs text-on-surface-variant">zoom_out</span>
+<input max="100" min="1" type="range" value="50"/>
+<span class="material-symbols-outlined text-xs text-on-surface-variant">zoom_in</span>
+</div>
+</div>
+</div>
+<!-- Timeline Editor Area -->
+<div class="flex-1 flex">
+<!-- Track Headers -->
+<div class="w-48 bg-surface-container-low border-r border-white/5 flex flex-col">
+<div class="h-8 border-b border-white/5 flex items-center px-3 font-code text-[10px] text-on-surface-variant bg-surface-container-lowest">
+                        Timecode
+                    </div>
+<!-- Video Track -->
+<div class="h-20 border-b border-white/5 p-2 flex flex-col justify-center relative bg-surface-variant/20">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-xs text-on-surface flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">movie</span> V1 (Main)</span>
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary cursor-pointer">visibility</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant hover:text-on-surface cursor-pointer">lock_open</span>
+</div>
+</div>
+<div class="absolute left-0 top-0 h-full w-1 bg-primary"></div>
+</div>
+<!-- Overlay Track -->
+<div class="h-20 border-b border-white/5 p-2 flex flex-col justify-center relative">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-xs text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">layers</span> V2 (Overlay)</span>
+<div class="flex gap-1">
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant hover:text-on-surface cursor-pointer">visibility</span>
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant hover:text-on-surface cursor-pointer">lock_open</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Tracks -->
+<div class="flex-1 relative overflow-x-auto overflow-y-hidden bg-background">
+<!-- Time Ruler -->
+<div class="h-8 border-b border-white/5 timeline-track relative bg-surface-container-lowest/80 text-[10px] font-code text-on-surface-variant">
+<!-- Playhead Marker -->
+<div class="absolute top-0 left-[120px] w-0 h-full border-l border-error z-20">
+<div class="absolute -top-0 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-error"></div>
+</div>
+<!-- Ruler markers (simulated) -->
+<span class="absolute left-[40px] top-1">00:10</span>
+<span class="absolute left-[80px] top-1">00:20</span>
+<span class="absolute left-[120px] top-1 text-error font-bold">00:30</span>
+<span class="absolute left-[160px] top-1">00:40</span>
+<span class="absolute left-[200px] top-1">00:50</span>
+</div>
+<!-- Track Canvas -->
+<div class="relative w-[150%] h-[calc(100%-32px)]">
+<!-- Vertical grid lines -->
+<div class="absolute inset-0 timeline-track opacity-50 pointer-events-none"></div>
+<!-- Playhead Line -->
+<div class="absolute top-0 bottom-0 left-[120px] w-[1px] bg-error z-20 shadow-[0_0_8px_rgba(255,180,171,0.5)]"></div>
+<!-- V1 Track Content -->
+<div class="absolute top-0 left-0 w-full h-20 flex items-center px-1">
+<!-- Selected Clip -->
+<div class="h-16 w-[120px] bg-primary/20 border border-primary rounded relative flex items-center justify-center group cursor-pointer shadow-[0_0_10px_rgba(192,193,255,0.1)]">
+<span class="font-code text-xs text-primary font-bold truncate px-2 z-10">Campus_Tour_01</span>
+<!-- Handles -->
+<div class="absolute left-0 w-2 h-full cursor-ew-resize hover:bg-primary/50"></div>
+<div class="absolute right-0 w-2 h-full cursor-ew-resize hover:bg-primary/50"></div>
+<!-- Background image hint -->
+<div class="absolute inset-0 bg-[url('placeholder')] opacity-20 bg-cover bg-center mix-blend-screen" data-alt="Dark, moody placeholder texture for a video timeline clip background. A subtle diagonal stripe pattern in deep slate gray, conveying a technical editing interface element without distracting from the UI overlay."></div>
+</div>
+<!-- Transition Indicator -->
+<div class="w-8 h-8 -ml-4 z-10 rounded-sm bg-surface-variant border border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors group relative">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:text-primary">animation</span>
+<!-- Tooltip / Picker Dropdown (Simulated active) -->
+<div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 bg-surface-container-high border border-white/10 rounded-lg p-2 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+<div class="text-xs text-on-surface-variant mb-1 font-label-md">Transition</div>
+<div class="flex flex-col gap-1">
+<div class="bg-primary/10 text-primary text-xs p-1 rounded flex justify-between"><span>Crossfade</span> <span>1.5s</span></div>
+<div class="hover:bg-white/5 text-on-surface text-xs p-1 rounded">Slide Left</div>
+</div>
+</div>
+</div>
+<!-- Unselected Clip -->
+<div class="h-16 w-[80px] bg-secondary-fixed-dim/10 border border-secondary/30 rounded relative flex items-center justify-center -ml-4 cursor-pointer hover:border-secondary transition-colors">
+<span class="font-code text-xs text-secondary-fixed-dim truncate px-2">Exam_Sched...</span>
+</div>
+</div>
+<!-- V2 Track Content -->
+<div class="absolute top-20 left-0 w-full h-20 flex items-center px-1">
+<!-- Overlay Clip starting halfway through first video -->
+<div class="h-12 w-[60px] ml-[80px] bg-tertiary/10 border border-tertiary/30 rounded-full relative flex items-center justify-center cursor-pointer hover:border-tertiary transition-colors">
+<span class="material-symbols-outlined text-sm text-tertiary">widgets</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Inspector / Properties Panel (Right side) -->
+<div class="w-64 bg-surface-container-low border-l border-white/5 flex flex-col">
+<div class="h-8 border-b border-white/5 flex items-center px-3 font-label-md text-xs text-on-surface-variant bg-surface-container-lowest">
+                        Clip Properties
+                    </div>
+<div class="flex-1 p-4 overflow-y-auto space-y-4">
+<div>
+<label class="font-label-md text-xs text-on-surface-variant block mb-1">Duration</label>
+<div class="flex items-center gap-2">
+<input class="w-full bg-surface-container border border-white/10 rounded px-2 py-1 text-sm font-code text-on-surface focus:border-primary focus:outline-none" type="text" value="00:00:15.00"/>
+</div>
+</div>
+<div>
+<label class="font-label-md text-xs text-on-surface-variant block mb-1">Scale / Fit</label>
+<select class="w-full bg-surface-container border border-white/10 rounded px-2 py-1 text-sm text-on-surface focus:border-primary focus:outline-none appearance-none">
+<option>Fill (Crop)</option>
+<option>Fit (Letterbox)</option>
+<option>Stretch</option>
+</select>
+</div>
+<div class="pt-2 border-t border-white/5">
+<label class="font-label-md text-xs text-on-surface-variant block mb-2">Color Adjust</label>
+<div class="space-y-3">
+<div>
+<div class="flex justify-between text-[10px] font-code text-on-surface-variant mb-1"><span>Brightness</span> <span>0%</span></div>
+<input max="100" min="-100" type="range" value="0"/>
+</div>
+<div>
+<div class="flex justify-between text-[10px] font-code text-on-surface-variant mb-1"><span>Contrast</span> <span>+12%</span></div>
+<input max="100" min="-100" type="range" value="12"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

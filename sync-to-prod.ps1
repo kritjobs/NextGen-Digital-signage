@@ -7,7 +7,28 @@
 $ErrorActionPreference = 'Stop'
 
 $localRoot  = 'C:\NextGen Digital Signature\enterprise-digital-signage-platform'
-$remoteRoot = '\\10.70.0.1\c\signage'
+
+# --- Remote root (prod C:\signage) -------------------------
+# order:
+#   1) env SYNC_PROD_PATH (if set)
+#   2) mapped drive Z:\ (SMB direct to 10.70.0.1 is often blocked by NAT on 445)
+#   3) original UNC \\10.70.0.1\c\signage
+$remoteRoot = $env:SYNC_PROD_PATH
+if (-not $remoteRoot) {
+  if (Test-Path 'Z:\') {
+    $remoteRoot = 'Z:\'
+    Write-Output "NOTE: using mapped drive Z:\ instead of UNC - verify it points to prod C:\signage"
+  } else {
+    $remoteRoot = '\\10.70.0.1\c\signage'
+  }
+}
+
+# verify it looks like the signage root (has docker-compose.yml)
+if (Test-Path (Join-Path $remoteRoot 'docker-compose.yml')) {
+  Write-Output "OK: $remoteRoot is signage (docker-compose.yml found)"
+} else {
+  Write-Output "WARN: $remoteRoot has no docker-compose.yml - check path (should be prod C:\signage)"
+}
 
 # Folders/files that must NOT be synced (prod-owned or Docker-generated)
 $excludeDirs  = @('node_modules', 'dist', 'uploads', 'backups', '.git', '.vite', 'android-player\app\build', 'android-player\.gradle')

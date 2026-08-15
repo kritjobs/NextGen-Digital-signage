@@ -18,8 +18,10 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 ### Verified (dev preview)
 - POST /api/quick-post เจาะจง scr-002 → player scr-001 **ไม่ขึ้น** / scr-002 **ขึ้น** (banner เหลือง warning) + admin banner ซิงก์ผ่าน global WS ✅
 
-### Pending — deploy prod
-- ⚠️ ยังไม่ได้ sync/redeploy prod (SMB `\\10.70.0.1\c\signage` ต้องใช้ credentials ที่ session นี้ไม่มี) — หลัง deploy ใช้ `node .freebuff/verify-prod-emergency.mjs` ตรวจ (สคริปต์สร้าง/ลบข้อมูลเทสเอง)
+### Pending — deploy prod (อัปเดต 2026-08-16)
+- ✅ **sync สำเร็จ** — SMB ตรงไป 10.70.0.1 ถูก NAT ตัด (error 67) → user map drive `Z:` → `sync-to-prod.ps1` รองรับ `Z:\`/`SYNC_PROD_PATH` แล้ว → hash ตรง **5/5** (`verify-prod-hash.ps1`) — โค้ด 0.4.7–0.4.12 อยู่บน `C:\signage` จริง
+- ⚠️ **build ยังไม่ได้โค้ดใหม่** — รอบ build 00:05 ได้ bundle เก่า `index-tH9gqdAn.js` (666KB, ไม่มี marker 0.4.11/0.4.12) ทั้งที่ source บน prod hash ตรง 100% (mtime 23:31 < build 00:05) — สงสัย build context ไม่ใช่ C:\signage หรือมี container ชุดซ้อนแย่ง port 3100 — ต้องรันบน prod: `docker compose build --no-cache --progress plain signage-app` (ดู `dist/assets/*.js` ควรเป็น `index-BM3zy3Kd.js` ~1.35MB) + `docker ps` / `docker compose ls`
+- หลัง deploy สำเร็จ ตรวจด้วย: `node .freebuff/verify-prod-emergency.mjs` (emergency เจาะจงจอ ครบวงจร) + `resolve scr-002` คืน `playlistId/layoutId` + Quick Post เจาะจงจอบน prod
 
 ---
 

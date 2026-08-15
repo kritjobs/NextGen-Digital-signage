@@ -61,7 +61,29 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - ❌ **ห้าม** แก้ `.env` prod โดยไม่สำรองก่อน (backup เป็น `.env.backup-<เวลา>`)
 - ✅ หลังแก้โค้ด: รัน typecheck + build ให้ผ่าน แล้ว sync ผ่าน `sync-to-prod.ps1`
 
----## 4. บันทึกการทำงานล่าสุด (Work Log)
+---
+
+## 4. บันทึกการทำงานล่าสุด (Work Log)
+
+### 2026-08-16 — 🤖 โดย Freebuff (**บทเรียน deploy: 4 รอบไม่ขึ้น — สาเหตุ + ขั้นตอนพิสูจน์**)
+
+> ⚠️ **อ่านก่อน deploy ทุกครั้ง** — เรื่องนี้ทำให้เสียเวลา 4 รอบ deploy ซ้ำๆ
+
+**สาเหตุที่โค้ดไม่เคยขึ้น prod (รอบ 1-3):** `\10.70.0.1\c\signage` **ไม่ได้มีโค้ดใหม่** — redeploy.bat build จากโค้ดที่อยู่บนเครื่อง prod เท่านั้น (ไม่ pull จาก GitHub) แต่ SMB ตรงไป 10.70.0.1 **ถูก NAT ของ router (10.10.0.254) ตัด** → `net use` error 67 ทุก share (รวม IPC$ — เกิดก่อนขั้น login) → copy ไฟล์ไม่เคยสำเร็จ → redeploy กี่รอบก็ได้โค้ดเก่า
+
+**วิธีพิสูจน์ (ใช้ได้เสมอ):**
+1. `powershell -File .freebuff/verify-prod-hash.ps1` — เทียบ SHA-256 5 ไฟล์ local ↔ prod (ต้อง MATCH 5/5)
+2. ตรวจ HTTP API ว่าโค้ดใหม่ขึ้นจริง: `/api/display/:id/data` ต้องมี key `emergency` (0.4.11) + `/api/schedules/resolve` ต้องคืน `playlistId/layoutId` ตอน tag_match (0.4.7)
+
+**วิธีแก้ SMB:** user map drive (เช่น `Z:`) ใน session ของตัวเอง → SMB session กลับมาใช้ได้ → รัน `sync-to-prod.ps1` (ตอนนี้**รองรับ `Z:\` / env `SYNC_PROD_PATH`** อัตโนมัติ fallback UNC — ไฟล์นี้อัปเดตแล้ว)
+
+**ไฟล์ที่ต้อง sync ตั้งแต่ deploy 0.4.5 (commit `b18461e`):** 5 ไฟล์ = `server.ts`, `src/App.tsx`, `src/components/player/DisplayKiosk.tsx`, `src/components/player/PlayerApp.tsx`, `src/store/useSignageStore.ts` (+ tests/docs) — ใช้ `sync-to-prod.ps1` เช็ค SHA-256 ให้อัตโนมัติ
+
+**⏳ ยังไม่ปิด (รอบ build 00:05 ได้ bundle เก่า `index-tH9gqdAn.js` 666KB ทั้งที่ source บน prod hash ตรง 100%):** สงสัย build context ไม่ใช่ C:\signage หรือมี container ชุดซ้อนแย่ง port 3100 — ต้องรันบน prod: `docker compose build --no-cache --progress plain signage-app` (ดู `dist/assets/*.js` ควรเป็น `index-BM3zy3Kd.js` ~1.35MB) + `docker ps` / `docker compose ls`
+
+**หมายเหตุ encoding:** `.ps1` ใหม่ต้องเป็น **ASCII ล้วน** (Windows PowerShell 5.1 อ่าน .ps1 แบบ ANSI — ภาษาไทยใน string พัง parser; ภาษาไทยใน comment พอได้แต่เสี่ยง)
+
+---
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Quick Post เจาะจงจอ + WS global — deploy prod รอ SMB credentials ⏳**)
 - **เจอบั๊ก:** PlayerApp `QUICK_POST` ไม่ filter `targetScreenIds` (เหมือน emergency เดิม) — แก้เป็นขึ้นเฉพาะจอเป้าหมาย

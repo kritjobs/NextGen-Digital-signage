@@ -53,9 +53,11 @@ if errorlevel 1 (
 
 REM หนึ่ง-shot migrate container อาจไม่ rerun ถ้ามัน exited แล้ว
 REM บังคับรัน migration ทุกครั้ง (กัน schema ตกค้างตอน deploy รอบใหม่)
+REM --build บังคับ rebuild image ของ signage-migrate ด้วย (มัน build จาก Dockerfile.dev
+REM แยกต่างหากจาก signage-app — ถ้าไม่ build ภาพเก่าจะไม่มี migration ใหม่)
 echo.
 echo  -- running migrate (ensuring schema is up to date) --
-docker compose run --rm signage-migrate
+docker compose run --rm --build signage-migrate
 if errorlevel 1 (
   echo WARN: migrate reported an error - check output above.
   pause

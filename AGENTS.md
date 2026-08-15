@@ -65,6 +65,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ post-redeploy: พบ container รันโค้ดเก่า — ต้อง redeploy อีกรอบ**)
+- **ตรวจหลัง redeploy (Tag-Based):** build-log 20:49 **เกิดก่อน** sync ไฟล์ใหม่ (20:59–21:13) → container รันโค้ดเก่า — เทสจริง: สร้างจอ+เพลย์ลิสต์ tagged บน prod แล้ว display data ยังคืน `contentSource: default` (ไม่ใช่ tag_match) = ยืนยันโค้ดเก่า
+- **Fix 2 จุด:** (1) migration `0010` **รันไป prod DB ตรงแล้ว** — `layouts.tags` column ลงครบ (journal 11) — เหตุ migrate ไม่รันอัตโนมัติ: `signage-migrate` build จาก `Dockerfile.dev` แยกจาก signage-app และ `docker compose build signage-app` ไม่เคย rebuild มัน → ภาพเก่าไม่มี migration ใหม่ (2) **แก้ redeploy.bat** → `docker compose run --rm --build signage-migrate` (บังคับ rebuild ภาพ migrate ทุกรอบ) — sync ไป prod แล้ว
+- **เหลือ 1 ขั้น: รัน redeploy.bat อีกรอบ** ที่ prod — รอบนี้ build จะเก็บโค้ดใหม่ (server.ts มี tag_match อยู่บนดิสก์ prod แล้ว) — ข้อมูลเทสพร้อมแล้ว (scr-tagtest-prod + pl-tagtest-prod มี item) ตรวจหลัง redeploy ได้ทันที
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Tag-Based Auto-Match + Ops: ล้าง prod**)
 - **Tag-Based Auto-Match:** `layouts` เพิ่ม `tags` (migration `0010`) — ตอนนี้ทุก entity มี tags — `resolveScreenContent()` จับคู่ playlist+layout จาก tags (case-insensitive) → `contentSource: tag_match` — จอใหม่ตั้ง tag ได้เนื้อหาทันที ไม่ต้องสร้าง schedule — broadcast เมื่อ tags เปลี่ยน — UI: 🎯 Tags ใน ScreensManager Configure (พร้อม ⚡ Auto-match hint) + PlaylistEditor + SmartLayoutBuilder — เทสจริง: จอใหม่ `scr-tagtest` (cafeteria+menu) → ได้ `Cafeteria Lunch Specials` อัตโนมัติ ✅ — integration **13/13** + typecheck + build + preview ผ่าน (`CHANGELOG.md` [0.4.3])
 - **Ops — ล้าง prod:** `scr-002` offline ตั้งแต่ 13 ส.ค. (หลัง REBOOT, IP เป็น docker bridge → จอถูกปิด/ถอดจริง — ตรวจทางกายภาพ); **ลบ 66 media rows ไฟล์หาย + 63 playlist_items** (เพลย์ลิสต์ `อนุบาลวันภาษาไทย` ใช้กับ scr-002 ที่ offline — ไม่กระทบจอที่รัน) — backup ก่อนล้าง

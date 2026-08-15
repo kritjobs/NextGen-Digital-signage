@@ -2,9 +2,9 @@
 setlocal
 REM ============================================================
 REM  Install Caddy HTTPS on 10.70.0.1 (run as ADMINISTRATOR)
-REM  - ใช้ Caddyfile ในโฟลเดอร์ local (C:\signage\caddy) — ไม่พึ่ง
-REM    ProgramData (กัน permission ปัญหา)
-REM  - caddyserver.com/api/download คืน caddy.exe ตรงๆ (ไม่ใช่ zip)
+REM  NOTE: `caddy install` ถูกลบจาก Caddy เวอร์ชันใหม่ -> ใช้
+REM  sc create ติดตั้ง Windows service แทน (fallback: caddy start)
+REM  ใช้ Caddyfile local (C:\signage\caddy\Caddyfile) ไม่พึ่ง ProgramData
 REM ============================================================
 cd /d C:\signage\caddy
 
@@ -72,10 +72,17 @@ if errorlevel 1 (
 echo OK: config valid
 
 echo.
-echo === Step 3/6: Install service ===
-caddy.exe install --config "%CADDYFILE%"
+echo === Step 3/6: Create service (sc create) ===
+sc query Caddy >nul 2>&1
 if errorlevel 1 (
-  echo WARN: install reported error - trying to continue (service may exist)
+  sc create Caddy binPath= "\"C:\signage\caddy\caddy.exe\" run --config \"C:\signage\caddy\Caddyfile\"" start= auto DisplayName= "Caddy Web Server"
+  if errorlevel 1 (
+    echo WARN: sc create failed - falling back to background process
+    goto runbg
+  )
+  echo OK: service Caddy created
+) else (
+  echo OK: service Caddy already exists
 )
 
 echo.
@@ -83,17 +90,31 @@ echo === Step 4/6: Start service ===
 net start Caddy 2>nul
 sc query Caddy | findstr /i RUNNING >nul
 if errorlevel 1 (
-  echo FAIL: Caddy service not running - run manually to see error:
+  echo service not running - trying background process
+  goto runbg
+)
+echo OK: Caddy service running
+goto exportca
+
+:runbg
+echo Starting Caddy as background process (caddy start)...
+caddy.exe start --config "%CADDYFILE%"
+if errorlevel 1 (
+  echo FAIL: cannot start Caddy - run manually to see the error:
   echo      cd C:\signage\caddy ^&^& caddy.exe run --config C:\signage\caddy\Caddyfile
   pause
   exit /b 1
 )
-echo OK: Caddy service running
+echo OK: Caddy running in background ^(note: จะไม่ auto-start เมื่อ reboot - ถ้าอยากได้ service ให้แก้ sc create^)
 
+:exportca
 echo.
 echo === Step 5/6: Export root CA for devices ===
 if not exist "caddy-root-ca.crt" (
   copy /y "%ProgramData%\Caddy\pki\authorities\local\root.crt" "caddy-root-ca.crt" >nul 2>&1
+)
+if not exist "caddy-root-ca.crt" (
+  copy /y "%APPDATA%\Caddy\pki\authorities\local\root.crt" "caddy-root-ca.crt" >nul 2>&1
 )
 if exist "caddy-root-ca.crt" (
   echo OK: CA saved at C:\signage\caddy\caddy-root-ca.crt

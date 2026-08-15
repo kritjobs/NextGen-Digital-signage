@@ -20,7 +20,7 @@ import {
   Presentation
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
-import { LayoutZone, MediaItem, Playlist, DigitalScreen } from '../../types/signage';
+import { LayoutZone, MediaItem, Playlist, DigitalScreen, PriorityLevel } from '../../types/signage';
 import { PairingQRCode } from './PairingQRCode';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
 import { analyticsApi } from '../../services/api';
@@ -45,8 +45,8 @@ export const PlayerApp: React.FC = () => {
   const [showPairingQr, setShowPairingQr] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [quickPost, setQuickPost] = useState<{ message: string; style: string } | null>(null);
-  // REQ-003: schedule ที่ active สำหรับจอนี้ (server-side resolution)
-  const [scheduleOverride, setScheduleOverride] = useState<{ id: string; name: string; layoutId: string | null; playlistId: string | null } | null>(null);
+  // REQ-003/006: schedule ที่ active สำหรับจอนี้ (server-side resolution + 6-Level priority)
+  const [scheduleOverride, setScheduleOverride] = useState<{ id: string; name: string; layoutId: string | null; playlistId: string | null; priority?: number; priorityLevel?: PriorityLevel } | null>(null);
 
   const playerRef = useRef<HTMLDivElement>(null);
   const activeScreenIdRef = useRef<string | null>(null);
@@ -88,8 +88,9 @@ export const PlayerApp: React.FC = () => {
     } catch { setCampaignLayoutId(null); }
   }, [campaignIndex]);
 
-  // Final layout priority (REQ-003): emergency overlay > schedule > campaign > base
-  // (emergency แสดงเป็น overlay ต่างหาก — ส่วนนี้เลือก layout เนื้อหาปกติ)
+  // Final content priority (REQ-006, 6 levels): emergency(91-100) > critical(81-90) > scheduled(41-80) > campaign(21-40) > default(11-20) > standby(1-10)
+  // emergency แสดงเป็น overlay ต่างหาก — ส่วนนี้เลือก layout เนื้อหาปกติ
+  // (schedule resolver ฝั่ง server เลือกระดับสูงสุดให้แล้ว → scheduleOverride ชนะ campaign/base)
   const activeLayout = (() => {
     if (scheduleOverride?.layoutId) {
       const l = layouts.find((x) => x.id === scheduleOverride.layoutId);

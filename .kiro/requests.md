@@ -16,7 +16,7 @@
 - ~~**REQ-003 — Server-side scheduler**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง)
 - **REQ-004 — Offline-first ใน web player** — แคชเนื้อหาให้จอเล่นต่อได้เมื่อเน็ตหลุด (Android มี OfflineCacheService อยู่แล้ว)
 - ~~**REQ-005 — Proof of Play เข้าระบบจริง**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — สถิติการเล่นสื่อจากจอเข้าสู่ฐานข้อมูลกลาง
-- **REQ-006 — 6-Level Priority Resolver ให้ครบ** — ระบบ priority ยังไม่เต็มรูปแบบ
+- ~~**REQ-006 — 6-Level Priority Resolver ให้ครบ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — ระบบ priority เต็มรูปแบบ 6 ระดับ
 - **REQ-007 — Scheduled DB backup อัตโนมัติ** — pg_dump ผ่าน Task Scheduler + เก็บ 7 วัน
 - **REQ-008 — Monitoring/alerting** — แจ้งเตือนเมื่อจอ offline / เซิร์ฟเวอร์ตาย
 - **REQ-009 — Automated tests** — integration test ของ security guard + pair/heartbeat
@@ -53,6 +53,18 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-006 — 6-Level Priority ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**ขยายระบบ priority จาก 3 ระดับเป็น 6 ระดับ + ผูกกับ scheduler resolver (REQ-003)**
+
+- **`src/types/signage.ts`:** `PriorityLevel` 6 ค่า + `PRIORITY_LEVELS` (band/สี/ป้าย) + `priorityLevelOf()` / `priorityRankOf()` / `priorityDefOf()`
+  - `emergency(91-100) > critical(81-90) > scheduled(41-80) > campaign(21-40) > default(11-20) > standby(1-10)`
+- **`server.ts`:** resolver ชนกัน → เทียบระดับก่อน แล้วค่อยเทียบเลขในระดับเดียวกัน + คืน `priorityLevel`/`source` ใน `/api/schedules/resolve`, `/api/display/:id/data`, `SCHEDULE_CHANGED` broadcast
+- **`SchedulerEngine.tsx`:** Hierarchy cards 6 ระดับ (EN+TH), สี timeline/badge ตาม band, slider 1–90 (Emergency 91-100 สงวนให้ระบบฉุกเฉิน)
+- **`PlayerApp.tsx`:** รับ `priorityLevel` ใน payload + ลำดับ 6 ระดับชัดเจน
+- เทส: typecheck 0 error, build ผ่าน, **smoke test 8/8** (conflict 85>60>30, campaign/standby/default band, ระดับสูงกว่าชนะแม้เลขน้อย, display data มี priorityLevel/contentSource) + ยืนยัน UI ใน preview
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
 
 ### REQ-005 — Proof of Play เข้าระบบจริง ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

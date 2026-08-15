@@ -1,10 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import {
   Calendar, Clock, Plus, Trash2, ShieldAlert, Layers, Zap,
-  Edit3, X, AlertTriangle, Check, Save, Eye, Play
+  Edit3, X, AlertTriangle, Check, Save, Eye, Play, Megaphone, Power
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
-import { ScheduleItem } from '../../types/signage';
+import { ScheduleItem, PRIORITY_LEVELS, priorityLevelOf } from '../../types/signage';
+
+// REQ-006: 6-Level Priority — ระดับของเลข priority ตัวหนึ่ง (band mapping)
+const levelDef = (n: number) => PRIORITY_LEVELS.find((d) => d.level === priorityLevelOf(n)) ?? PRIORITY_LEVELS[4];
+const LEVEL_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  emergency: ShieldAlert, critical: AlertTriangle, scheduled: Clock,
+  campaign: Megaphone, default: Layers, standby: Power,
+};
 
 const DAYS_LABEL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HOURS = Array.from({ length: 18 }, (_, i) => i + 6); // 06:00–23:00
@@ -161,20 +168,21 @@ export const SchedulerEngine: React.FC = () => {
         </div>
       </div>
 
-      {/* Priority Hierarchy Cards */}
+      {/* REQ-006: Priority Hierarchy — 6 Levels */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="bg-rose-950/30 border border-rose-800/40 p-3 rounded-xl flex items-center gap-3">
-          <div className="p-2 bg-rose-600/20 rounded-lg"><ShieldAlert className="h-5 w-5 text-rose-400" /></div>
-          <div><div className="text-[10px] font-bold text-rose-400 uppercase">PRIORITY 100</div><h4 className="font-bold text-white text-xs">Emergency Override</h4></div>
-        </div>
-        <div className="bg-cyan-950/30 border border-cyan-800/40 p-3 rounded-xl flex items-center gap-3">
-          <div className="p-2 bg-cyan-600/20 rounded-lg"><Clock className="h-5 w-5 text-cyan-400" /></div>
-          <div><div className="text-[10px] font-bold text-cyan-400 uppercase">PRIORITY 50-89</div><h4 className="font-bold text-white text-xs">Scheduled Events</h4></div>
-        </div>
-        <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center gap-3">
-          <div className="p-2 bg-slate-800 rounded-lg"><Layers className="h-5 w-5 text-slate-400" /></div>
-          <div><div className="text-[10px] font-bold text-slate-400 uppercase">PRIORITY 10-49</div><h4 className="font-bold text-white text-xs">Default Fallback</h4></div>
-        </div>
+        {PRIORITY_LEVELS.map((lv) => {
+          const Icon = LEVEL_ICONS[lv.level];
+          return (
+            <div key={lv.level} className={`${lv.card} border p-3 rounded-xl flex items-center gap-3`}>
+              <div className={`p-2 rounded-lg ${lv.iconBg}`}><Icon className={`h-5 w-5 ${lv.iconText}`} /></div>
+              <div>
+                <div className={`text-[10px] font-bold uppercase ${lv.text}`}>PRIORITY {lv.min}-{lv.max}</div>
+                <h4 className="font-bold text-white text-xs">{lv.label} <span className="text-slate-400 font-normal">· {lv.labelTh}</span></h4>
+                <p className="text-[9px] text-slate-500 mt-0.5">{lv.desc}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Conflict Warning */}
@@ -217,9 +225,7 @@ export const SchedulerEngine: React.FC = () => {
               const right = Math.min(100, timeToPercent(sch.endTime));
               const width = right - left;
 
-              const barColor = sch.priority >= 80 ? 'bg-amber-500/60 border-amber-500'
-                : sch.priority >= 50 ? 'bg-cyan-500/40 border-cyan-500'
-                : 'bg-slate-600/40 border-slate-500';
+              const barColor = levelDef(sch.priority).bar;
 
               return (
                 <div key={sch.id} className="flex items-center">
@@ -255,11 +261,13 @@ export const SchedulerEngine: React.FC = () => {
             })}
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-800 text-[10px]">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-500/60 border border-amber-500" /> High Priority (80+)</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-cyan-500/40 border border-cyan-500" /> Scheduled (50-79)</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-slate-600/40 border border-slate-500" /> Default (10-49)</span>
+          {/* Legend — REQ-006: 6 levels */}
+          <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-slate-800 text-[10px]">
+            {PRIORITY_LEVELS.map((lv) => (
+              <span key={lv.level} className="flex items-center gap-1">
+                <span className={`w-3 h-3 rounded ${lv.dot}`} /> {lv.label} ({lv.min}-{lv.max})
+              </span>
+            ))}
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded ring-1 ring-amber-400 bg-transparent" /> Conflict</span>
           </div>
         </div>
@@ -287,12 +295,8 @@ export const SchedulerEngine: React.FC = () => {
                   }`}>
                   {/* Header row */}
                   <div className="flex items-center justify-between">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      sch.priority >= 80 ? 'bg-amber-950 text-amber-300 border border-amber-800' :
-                      sch.priority >= 50 ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' :
-                      'bg-slate-950 text-slate-400 border border-slate-700'
-                    }`}>
-                      Priority: {sch.priority}
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${levelDef(sch.priority).badge}`}>
+                      {levelDef(sch.priority).label} · {sch.priority}
                     </span>
                     <div className="flex items-center gap-2">
                       {hasConflict && (
@@ -363,7 +367,7 @@ export const SchedulerEngine: React.FC = () => {
                 <h3 className="text-base font-bold text-white">
                   {editingId ? 'Edit Schedule Rule' : 'Create Schedule Rule'}
                 </h3>
-                <p className="text-[9px] text-amber-400 mt-0.5">⚡ Schedule มี priority สูงกว่า Screen Default — จะ override layout/playlist ของจอตามเวลาที่กำหนด</p>
+                <p className="text-[9px] text-amber-400 mt-0.5">⚡ 6-Level Priority: Emergency(91-100) &gt; Critical(81-90) &gt; Scheduled(41-80) &gt; Campaign(21-40) &gt; Default(11-20) &gt; Standby(1-10) — สูงกว่าชนะเมื่อชนกัน</p>
               </div>
               <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
@@ -436,16 +440,16 @@ export const SchedulerEngine: React.FC = () => {
                 </div>
               </div>
 
-              {/* Priority */}
+              {/* Priority — REQ-006: slider ครอบ 5 ระดับ (1-90) ส่วน Emergency (91-100) สงวนไว้ให้ระบบฉุกเฉิน */}
               <div>
                 <label className="text-slate-300 block mb-1 font-medium">
-                  Priority Weight: <span className={`font-mono font-bold ${formData.priority >= 80 ? 'text-amber-400' : formData.priority >= 50 ? 'text-cyan-400' : 'text-slate-400'}`}>{formData.priority}</span>
+                  Priority Weight: <span className={`font-mono font-bold ${levelDef(formData.priority).text}`}>{formData.priority} <span className="text-[9px] font-normal uppercase opacity-80">({levelDef(formData.priority).label})</span></span>
                 </label>
-                <input type="range" min="10" max="95" value={formData.priority}
+                <input type="range" min="1" max="90" value={formData.priority}
                   onChange={(e) => setFormData(p => ({ ...p, priority: Number(e.target.value) }))}
                   className="w-full accent-cyan-500" />
                 <div className="flex justify-between text-[9px] text-slate-500 mt-0.5">
-                  <span>10 (Default)</span><span>50 (Scheduled)</span><span>95 (High)</span>
+                  <span>1 (Standby)</span><span>30 (Campaign)</span><span>50 (Scheduled)</span><span>90 (Critical)</span>
                 </div>
               </div>
 

@@ -15,6 +15,7 @@ import {
   emergencyAlerts, telemetryLogs, proofOfPlayLogs, layoutVersions,
 } from './src/db/schema.js';
 import { eq, desc, sql, and } from 'drizzle-orm';
+import { priorityLevelOf, priorityRankOf } from './src/types/signage.js';
 import { createServer as createViteServer } from 'vite';
 
 // ─── Security imports ────────────────────────────────────────
@@ -176,7 +177,8 @@ async function startServer() {
 
   // หา schedule ที่ active สำหรับจอหนึ่ง ณ เวลานี้
   // กฎ: isActive + ช่วงวันที่ + วันในสัปดาห์ + ช่วงเวลา + เป้าหมาย (ทุกจอ / จอที่ระบุ / กลุ่ม)
-  // ถ้าชนกันหลายรายการ → เลือก priority สูงสุด (เลขมาก = สำคัญกว่า)
+  // ถ้าชนกันหลายรายการ → REQ-006: เลือกตาม 6-Level Priority ก่อน (emergency > critical > scheduled > campaign > default > standby)
+  // แล้วค่อยเทียบตัวเลข priority ภายในระดับเดียวกัน (เลขมาก = สำคัญกว่า)
   async function getActiveScheduleForScreen(screenId: string, now: Date): Promise<(typeof schedules.$inferSelect) | null> {
     const [screen] = await db.select().from(screens).where(eq(screens.id, screenId));
     if (!screen) return null;
@@ -204,19 +206,28 @@ async function startServer() {
       const targetsScreen = s.screenIds?.includes(screenId);
       const targetsGroup = s.screenGroupIds?.includes(screen.group ?? '');
       if (!targetsAll && !targetsScreen && !targetsGroup) continue;
-      // เลือก priority สูงสุด
-      if (!best || s.priority > best.priority) best = s;
+      // REQ-006: เทียบระดับ (6-Level) ก่อน แล้วค่อยเทียบตัวเลขในระดับเดียวกัน
+      const sRank = priorityRankOf(s.priority);
+      const bestRank = best ? priorityRankOf(best.priority) : -1;
+      if (!best || sRank > bestRank || (sRank === bestRank && s.priority > best.priority)) best = s;
     }
     return best;
   }
 
-  // ผลลัพธ์สุดท้ายว่าจอควรได้ layout/playlist ไหน
+  // ผลลัพธ์สุดท้ายว่าจอควรได้ layout/playlist ไหน (REQ-006: คืนระดับ priority ด้วย)
   async function resolveScreenContent(screenId: string, now: Date) {
     const schedule = await getActiveScheduleForScreen(screenId, now);
     if (schedule) {
-      return { schedule, layoutId: schedule.layoutId ?? null, playlistId: schedule.playlistId ?? null };
+      return {
+        schedule,
+        layoutId: schedule.layoutId ?? null,
+        playlistId: schedule.playlistId ?? null,
+        priorityLevel: priorityLevelOf(schedule.priority),
+        source: 'schedule' as const,
+      };
     }
-    return { schedule: null, layoutId: null, playlistId: null };
+    // ไม่มี schedule → จอใช้เนื้อหาปกติของตัวเอง (ระดับ default)
+    return { schedule: null, layoutId: null, playlistId: null, priorityLevel: 'default' as const, source: 'default' as const };
   }
 
   // ตรวจจับว่า schedule ของแต่ละจอเปลี่ยนไป → broadcast ให้ player รู้ทันที
@@ -235,8 +246,10 @@ async function startServer() {
           broadcast('SCHEDULE_CHANGED', {
             screenId: s.id,
             schedule: r.schedule
-              ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId }
+              ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId, priority: r.schedule.priority, priorityLevel: r.priorityLevel }
               : null,
+            priorityLevel: r.priorityLevel,
+            source: r.source,
           });
         }
       }
@@ -750,7 +763,11 @@ async function startServer() {
         const r = await resolveScreenContent(screenId, new Date());
         res.json({
           screenId,
-          schedule: r.schedule ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId } : null,
+          schedule: r.schedule
+            ? { id: r.schedule.id, name: r.schedule.name, layoutId: r.layoutId, playlistId: r.playlistId, priority: r.schedule.priority, priorityLevel: r.priorityLevel }
+            : null,
+          priorityLevel: r.priorityLevel,
+          source: r.source,
         });
       } catch (e) { next(e); }
     });
@@ -1374,10 +1391,12 @@ async function startServer() {
         playlists: allPlaylists,
         mediaItems: allMedia,
         serverTime: now.toISOString(),
-        // REQ-003: ข้อมูล schedule ที่ active อยู่ (null = ไม่มี schedule → ใช้ค่า default)
+        // REQ-003/006: ข้อมูล schedule ที่ active อยู่ (null = ไม่มี schedule → ใช้ค่า default) + ระดับ priority
         schedule: resolution.schedule
-          ? { id: resolution.schedule.id, name: resolution.schedule.name, layoutId: resolution.layoutId, playlistId: resolution.playlistId }
+          ? { id: resolution.schedule.id, name: resolution.schedule.name, layoutId: resolution.layoutId, playlistId: resolution.playlistId, priority: resolution.schedule.priority, priorityLevel: resolution.priorityLevel }
           : null,
+        priorityLevel: resolution.priorityLevel,
+        contentSource: resolution.source,
         effectivePlaylistId,
       });
     } catch (e) { next(e); }

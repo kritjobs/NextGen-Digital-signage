@@ -45,6 +45,28 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.6] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-006 6-Level Priority)
+
+### Added
+- **6-Level Priority Model (REQ-006)** — ขยายจาก 3 ระดับเป็น 6 ระดับเต็มรูปแบบ:
+  - `src/types/signage.ts` — `PriorityLevel` 6 ค่า + `PRIORITY_LEVELS` (band/สี/ป้าย EN+TH) + `priorityLevelOf()` / `priorityRankOf()` / `priorityDefOf()`
+  - ระดับ: `emergency(91-100) > critical(81-90) > scheduled(41-80) > campaign(21-40) > default(11-20) > standby(1-10)`
+- **Resolver ใช้ระดับ (REQ-003+006)** — `server.ts`: ชนกันหลาย schedule → เทียบระดับก่อน แล้วค่อยเทียบเลขในระดับเดียวกัน; คืน `priorityLevel` + `source` ใน `/api/schedules/resolve`, `/api/display/:id/data`, `SCHEDULE_CHANGED` broadcast
+- **Scheduler Engine UI** — Hierarchy cards 6 ระดับ (พร้อม label ไทย), สี timeline bar / rule badge ตาม band, slider priority 1–90 (ช่วง 91-100 สงวนให้ระบบฉุกเฉิน) + แสดงระดับปัจจุบัน
+
+### Changed
+- `PriorityLevel` เดิม 3 ค่า (`emergency|scheduled|default`) → 6 ค่า (เพิ่ม `critical|campaign|standby`)
+- Badge rule ใน Scheduler: `Priority: 80` → `Scheduled · 80`
+
+### Verified
+- typecheck 0 error, build ผ่าน, smoke test 8/8 (conflict 85>60>30, band campaign/standby/default, ระดับสูงกว่าชนะแม้ตัวเลขน้อยกว่า, display data มี priorityLevel/contentSource) + ยืนยัน UI ใน preview (6 cards + badge + slider)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- **หมายเหตุ:** rule เดิมที่ priority 95 (REQ003 Preview Test) ถูก cleanup ระหว่างเทส — เป็น rule ทดสอบของเดโม REQ-003
+
+---
+
 ## [0.2.5] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-005 Proof of Play เข้าระบบจริง)
 
 ### Added

@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.6]`)
+- **REQ-006 (6-Level Priority) เสร็จ** — ขยาย priority จาก 3 เป็น 6 ระดับ (emergency>critical>scheduled>campaign>default>standby) + resolver (REQ-003) เทียบระดับก่อนเลข + คืน priorityLevel/source ใน API — smoke test 8/8 + ยืนยัน UI — ยังไม่ deploy (`CHANGELOG.md` [0.2.6])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.5]`)
 - **REQ-005 (Proof of Play เข้าระบบจริง) เสร็จ** — จอ POST หลักฐานการเล่นสื่อเข้า server (admin/display token, กันส่งแทนจออื่น 403) → หน้า Analytics มีข้อมูลจริง — smoke test 8/8 + เทส live ใน preview (TV Player เล่นจริง → รายการ COMPLETED ทุก 15 วิ) — ยังไม่ deploy (`CHANGELOG.md` [0.2.5])
 

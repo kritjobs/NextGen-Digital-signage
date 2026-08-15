@@ -45,6 +45,24 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.3] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Fix: สื่อตัวอย่างต้นทางตาย → ไฟล์ในระบบ)
+
+### Fixed
+- **Seed media ตาย (403) → ไฟล์ในระบบ:** เดิม `med-001/002` (วิดีโอ) ชี้ Google `gtv-videos-bucket` (BigBuckBunny/ElephantsDream — bucket ปิดไปแล้ว → 403 ทุกครั้ง) และ `med-003/004` + thumbnails ชี้ unsplash (external)
+  - เพิ่มไฟล์ตัวอย่างใน repo: `public/media/sample/` (welcome-demo.mp4 6.6MB + campus-1..4.png) — อยู่ใน repo → เข้า dist ตอน build + sync ไป prod ได้ ไม่ต้องพึ่ง external URL
+  - `seed.ts` — media ทั้ง 8 ตัวชี้ `/media/sample/*` (ไม่มี external dependency)
+  - อัปเดต dev DB (med-001..008) ตรงๆ — จอเล่นวิดีโอจริงได้ทันที
+
+### Verified
+- `/media/sample/welcome-demo.mp4` → HTTP 200 video/mp4 (6.6MB), campus png → 200 image/png
+- Kiosk (scr-001): `welcome-demo.mp4 → 206 (Media)` + PoP 201 ต่อเนื่อง = **วิดีโอเล่นจริง ไม่มี 403** (screenshot ยืนยันเห็นเฟรมวิดีโอ)
+
+### Known / Pending
+- ต้อง redeploy (rebuild) เพื่อให้ `/media/sample/*` เข้า dist ของ prod
+- ยังมี media rows ที่ user อัปโหลดแล้วไฟล์หาย (`*_optimized.webp` ไม่อยู่ในดิสก์) — ต่างจาก seed (ข้อมูลผู้ใช้เดิม) ควรอัปโหลดใหม่ผ่าน Media Library
+
+---
+
 ## [0.3.2] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-004 Offline-First Web Player)
 
 ### Added

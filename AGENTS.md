@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.3]`)
+- **Fix: seed media ต้นทางตาย (403) → ไฟล์ในระบบ** — เพิ่ม `public/media/sample/` (welcome-demo.mp4 + campus-1..4.png ~11.6MB) + `seed.ts` ชี้ `/media/sample/*` (ไม่พึ่ง external) + อัปเดต dev DB — ยืนยัน kiosk เล่นวิดีโอจริง (206 + PoP 201) — ต้อง redeploy ถึงจะเข้า prod dist (`CHANGELOG.md` [0.3.3])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.2]`)
 - **REQ-004 (Offline-First Web Player) เสร็จ** — `public/sw.js` (network-first ข้อมูลจอ + stale-while-revalidate สื่อ + cache-first assets) + DisplayKiosk offline state/banner/auto-resume + dev hook `?simoffline=1` — **REQ-004 เป็นงานสุดท้ายของกลุ่ม 3 ครบทั้งหมด!** — integration 10/10 + เทส live ใน preview (SW activated, cache 3 กลุ่ม, simoffline แสดงเนื้อหาจาก cache) — ⚠️ SW ต้อง HTTPS/localhost (prod ยัง http) — ยังไม่ sync/deploy (`CHANGELOG.md` [0.3.2])
 

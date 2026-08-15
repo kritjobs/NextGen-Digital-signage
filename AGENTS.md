@@ -63,6 +63,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Quick Post เจาะจงจอ + WS global — deploy prod รอ SMB credentials ⏳**)
+- **เจอบั๊ก:** PlayerApp `QUICK_POST` ไม่ filter `targetScreenIds` (เหมือน emergency เดิม) — แก้เป็นขึ้นเฉพาะจอเป้าหมาย
+- **เพิ่ม WS global ใน `App.tsx`:** เชื่อม WS ครั้งเดียว → emergency + quick-post ซิงก์ทุกแท็บ (banner admin) — store เพิ่ม `quickPost` + `receiveQuickPost` (auto-hide) — PlayerApp อ่านจาก store + filter ตามจอ
+- **เทส:** integration #14 (Quick Post WS วงจร + anon relay ถูกบล็อก) — **16/16 ผ่าน** + typecheck/build ผ่าน; ยืนยันใน preview: quick-post เฉพาะ scr-002 → scr-001 ไม่ขึ้น / scr-002 ขึ้น + admin banner ซิงก์
+- **⏳ deploy prod ยังไม่ทำ:** `\\10.70.0.1\c\signage` เข้าไม่ได้ใน session นี้ (ไม่มี SMB credentials) — ขั้นตอน: (1) `powershell -ExecutionPolicy Bypass -File sync-to-prod.ps1` (2) รัน `redeploy.bat` ที่เครื่อง prod (3) `node .freebuff/verify-prod-emergency.mjs` ตรวจ — (`CHANGELOG.md` [0.4.12])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Emergency เจาะจงจอ — overlay เฉพาะเป้าหมาย ✅**)
 - **พบ 3 บั๊กตอนเทส targetScreenIds:** ① PlayerApp overlay ขึ้นทุกจอ (ไม่ filter target) ② web frontend ไม่รับ EMERGENCY ผ่าน WS (มีแต่ Android) ③ DisplayKiosk ไม่มี overlay เลย
 - **แก้:** PlayerApp filter `activeEmergency` ตามจอที่แสดง; store เพิ่ม `receiveEmergencyTrigger`/`receiveEmergencyClear` (state-only) + refactor trigger/clear ให้ใช้ร่วม; WS handler ใน PlayerApp + DisplayKiosk; DisplayKiosk เพิ่ม overlay แดง + catch-up จาก display data; server display data คืน `emergency` เฉพาะจอเป้าหมาย

@@ -71,6 +71,10 @@ interface SignageStoreState {
   // WS: รับสถานะ emergency จาก broadcast (state เท่านั้น — ไม่ POST ซ้ำ)
   receiveEmergencyTrigger: (alert: any) => void;
   receiveEmergencyClear: (alertId: string) => void;
+
+  // WS: Quick Post broadcast → ทุกแท็บ/player เห็นพร้อมกัน (auto-hide ตาม duration)
+  quickPost: any | null;
+  receiveQuickPost: (post: any) => void;
   
   // CRUD Actions (now call API + update local state)
   addScreen: (screen: DigitalScreen) => void;
@@ -241,6 +245,9 @@ function mapEmergency(e: any): EmergencyAlert {
 }
 
 // ─── Store ───────────────────────────────────────────────────
+// timer ของ Quick Post auto-hide (module-level — reset เมื่อมี post ใหม่)
+let quickPostTimer: any = null;
+
 export const useSignageStore = create<SignageStoreState>((set, get) => ({
   viewMode: 'admin',
   setViewMode: (viewMode) => set({ viewMode }),
@@ -259,6 +266,7 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
   playlists: [],
   schedules: [],
   emergencyAlerts: [],
+  quickPost: null,
   telemetryLogs: [],
   proofOfPlayLogs: [],
 
@@ -488,6 +496,14 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
       emergencyAlerts: state.emergencyAlerts.map((a) => a.id === alertId ? { ...a, active: false } : a),
       screens: state.screens.map((scr) => scr.activeEmergencyId === alertId ? { ...scr, status: 'online' as const, activeEmergencyId: undefined } : scr),
     }));
+  },
+
+  // WS broadcast → ตั้ง Quick Post + auto-hide ตาม duration (post ใหม่แทนที่ post เก่า; null = ปิดทันที)
+  receiveQuickPost: (post) => {
+    if (quickPostTimer) clearTimeout(quickPostTimer);
+    if (!post) { set({ quickPost: null }); return; }
+    set({ quickPost: post });
+    quickPostTimer = setTimeout(() => set({ quickPost: null }), (post.duration || 30) * 1000);
   },
 
   // ─── CRUD: Screens ────────────────────────────────────────

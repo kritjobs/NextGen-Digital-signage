@@ -34,8 +34,7 @@ export const PlayerApp: React.FC = () => {
     playlists, 
     mediaItems, 
     emergencyAlerts,
-    receiveEmergencyTrigger,
-    receiveEmergencyClear,
+    quickPost,
     isSimulatedOffline,
     setIsSimulatedOffline,
     recordProofOfPlay,
@@ -46,7 +45,6 @@ export const PlayerApp: React.FC = () => {
   const [showOsd, setShowOsd] = useState(true);
   const [showPairingQr, setShowPairingQr] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [quickPost, setQuickPost] = useState<{ message: string; style: string } | null>(null);
   // REQ-003/006: schedule ที่ active สำหรับจอนี้ (server-side resolution + 6-Level priority)
   const [scheduleOverride, setScheduleOverride] = useState<{ id: string; name: string; layoutId: string | null; playlistId: string | null; priority?: number; priorityLevel?: PriorityLevel } | null>(null);
   // REQ-TagMatch: layout/playlist ที่ server จับคู่จาก tags (source=tag_match) —
@@ -59,6 +57,10 @@ export const PlayerApp: React.FC = () => {
   const activeScreen = screens.find((s) => s.id === playerScreenId) || screens[0];
   // Emergency overlay ขึ้นเฉพาะจอที่เป็นเป้าหมาย (targetScreenIds ว่าง = ทุกจอ)
   const activeEmergency = emergencyAlerts.find((a) => a.active && (a.targetScreenIds.length === 0 || a.targetScreenIds.includes(activeScreen?.id || '')));
+  // Quick Post ขึ้นเฉพาะจอที่เป็นเป้าหมาย (store เก็บ post ล่าสุดจาก global WS — filter ที่นี่)
+  const activeQuickPost = quickPost && (quickPost.targetScreenIds?.length === 0 || (quickPost.targetScreenIds || []).includes(activeScreen?.id || ''))
+    ? quickPost
+    : null;
   activeScreenIdRef.current = activeScreen?.id || null;
 
   // Active Layout (with fallback: currentLayout → fallbackLayout → first layout)
@@ -157,7 +159,7 @@ export const PlayerApp: React.FC = () => {
     return () => clearTimeout(osdTimer);
   }, [showOsd]);
 
-  // WebSocket listener for Quick Post
+  // WebSocket listener (schedule/campaign/tag-match sync — emergency/quick-post จัดการที่ App.tsx)
   useEffect(() => {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const token = localStorage.getItem('signage_access_token') || '';
@@ -171,18 +173,8 @@ export const PlayerApp: React.FC = () => {
         ws.onmessage = (event) => {
           try {
             const msg = JSON.parse(event.data);
-            if (msg.type === 'QUICK_POST' && msg.payload) {
-              const post = msg.payload;
-              setQuickPost({ message: post.message, style: post.style || 'info' });
-              setTimeout(() => setQuickPost(null), (post.duration || 30) * 1000);
-            }
-            // Emergency: broadcast ถึงทุก client → อัปเดต store (player ฟิลเตอร์ overlay ตาม target เอง)
-            if (msg.type === 'EMERGENCY_TRIGGERED' && msg.payload) {
-              receiveEmergencyTrigger(msg.payload);
-            }
-            if (msg.type === 'EMERGENCY_CLEARED' && msg.payload?.alertId) {
-              receiveEmergencyClear(msg.payload.alertId);
-            }
+            // Emergency + Quick Post: จัดการผ่าน global WS handler ใน App.tsx (store ซิงก์ทุกแท็บ)
+            // — player ฟิลเตอร์ตาม target เฉพาะตอน render
             // REQ-003/011/TagMatch: schedule/campaign/tag_match เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
             if (msg.type === 'SCHEDULE_CHANGED' && msg.payload?.screenId === activeScreenIdRef.current) {
               setScheduleOverride(msg.payload.schedule || null);
@@ -280,15 +272,15 @@ export const PlayerApp: React.FC = () => {
 
       {/* 3. SMART TV ON-SCREEN DISPLAY (OSD) & OVERLAY CONTROLS */}
 
-      {/* Quick Post Overlay */}
-      {quickPost && (
+      {/* Quick Post Overlay (เฉพาะจอเป้าหมาย) */}
+      {activeQuickPost && (
         <div className={`absolute top-0 left-0 right-0 z-50 p-4 flex items-center justify-center animate-fade-in ${
-          quickPost.style === 'urgent' ? 'bg-rose-600' :
-          quickPost.style === 'warning' ? 'bg-amber-600' :
-          quickPost.style === 'success' ? 'bg-emerald-600' :
+          activeQuickPost.style === 'urgent' ? 'bg-rose-600' :
+          activeQuickPost.style === 'warning' ? 'bg-amber-600' :
+          activeQuickPost.style === 'success' ? 'bg-emerald-600' :
           'bg-blue-600'
         }`}>
-          <p className="text-white text-lg font-bold text-center max-w-3xl">{quickPost.message}</p>
+          <p className="text-white text-lg font-bold text-center max-w-3xl">{activeQuickPost.message}</p>
         </div>
       )}
 

@@ -5,6 +5,24 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.12] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Quick Post เจาะจงจอ + WS global ทุกแท็บ ✅)
+
+### Fixed
+- **🐛 PlayerApp Quick Post เดิมไม่ filter target** — `QUICK_POST` handler ตั้ง overlay โดยไม่เช็ค `targetScreenIds` (บั๊กเดียวกับ emergency รอบก่อน) → แก้เป็นขึ้นเฉพาะจอเป้าหมาย (DisplayKiosk filter ถูกอยู่แล้ว)
+
+### Added
+- **WS handler ระดับแอป (`App.tsx`)** — เชื่อม WS ครั้งเดียวตอน authenticated → รับ `EMERGENCY_TRIGGERED`/`EMERGENCY_CLEARED`/`QUICK_POST` → อัปเดต store → **admin ทุกแท็บ** เห็น banner emergency + banner Quick Post (สีตาม style, ปิดได้ + auto-hide ตาม duration) — ไม่ต้อง mount เฉพาะ Player แล้ว
+- **Store:** `quickPost` state + `receiveQuickPost(post)` (auto-hide timer, post ใหม่แทนที่ post เก่า) — PlayerApp อ่านจาก store + filter ตามจอที่แสดง; refactor emergency handler ออกจาก PlayerApp (ใช้ global แทน)
+- **Integration test #14** — Quick Post: POST → WS broadcast `QUICK_POST` (payload message/style/targetScreenIds/duration ครบ) + anonymous relay ปลอมถูกบล็อก + audit `quick_post` → **16/16 ผ่าน**
+
+### Verified (dev preview)
+- POST /api/quick-post เจาะจง scr-002 → player scr-001 **ไม่ขึ้น** / scr-002 **ขึ้น** (banner เหลือง warning) + admin banner ซิงก์ผ่าน global WS ✅
+
+### Pending — deploy prod
+- ⚠️ ยังไม่ได้ sync/redeploy prod (SMB `\\10.70.0.1\c\signage` ต้องใช้ credentials ที่ session นี้ไม่มี) — หลัง deploy ใช้ `node .freebuff/verify-prod-emergency.mjs` ตรวจ (สคริปต์สร้าง/ลบข้อมูลเทสเอง)
+
+---
+
 ## [0.4.11] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Emergency เจาะจงจอ — overlay เฉพาะเป้าหมาย ✅)
 
 ### Fixed

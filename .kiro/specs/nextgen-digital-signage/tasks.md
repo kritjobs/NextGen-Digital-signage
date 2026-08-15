@@ -30,6 +30,7 @@
 - ✅ **2026-08-15 (Freebuff):** **Emergency Alert ผ่าน Realtime Control ตรวจผ่าน** — trigger → overlay แดง (pulse) บน TV Player ทันที → clear → กลับเนื้อหาปกติ — ดู `CHANGELOG.md` [0.4.9]
 - ✅ **2026-08-15 (Freebuff):** **Integration test วงจร Emergency เพิ่มแล้ว** — REST trigger/clear → WS broadcast → จอ emergency → กลับ online + anonymous relay ถูกบล็อก (test #13, 15/15 ผ่าน) — ดู `CHANGELOG.md` [0.4.10]
 - ✅ **2026-08-15 (Freebuff):** **Emergency เจาะจงจอ (targetScreenIds) แก้ครบ 3 บั๊ก** — PlayerApp filter overlay ตามเป้าหมาย, WS propagation เข้า web (receiveEmergencyTrigger/Clear), DisplayKiosk มี overlay + catch-up จาก display data (server คืน `emergency`) — ยืนยันใน preview: เฉพาะ scr-002 ขึ้น + 15/15 ผ่าน — ดู `CHANGELOG.md` [0.4.11]
+- ✅ **2026-08-15 (Freebuff):** **Quick Post เจาะจงจอ + WS global ใน App** — PlayerApp filter targetScreenIds, WS ระดับแอป (emergency/quick-post ซิงก์ทุกแท็บ), store `receiveQuickPost` — 16/16 ผ่าน — ⏳ deploy prod รอ SMB credentials (ดู `CHANGELOG.md` [0.4.12])
 
 ---
 

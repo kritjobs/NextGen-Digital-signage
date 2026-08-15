@@ -26,7 +26,7 @@ import { useBrandingStore } from './store/useBrandingStore';
 
 export default function App() {
   const { isAuthenticated, user, checkAuth } = useAuthStore();
-  const { viewMode, activeAdminTab, isLoading, loadError, loadAllData } = useSignageStore();
+  const { viewMode, activeAdminTab, isLoading, loadError, loadAllData, quickPost, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost } = useSignageStore();
   const { theme } = useThemeStore();
   const { footerText } = useBrandingStore();
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
@@ -63,6 +63,32 @@ export default function App() {
       loadAllData();
     }
   }, [isAuthenticated, loadAllData]);
+
+  // ─── Global WebSocket: ซิงก์ emergency + quick-post ไปทุกแท็บ/ทุก player ───
+  // (admin ทุกหน้าเห็น banner + player ทุกตัวเห็น overlay — ไม่ต้องรอ mount เฉพาะ Player)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const token = localStorage.getItem('signage_access_token') || '';
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let ws: WebSocket | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+    const connect = () => {
+      try {
+        ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws?token=${token}`);
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'EMERGENCY_TRIGGERED' && msg.payload) receiveEmergencyTrigger(msg.payload);
+            if (msg.type === 'EMERGENCY_CLEARED' && msg.payload?.alertId) receiveEmergencyClear(msg.payload.alertId);
+            if (msg.type === 'QUICK_POST' && msg.payload) receiveQuickPost(msg.payload);
+          } catch { /* ข้ามข้อความที่ไม่ใช่ JSON */ }
+        };
+        ws.onclose = () => { reconnectTimer = setTimeout(connect, 5000); };
+      } catch { /* ignore */ }
+    };
+    connect();
+    return () => { clearTimeout(reconnectTimer); ws?.close(); };
+  }, [isAuthenticated, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost]);
 
   // ─── Not Authenticated → Show Login ────────────────────
   if (!isAuthenticated) {
@@ -110,6 +136,22 @@ export default function App() {
       
       {/* Emergency Alert Flashing Banner */}
       <EmergencyBanner />
+
+      {/* Quick Post Banner (ทุกแท็บเห็น — ซิงก์ผ่าน global WS) */}
+      {quickPost && (
+        <div className={`sticky top-0 z-[90] w-full px-4 py-2.5 flex items-center justify-center gap-2 text-white text-sm font-bold shadow-lg ${
+          quickPost.style === 'urgent' ? 'bg-rose-600' :
+          quickPost.style === 'warning' ? 'bg-amber-600' :
+          quickPost.style === 'success' ? 'bg-emerald-600' :
+          'bg-blue-600'
+        }`}>
+          <span>📣 {quickPost.message}</span>
+          <button
+            onClick={() => receiveQuickPost(null)}
+            className="ml-2 px-2 py-0.5 rounded bg-black/25 hover:bg-black/40 text-xs font-bold"
+          >✕</button>
+        </div>
+      )}
 
       {/* Global Navigation Bar */}
       <Navbar onOpenEmergencyModal={() => setIsEmergencyModalOpen(true)} />

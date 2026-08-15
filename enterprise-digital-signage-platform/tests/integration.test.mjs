@@ -677,3 +677,49 @@ test('13. Emergency — REST trigger/clear → WS broadcast → จอ emergency
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// 14) Quick Post — REST POST → WS broadcast QUICK_POST → payload ครบ
+//     (targetScreenIds — player/kiosk ฟิลเตอร์ overlay ตามเป้าหมาย)
+// ═══════════════════════════════════════════════════════════════
+test('14. Quick Post — POST → WS broadcast → targetScreenIds + anonymous relay ถูกบล็อก', async () => {
+  const adminWs = await openWs(token);
+  const anonWs = await openWs(null);
+  try {
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'admin WS ควรเชื่อม');
+    assert.ok(await waitFor(() => anonWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'anon WS ควรเชื่อม');
+
+    // ⚠️ Security: anonymous ส่ง QUICK_POST ปลอม → hub ต้องไม่ relay ต่อ
+    const before = adminWs.messages.length;
+    anonWs.ws.send(JSON.stringify({ type: 'QUICK_POST', payload: { message: 'fake' } }));
+    assert.ok(!await waitFor(() => adminWs.messages.slice(before).some((m) => m.type === 'QUICK_POST'), 800),
+      'anonymous relay ปลอมต้องถูกบล็อก (receive-only)');
+
+    // POST /api/quick-post เจาะจงจอเทส → WS broadcast พร้อม targetScreenIds
+    const msg = '[TEST] Quick Post integration ' + Date.now().toString(36);
+    const r = await raw('POST', '/quick-post', {
+      token,
+      body: { message: msg, style: 'warning', targetScreenIds: [testScreenId], duration: 5 },
+    });
+    assert.equal(r.status, 200, `quick-post: ${JSON.stringify(r.json)}`);
+    const post = r.json?.post;
+    assert.ok(post?.id, 'ควรได้ post id');
+    assert.deepEqual(post.targetScreenIds, [testScreenId], 'server ควรส่ง targetScreenIds ไปกับ payload');
+
+    // WS: admin ได้รับ QUICK_POST พร้อม payload ครบ (player ใช้ตัวนี้ filter ตามจอ)
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'QUICK_POST' && m.payload?.id === post.id)),
+      'ควรได้รับ QUICK_POST ผ่าน WS');
+    const qp = adminWs.messages.find((m) => m.type === 'QUICK_POST' && m.payload?.id === post.id);
+    assert.equal(qp.payload.message, msg, 'payload ควรมี message');
+    assert.equal(qp.payload.style, 'warning', 'payload ควรมี style');
+    assert.deepEqual(qp.payload.targetScreenIds, [testScreenId], 'payload ควรมี targetScreenIds');
+    assert.ok(qp.payload.duration >= 1, 'payload ควรมี duration');
+
+    // audit บันทึก quick_post
+    const audit = await api.audit.logs(token, { action: 'quick_post', limit: 10 });
+    assert.ok((audit.json?.data ?? []).some((l) => l.resourceId === post.id), 'audit ควรมี quick_post ของเรา');
+  } finally {
+    adminWs.ws.close();
+    anonWs.ws.close();
+  }
+});
+

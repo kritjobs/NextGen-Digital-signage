@@ -65,6 +65,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — Media Expiration ขึ้น prod ✅**)
+- redeploy ผ่าน — แต่ **migration ไม่รันอัตโนมัติ** (signage-migrate เป็น one-shot, compose up ไม่ rerun) → รัน `db:migrate` ไป prod DB ตรง (column `release_date` + `fallback_image_url` ลงครบ)
+- **เทสบน prod ผ่าน:** POST /api/media รับ expiresAt ได้ + `/api/display/scr-001/data` กรอง expired ออก (med-check-exp ไม่ส่ง, normal ส่ง) — ลบ media เทสแล้ว
+- **แก้ redeploy.bat:** เพิ่ม `docker compose run --rm signage-migrate` ทุกครั้ง (กัน schema ตกค้างรอบหน้า) — commit `5d5fc3e` push + sync แล้ว
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Media Expiration + Embargo + Fallback Image**)
 - `release_date` (embargo) + `fallback_image_url` ใน media_items (migration `0009`) — server กรอง `/api/display/:id/data` (`isMediaPlayable`) — จอไม่เห็น media หมดอายุ/ยังไม่ถึงวันเปิดตัว — player/kiosk filter ชั้น client ด้วย
 - MediaLibrary: field Release Date — Embargo + Fallback Image URL + badge (🔒 Embargo / ⛔ Expired)

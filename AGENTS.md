@@ -63,6 +63,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**Emergency เจาะจงจอ — overlay เฉพาะเป้าหมาย ✅**)
+- **พบ 3 บั๊กตอนเทส targetScreenIds:** ① PlayerApp overlay ขึ้นทุกจอ (ไม่ filter target) ② web frontend ไม่รับ EMERGENCY ผ่าน WS (มีแต่ Android) ③ DisplayKiosk ไม่มี overlay เลย
+- **แก้:** PlayerApp filter `activeEmergency` ตามจอที่แสดง; store เพิ่ม `receiveEmergencyTrigger`/`receiveEmergencyClear` (state-only) + refactor trigger/clear ให้ใช้ร่วม; WS handler ใน PlayerApp + DisplayKiosk; DisplayKiosk เพิ่ม overlay แดง + catch-up จาก display data; server display data คืน `emergency` เฉพาะจอเป้าหมาย
+- **ยืนยันใน preview (ผ่าน WS path จริง — trigger จากหน้าเพจ):** scr-001 (ไม่เป้าหมาย) ไม่แดง / scr-002 ขึ้นทันที / clear หายหมด + kiosk /display/scr-002 ขึ้น overlay จาก data
+- **เทส:** integration #13 ขยาย display-data check — **15/15 ผ่าน**; typecheck + build ผ่าน (`CHANGELOG.md` [0.4.11])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**integration test วงจร Emergency — 15/15 ผ่าน ✅**)
 - **เพิ่ม `tests/integration.test.mjs` #13:** Emergency วงจรเต็ม — REST trigger/clear → WS broadcast → จอ emergency → กลับ online — เปิด WS client จริง (admin + anonymous) ยืนยัน `EMERGENCY_TRIGGERED`/`EMERGENCY_CLEARED` payload ครบ (สิ่งที่ PlayerApp ใช้ทำ overlay แดง) + จออื่นไม่โดน + audit บันทึก trigger/clear + **anonymous WS ส่งข้อความปลอมไม่ relay ต่อ** (security guard)
 - **`tests/helpers.mjs`:** เพิ่ม `api.emergency` + `openWs()`/`waitFor()` (WS client เก็บข้อความ) — `npm run test:integration` → **15/15 ผ่าน** (~72 วิ)

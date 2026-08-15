@@ -22,6 +22,8 @@ export const DisplayKiosk: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [quickPost, setQuickPost] = useState<any>(null);
+  // Emergency: alert ที่ target จอนี้ (จาก WS + catch-up จาก display data)
+  const [emergency, setEmergency] = useState<any>(null);
   const [hideInteractQr, setHideInteractQr] = useState(false);
   // REQ-003: ref ไว้ให้ WS handler เรียก fetch ใหม่ได้ทันทีเมื่อ schedule เปลี่ยน
   const fetchDataRef = useRef<() => void>(() => {});
@@ -174,6 +176,11 @@ export const DisplayKiosk: React.FC = () => {
     return () => clearInterval(interval);
   }, [screenId, token]);
 
+  // Emergency catch-up: จอที่เปิดค้างตอนมี alert active → แสดงทันทีจาก display data (server ส่ง emergency เฉพาะจอเป้าหมาย)
+  useEffect(() => {
+    setEmergency((data as any)?.emergency ?? null);
+  }, [data]);
+
   // REQ-011: campaign rotation — refetch ให้ทันเมื่อ item เปลี่ยน (server คำนวณ layout ตามเวลา)
   useEffect(() => {
     const c: any = (data as any)?.campaign;
@@ -240,6 +247,16 @@ export const DisplayKiosk: React.FC = () => {
                 setQuickPost(post);
                 setTimeout(() => setQuickPost(null), (post.duration || 30) * 1000);
               }
+            }
+            // Emergency: ขึ้น overlay เฉพาะจอที่เป็นเป้าหมาย (target ว่าง = ทุกจอ)
+            if (msg.type === 'EMERGENCY_TRIGGERED' && msg.payload) {
+              const targets = msg.payload.targetScreenIds || msg.payload.target_screen_ids || [];
+              if (targets.length === 0 || targets.includes(screenId)) {
+                setEmergency(msg.payload);
+              }
+            }
+            if (msg.type === 'EMERGENCY_CLEARED' && msg.payload?.alertId) {
+              setEmergency((prev) => (prev && prev.id === msg.payload.alertId ? null : prev));
             }
           } catch { /* ignore parse errors */ }
         };
@@ -309,6 +326,25 @@ export const DisplayKiosk: React.FC = () => {
             <img src="/logo-thaihua.png" alt="ThaiHua Digital Signage" className="w-48 mx-auto mb-4" />
             <p className="text-white text-xl font-semibold mb-2">Display Ready</p>
             <p className="text-cyan-400 text-lg animate-pulse">Click anywhere to enter fullscreen</p>
+          </div>
+        </div>
+      )}
+
+      {/* EMERGENCY BROADCAST OVERLAY — เฉพาะจอเป้าหมาย */}
+      {emergency && (
+        <div className="absolute inset-0 z-[200] bg-rose-950/95 flex flex-col items-center justify-center p-8 text-center text-white animate-pulse border-8 border-rose-500">
+          <div className="text-6xl mb-4 animate-bounce">🚨</div>
+          <span className="text-sm font-black tracking-widest uppercase bg-black/60 px-4 py-1 rounded border border-rose-400 text-rose-200">
+            🚨 EMERGENCY OVERRIDE BROADCAST
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-black mt-4 text-white tracking-tight drop-shadow-lg">
+            {emergency.title}
+          </h1>
+          <p className="text-lg sm:text-2xl font-semibold mt-4 text-rose-100 max-w-3xl leading-relaxed">
+            {emergency.message}
+          </p>
+          <div className="mt-8 text-xs font-mono text-rose-300 bg-rose-900/80 px-4 py-2 rounded-xl">
+            Triggered at {new Date(emergency.triggeredAt || Date.now()).toLocaleTimeString()} • All zones overridden
           </div>
         </div>
       )}

@@ -629,6 +629,24 @@ test('13. Emergency — REST trigger/clear → WS broadcast → จอ emergency
     const touched = (others.json?.data ?? []).find((s) => s.status === 'emergency' && s.id !== testScreenId);
     assert.ok(!touched, `จออื่นต้องไม่เป็น emergency (เจอ: ${touched?.id})`);
 
+    // Display data (kiosk catch-up): จอเป้าหมายได้ emergency ใน payload, จออื่นไม่ได้
+    const ddTarget = await api.display.data(testScreenId, displayToken);
+    assert.equal(ddTarget.json?.emergency?.id, alert.id, 'display data ของจอเป้าหมายควรมี emergency (kiosk ขึ้น overlay)');
+    const otherId = tid('scr-emg-other');
+    const otherPair = 'TQ' + Date.now().toString(36).slice(-6).toUpperCase() + 'E';
+    await api.screens.create(token, {
+      id: otherId, pairingCode: otherPair, name: '[TEST] Emergency Other', group: '', location: '',
+    });
+    try {
+      const otherTok = (await api.display.generateToken(token, otherId)).json?.displayToken;
+      assert.ok(otherTok, 'ควรได้ token จออื่น');
+      const ddOther = await api.display.data(otherId, otherTok);
+      assert.ok(!ddOther.json?.emergency, 'display data ของจออื่นไม่ควรมี emergency');
+      assert.notEqual(ddOther.json?.screen?.status, 'emergency', 'จออื่นไม่ควรเป็น emergency');
+    } finally {
+      await api.screens.remove(token, otherId);
+    }
+
     // clear → 200
     const cl = await api.emergency.clear(token, { alertId: alert.id });
     assert.equal(cl.status, 200, `clear: ${JSON.stringify(cl.json)}`);
@@ -643,6 +661,10 @@ test('13. Emergency — REST trigger/clear → WS broadcast → จอ emergency
     const sc2 = await raw('GET', `/screens/${testScreenId}`, { token });
     assert.equal(sc2.json?.status, 'online', 'จอควรกลับ online');
     assert.equal(sc2.json?.activeEmergencyId, null, 'activeEmergencyId ควรเคลียร์');
+
+    // หลัง clear → display data ไม่มี emergency อีก
+    const ddAfter = await api.display.data(testScreenId, displayToken);
+    assert.equal(ddAfter.json?.emergency, null, 'หลัง clear display data ไม่ควรมี emergency');
 
     // audit บันทึก emergency_trigger + emergency_clear
     const audit = await api.audit.logs(token, { resource: 'emergency', limit: 20 });

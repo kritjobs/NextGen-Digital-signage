@@ -5,6 +5,22 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.11] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Emergency เจาะจงจอ — overlay เฉพาะเป้าหมาย ✅)
+
+### Fixed
+- **🐛 PlayerApp overlay เดิมขึ้นทุกจอ** — `activeEmergency` หา alert แรกที่ active โดยไม่เช็ค `targetScreenIds` → trigger เฉพาะ scr-002 แต่ player จออื่นก็แดงด้วย — แก้เป็น filter ตามจอที่แสดง (target ว่าง = ทุกจอ)
+- **🐛 Web app ไม่รับ emergency ผ่าน WS เลย** — web frontend ไม่มี handler `EMERGENCY_TRIGGERED`/`EMERGENCY_CLEARED` (มีแต่ Android player) → จอ web ไม่เห็น alert จริงเวลา admin คนอื่น trigger — เพิ่ม handler ใน PlayerApp + DisplayKiosk (ผ่าน store action ใหม่ `receiveEmergencyTrigger`/`receiveEmergencyClear` — state-only ไม่ POST ซ้ำ)
+- **🐛 DisplayKiosk ไม่มี emergency overlay เลย** — จอจริง (/display/:id) ไม่แสดง alert — เพิ่ม overlay แดงเต็มจอ + catch-up จาก display data (server คืน `emergency` เฉพาะจอเป้าหมาย → จอที่เปิดค้าง/เพิ่ง reconnect ขึ้นทันที)
+- **Server:** `GET /api/display/:screenId/data` เพิ่มคอลัมน์ `emergency` (active alert ของจอนั้น หรือ null)
+
+### Verified (dev preview — ผ่าน 4 จุด)
+- trigger เฉพาะ scr-002 → player ที่ scr-001 **ไม่ขึ้น** overlay, สลับมา scr-002 **ขึ้นทันที** (ผ่าน WS propagation — trigger จากหน้าเพจ ไม่ใช่ผ่าน modal)
+- clear → overlay หายทั้ง 2 จอ + banner admin หาย
+- kiosk `/display/scr-002` ขึ้น overlay จาก display data + เคลียร์ได้
+- **integration 15/15 ผ่าน** — เทส 13 ขยาย: display data ของจอเป้าหมายมี `emergency`, จออื่นไม่มี + หลัง clear เป็น null
+
+---
+
 ## [0.4.10] — 2026-08-15  🤖 แก้ไขโดย Freebuff (integration test วงจร Emergency ✅)
 
 ### Added

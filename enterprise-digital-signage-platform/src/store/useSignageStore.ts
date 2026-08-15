@@ -68,6 +68,9 @@ interface SignageStoreState {
   // Emergency
   triggerEmergency: (alertData: Partial<EmergencyAlert>) => void;
   clearEmergency: (alertId: string) => void;
+  // WS: รับสถานะ emergency จาก broadcast (state เท่านั้น — ไม่ POST ซ้ำ)
+  receiveEmergencyTrigger: (alert: any) => void;
+  receiveEmergencyClear: (alertId: string) => void;
   
   // CRUD Actions (now call API + update local state)
   addScreen: (screen: DigitalScreen) => void;
@@ -441,21 +444,10 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
   triggerEmergency: async (alertData) => {
     try {
       const res = await emergencyApi.trigger(alertData);
-      const alert = res.alert;
-      // Update local state immediately
-      set((state) => ({
-        emergencyAlerts: [mapEmergency({ ...alert, active: true }), ...state.emergencyAlerts.map(a => ({ ...a, active: false }))],
-        screens: state.screens.map((scr) => {
-          const targets = alert.targetScreenIds || alert.target_screen_ids || [];
-          if (targets.length === 0 || targets.includes(scr.id)) {
-            return { ...scr, status: 'emergency' as const, activeEmergencyId: alert.id };
-          }
-          return scr;
-        }),
-      }));
+      get().receiveEmergencyTrigger(res.alert);
     } catch (err) {
       // Fallback: local-only emergency
-      const newAlert: EmergencyAlert = {
+      get().receiveEmergencyTrigger({
         id: 'emg-' + Date.now(),
         title: alertData.title || 'EMERGENCY BROADCAST ALERT',
         message: alertData.message || 'ATTENTION ALL OCCUPANTS: Follow facility emergency safety guidelines immediately.',
@@ -465,23 +457,33 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
         active: true,
         triggeredAt: new Date().toISOString(),
         triggeredBy: 'Security Operations Center',
-      };
-      set((state) => ({
-        emergencyAlerts: [newAlert, ...state.emergencyAlerts.map(a => ({ ...a, active: false }))],
-        screens: state.screens.map((scr) => {
-          if (newAlert.targetScreenIds.length === 0 || newAlert.targetScreenIds.includes(scr.id)) {
-            return { ...scr, status: 'emergency' as const, activeEmergencyId: newAlert.id };
-          }
-          return scr;
-        }),
-      }));
+      });
     }
+  },
+
+  // WS broadcast → อัปเดต state ทันที (ทุก client เห็นพร้อมกัน) — ไม่ POST ซ้ำ
+  receiveEmergencyTrigger: (alert) => {
+    set((state) => ({
+      emergencyAlerts: [mapEmergency({ ...alert, active: true }), ...state.emergencyAlerts.map(a => ({ ...a, active: false }))],
+      screens: state.screens.map((scr) => {
+        const targets = alert.targetScreenIds || alert.target_screen_ids || [];
+        if (targets.length === 0 || targets.includes(scr.id)) {
+          return { ...scr, status: 'emergency' as const, activeEmergencyId: alert.id };
+        }
+        return scr;
+      }),
+    }));
   },
 
   clearEmergency: async (alertId) => {
     try {
       await emergencyApi.clear(alertId);
     } catch { /* continue anyway */ }
+    get().receiveEmergencyClear(alertId);
+  },
+
+  // WS broadcast → เคลียร์ state (ทุก client เห็นพร้อมกัน)
+  receiveEmergencyClear: (alertId) => {
     set((state) => ({
       emergencyAlerts: state.emergencyAlerts.map((a) => a.id === alertId ? { ...a, active: false } : a),
       screens: state.screens.map((scr) => scr.activeEmergencyId === alertId ? { ...scr, status: 'online' as const, activeEmergencyId: undefined } : scr),

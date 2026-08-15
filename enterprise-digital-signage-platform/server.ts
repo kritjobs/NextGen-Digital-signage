@@ -1643,6 +1643,11 @@ async function startServer() {
       // Media Expiration + Embargo: จอไม่ได้รับ media ที่หมดอายุแล้ว หรือยังไม่ถึงวันเปิดตัว
       const visibleMedia = allMedia.filter((m) => isMediaPlayable(m, now));
 
+      // Emergency: alert ที่ active สำหรับจอนี้ (kiosk ที่เปิดค้าง/เพิ่ง reconnect จะขึ้น overlay ทันที)
+      const activeEmergency = screen.activeEmergencyId
+        ? (await db.select().from(emergencyAlerts).where(eq(emergencyAlerts.id, screen.activeEmergencyId)))[0] ?? null
+        : null;
+
       res.json({
         screen,
         layout,
@@ -1659,6 +1664,7 @@ async function startServer() {
         priorityLevel: resolution.priorityLevel,
         contentSource: resolution.source,
         effectivePlaylistId,
+        emergency: activeEmergency?.isActive ? activeEmergency : null,
       });
     } catch (e) { next(e); }
   });

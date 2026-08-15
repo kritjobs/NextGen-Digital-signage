@@ -34,6 +34,8 @@ export const PlayerApp: React.FC = () => {
     playlists, 
     mediaItems, 
     emergencyAlerts,
+    receiveEmergencyTrigger,
+    receiveEmergencyClear,
     isSimulatedOffline,
     setIsSimulatedOffline,
     recordProofOfPlay,
@@ -55,7 +57,8 @@ export const PlayerApp: React.FC = () => {
   const activeScreenIdRef = useRef<string | null>(null);
 
   const activeScreen = screens.find((s) => s.id === playerScreenId) || screens[0];
-  const activeEmergency = emergencyAlerts.find((a) => a.active);
+  // Emergency overlay ขึ้นเฉพาะจอที่เป็นเป้าหมาย (targetScreenIds ว่าง = ทุกจอ)
+  const activeEmergency = emergencyAlerts.find((a) => a.active && (a.targetScreenIds.length === 0 || a.targetScreenIds.includes(activeScreen?.id || '')));
   activeScreenIdRef.current = activeScreen?.id || null;
 
   // Active Layout (with fallback: currentLayout → fallbackLayout → first layout)
@@ -172,6 +175,13 @@ export const PlayerApp: React.FC = () => {
               const post = msg.payload;
               setQuickPost({ message: post.message, style: post.style || 'info' });
               setTimeout(() => setQuickPost(null), (post.duration || 30) * 1000);
+            }
+            // Emergency: broadcast ถึงทุก client → อัปเดต store (player ฟิลเตอร์ overlay ตาม target เอง)
+            if (msg.type === 'EMERGENCY_TRIGGERED' && msg.payload) {
+              receiveEmergencyTrigger(msg.payload);
+            }
+            if (msg.type === 'EMERGENCY_CLEARED' && msg.payload?.alertId) {
+              receiveEmergencyClear(msg.payload.alertId);
             }
             // REQ-003/011/TagMatch: schedule/campaign/tag_match เปลี่ยน → อัปเดต layout/playlist ทันที (ไม่ต้องรอ refresh)
             if (msg.type === 'SCHEDULE_CHANGED' && msg.payload?.screenId === activeScreenIdRef.current) {

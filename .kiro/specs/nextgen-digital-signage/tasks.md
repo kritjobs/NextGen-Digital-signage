@@ -29,6 +29,7 @@
 - ✅ **2026-08-15 (Freebuff):** **Dual Simulator + Quick Post ผ่าน WS ตรวจผ่าน** — Admin+TV Player คู่กัน, Quick Post ขึ้นจอ realtime (POST /api/quick-post → WS broadcast → overlay) — ดู `CHANGELOG.md` [0.4.8]
 - ✅ **2026-08-15 (Freebuff):** **Emergency Alert ผ่าน Realtime Control ตรวจผ่าน** — trigger → overlay แดง (pulse) บน TV Player ทันที → clear → กลับเนื้อหาปกติ — ดู `CHANGELOG.md` [0.4.9]
 - ✅ **2026-08-15 (Freebuff):** **Integration test วงจร Emergency เพิ่มแล้ว** — REST trigger/clear → WS broadcast → จอ emergency → กลับ online + anonymous relay ถูกบล็อก (test #13, 15/15 ผ่าน) — ดู `CHANGELOG.md` [0.4.10]
+- ✅ **2026-08-15 (Freebuff):** **Emergency เจาะจงจอ (targetScreenIds) แก้ครบ 3 บั๊ก** — PlayerApp filter overlay ตามเป้าหมาย, WS propagation เข้า web (receiveEmergencyTrigger/Clear), DisplayKiosk มี overlay + catch-up จาก display data (server คืน `emergency`) — ยืนยันใน preview: เฉพาะ scr-002 ขึ้น + 15/15 ผ่าน — ดู `CHANGELOG.md` [0.4.11]
 
 ---
 

@@ -86,8 +86,18 @@ if errorlevel 1 (
 )
 
 echo.
-echo === Step 4/6: Start service ===
-net start Caddy 2>nul
+echo === Step 4/6: Start (or restart) service ===
+REM net start ไม reload config ถ้า service รันอยู - ตอง stop+start
+REM เพื่อโหลด Caddyfile ใหม (เชน storage pin) ให cert ใหมออก
+sc query Caddy | findstr /i RUNNING >nul
+if errorlevel 1 (
+  net start Caddy 2>nul
+) else (
+  echo Service already running - restarting to load new config...
+  net stop Caddy >nul 2>&1
+  timeout /t 3 /nobreak >nul
+  net start Caddy 2>nul
+)
 sc query Caddy | findstr /i RUNNING >nul
 if errorlevel 1 (
   echo service not running - trying background process

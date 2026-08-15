@@ -45,6 +45,10 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.6] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Ops: แก้ CA ผิดตัว — pin Caddy storage)
+
+**Fix:** cert บน prod ถูกเซ็นโดย root คนละตัวกับ `caddy-root-ca.crt` ที่ export (storage ของ validate/start ต่างจาก Windows service → CA แตก) — pin `storage file_system { root C:/signage/caddy/storage }` ใน `caddy/Caddyfile` + `install-caddy.bat` export CA จาก path เดียวกันเสมอ (overwrite) — ต้องรัน `install-caddy.bat` ที่ prod อีกครั้ง + ติดตั้ง CA ใหม่ทุกเครื่อง/จอ
+
 ## [0.3.5] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Ops: Caddy HTTPS สำหรับ LAN — REQ-004 เต็มรูปแบบ)
 
 ### Added

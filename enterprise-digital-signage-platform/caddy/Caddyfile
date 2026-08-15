@@ -15,6 +15,15 @@
 	# ⚠️ :80 ถูก Apache (PHP app อื่นบนเครื่องเดียวกัน) ครอบอยู่ —
 	# Caddy ขอแค่ :443 (ปิด auto redirect → ต้องเข้า https:// ตรงๆ)
 	auto_https disable_redirects
+
+	# ⚠️ PIN storage ไว้ที่ C:\signage\caddy\storage (ในโปรเจค — เข้าถึง
+	# ผ่าน SMB ได้) — กัน CA แตกคนละที่ระหว่าง console/service
+	# (bug 15 ส.ค.: caddy validate/start สร้าง CA ที่ %APPDATA% แต่
+	#  Windows service ใช้ storage คนละที่ → export root ผิดตัว →
+	#  cert error แม้ติดตั้ง CA แล้ว)
+	storage file_system {
+		root C:/signage/caddy/storage
+	}
 }
 
 https://10.70.0.1 {

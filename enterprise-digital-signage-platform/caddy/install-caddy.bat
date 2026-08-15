@@ -110,14 +110,17 @@ echo OK: Caddy running in background ^(note: จะไม่ auto-start เม�
 :exportca
 echo.
 echo === Step 5/6: Export root CA for devices ===
-if not exist "caddy-root-ca.crt" (
-  copy /y "%ProgramData%\Caddy\pki\authorities\local\root.crt" "caddy-root-ca.crt" >nul 2>&1
+REM Caddyfile pin storage ไวที่ C:\signage\caddy\storage (ดู Caddyfile) -
+REM export จากที่นี่เสมอ (overwrite) กัน root ผิดตัวแบบเดิม
+set CA_ROOT=C:\signage\caddy\storage\pki\authorities\local\root.crt
+if not exist "%CA_ROOT%" (
+  echo Waiting for Caddy to create CA storage...
+  timeout /t 5 /nobreak >nul
 )
-if not exist "caddy-root-ca.crt" (
-  copy /y "%APPDATA%\Caddy\pki\authorities\local\root.crt" "caddy-root-ca.crt" >nul 2>&1
-)
+copy /y "%CA_ROOT%" "caddy-root-ca.crt" >nul 2>&1
 if exist "caddy-root-ca.crt" (
   echo OK: CA saved at C:\signage\caddy\caddy-root-ca.crt
+  echo     ^(from pinned storage: %CA_ROOT%^)
 ) else (
   echo NOTE: CA not found yet - Caddy creates it on first run. Wait and re-run.
 )

@@ -65,8 +65,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (Ops: Caddy HTTPS ขึ้นบน prod แล้ว ✅)
-- **HTTPS ทำงานแล้วบน prod** — `https://10.70.0.1/api/health` → 200 JSON, `/sw.js` → 200 application/javascript, cert issuer = Caddy Local Authority (internal CA, renew อัตโนมัติ), media/sample ผ่าน proxy 200 (png/video/mp4) — :80 ปล่อย Apache (app อื่น) ไว้ตามเดิม — **เหลือ:** ติดตั้ง `caddy-root-ca.crt` ที่จอ + ตั้ง `APP_URL=https://10.70.0.1` ใน .env แล้ว redeploy
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (Ops: **แก้ CA ผิดตัว — pin Caddy storage**)
+- **เจอ bug:** cert ที่ Caddy เสิร์ฟถูกเซ็นโดย root ที่**ไม่ใช่** `caddy-root-ca.crt` ที่ export/ติดตั้ง (openssl verify = error 20) — `caddy validate`/`caddy start` สร้าง CA ที่ `%APPDATA%` แต่ Windows service ใช้ storage คนละที่ → ทุกเครื่องที่ติดตั้ง CA ไปแล้วยังเจอ `ERR_CERT_AUTHORITY_INVALID`
+- **แก้:** pin `storage file_system { root C:/signage/caddy/storage }` ใน `caddy/Caddyfile` + `install-caddy.bat` export CA จาก path นี้เสมอ (overwrite) — **ต้องรัน install-caddy.bat ที่ prod อีกครั้ง แล้วติดตั้ง CA ใหม่ทุกเครื่อง**
+- **เดิม (HTTPS ขึ้นแล้ว):** `https://10.70.0.1/api/health` → 200, `/sw.js` → application/javascript, cert issuer = Caddy Local Authority, :80 ปล่อย Apache — **เหลือ:** ติดตั้ง CA ที่ถูกที่จอ + ตั้ง `APP_URL=https://10.70.0.1` ใน .env แล้ว redeploy
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.5]`)
 - **Ops: ชุดติดตั้ง Caddy HTTPS บน prod (LAN)** — `caddy/Caddyfile` (tls internal) + `install-caddy.bat` + `TRUST-CA.md` — ให้ SW (REQ-004) ทำงานเต็มรูปแบบบน https://10.70.0.1 — ต้องรันที่เครื่อง prod + ติดตั้ง CA ที่จอ + ตั้ง APP_URL=https แล้ว redeploy (`CHANGELOG.md` [0.3.5])

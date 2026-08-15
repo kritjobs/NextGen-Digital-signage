@@ -19,7 +19,7 @@
 - ~~**REQ-006 — 6-Level Priority Resolver ให้ครบ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — ระบบ priority เต็มรูปแบบ 6 ระดับ
 - ~~**REQ-007 — Scheduled DB backup อัตโนมัติ**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — backup DB + uploads อัตโนมัติ/ตามสั่ง ดาวน์โหลดได้จากหน้า Admin
 - ~~**REQ-008 — Monitoring/alerting**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — แจ้งเตือนเมื่อจอ offline
-- **REQ-009 — Automated tests** — integration test ของ security guard + pair/heartbeat
+- ~~**REQ-009 — Automated tests**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — integration test ครอบคลุม 7 งาน + security guard + pair/heartbeat
 - ~~**REQ-010 — Audit log admin**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — บันทึกการกระทำของ admin ย้อนหลัง
 
 #### 📋 ผลสำรวจความพร้อม (2026-08-15 — 🤖 Freebuff)
@@ -49,6 +49,26 @@ _(ว่าง)_
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
 
+### REQ-009 — Automated Integration Tests ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**ชุดเทสอัตโนมัติครอบคลุม 7 งานที่ deploy + security guard + pair/heartbeat**
+
+- **เดิม:** เทสเป็นสคริปต์ once-off (`smoke-*.mjs`) ที่ลบทิ้งหลังใช้ — กัน regression ระยะยาวไม่ได้
+- **`tests/helpers.mjs`** (ใหม่) — login/request wrappers + API ครบทุกกลุ่ม + เข้าถึง DB ตรง (สำหรับเทส offline detection) + **safety guard: ห้ามรันบน prod (NODE_ENV=production → reject ทันที)**
+- **`tests/integration.test.mjs`** (ใหม่) — ใช้ `node:test` ในตัว (0 dependency เพิ่ม) 9 ชุด:
+  1. Security — 401/403/SSRF/login
+  2. Pair + Heartbeat — pair สำเร็จ/ซ้ำ 409/code ผิด 404 + heartbeat อัปเดต status/IP
+  3. REQ-005 PoP — POST 201/GET roundtrip/ไม่มี token 401/จออื่น 403/body ผิด 400
+  4. REQ-003 Scheduler — schedule ที่ตรงเงื่อนไข → active + priorityLevel
+  5. REQ-006 Priority — 60>30 ชนะ, 20>15, conflict ตามระดับ
+  6. REQ-011 Campaigns — CRUD + ชนะ/แพ้ campaign 30 เทียบ schedule 25/35/15
+  7. REQ-008 Monitoring — จำลองจอเงียบ 10 นาที → offline + กลับมา → online (รอ ticker 30 วิ)
+  8. REQ-010 Audit — login + layout create อยู่ใน log + filter
+  9. REQ-007 Backup — list/run/download/delete + path traversal 404
+- สร้างข้อมูล `[TEST]` แล้วลบให้เรียบร้อย (จอ/schedule/campaign/layout) — **รันซ้ำได้ไม่สะสมขยะ**
+- รัน: `npm run test:integration` (ต้องมี `npm run dev` ก่อน) — ใช้ dev DB เท่านั้น
+- เทส: **9/9 ผ่าน 2 รอบติด** (~71 วิ/รอบ หลักๆ คือรอ monitor ticker 35 วิ × 2)
+
 ### REQ-007 — Backup อัตโนมัติ (DB + Uploads) ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
 **สำรองข้อมูล DB + ไฟล์มีเดีย เป็นไฟล์ ดาวน์โหลดได้จากหน้า Admin**
@@ -64,7 +84,7 @@ _(ว่าง)_
 - **`BackupManager.tsx`:** หน้า **Backup** ใหม่ใน Navbar — การ์ด config (เวลาอัตโนมัติ/retention/จำนวนไฟล์) + ปุ่ม Run backup now + ตารางไฟล์ (ประเภท DB/Uploads, ขนาด, เวลา, ดาวน์โหลด/ลบ)
 - **`docker-compose.yml`:** mount `./backups:/app/backups` ให้ signage-app (+ env `BACKUP_DIR`/`BACKUP_RETENTION_DAYS`/`BACKUP_HOUR`) — ไฟล์ backup อยู่บน host `\10.70.0.1\c\signage\backups`
 - เทส: typecheck 0 error, build ผ่าน, **smoke test 14/14** (401, list+config, run → db JSON 21 ตาราง + zip PK, download attachment, delete, path traversal 404) + ยืนยัน UI (Run backup now ผ่าน UI → 2 ไฟล์โผล่ในตารางจริง)
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 ~15:48 — `redeploy.bat`)** — ยืนยัน live บน 10.70.0.1 เรียบร้อย
 
 ### REQ-010 — Audit log admin ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
@@ -76,7 +96,7 @@ _(ว่าง)_
 - **`api.ts`:** `auditApi.getLogs()`
 - **`AnalyticsTelemetry.tsx`:** ส่วน **"Admin Audit Trail"** — ตาราง (เวลาแบบไทย, ผู้ใช้, action badge สีตาม severity, หมวด, resourceId, IP) + dropdown หมวด + ค้นหา + ปุ่มค้นหา
 - เทส: typecheck 0 error, build ผ่าน, **smoke test 9/9** (สร้าง layout → create/update/delete ปรากฏใน log, filter resource/action/q, limit cap, 401) + ยืนยัน UI (ตารางมี login/layout/campaign/schedule จริง)
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 ~15:48 — `redeploy.bat`)** — ยืนยัน live บน 10.70.0.1 เรียบร้อย
 
 ### REQ-008 — Monitoring & Alerting ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
@@ -87,7 +107,7 @@ _(ว่าง)_
 - **`useSignageStore.ts`:** `refreshScreens()` — poll สถานะจอจาก server
 - **`ScreensManager.tsx`:** poll ทุก 60 วิ + **banner แดง** "X จอไม่ตอบสนอง" (รายชื่อ + ปุ่มรีเฟรช) + **heartbeat indicator** บนการ์ดทุกจอ (❤️ Xm สีเขียว = สด / สีแดง = stale)
 - เทส: typecheck 0 error, build ผ่าน, **smoke test 9/9** (โครงสร้าง endpoint, ตรวจจับ offline → alert + screen_offline, recovery → เคลียร์ + screen_online, 401 ไม่มี token) + ยืนยัน UI ใน preview (banner + indicator)
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 ~15:48 — `redeploy.bat`)** — ยืนยัน live บน 10.70.0.1 เรียบร้อย
 
 ### REQ-011 — Campaigns ฝั่ง server ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
@@ -108,7 +128,7 @@ _(ว่าง)_
 - **`SchedulerEngine.tsx`:** Hierarchy cards 6 ระดับ (EN+TH), สี timeline/badge ตาม band, slider 1–90 (Emergency 91-100 สงวนให้ระบบฉุกเฉิน)
 - **`PlayerApp.tsx`:** รับ `priorityLevel` ใน payload + ลำดับ 6 ระดับชัดเจน
 - เทส: typecheck 0 error, build ผ่าน, **smoke test 8/8** (conflict 85>60>30, campaign/standby/default band, ระดับสูงกว่าชนะแม้เลขน้อย, display data มี priorityLevel/contentSource) + ยืนยัน UI ใน preview
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 ~15:48 — `redeploy.bat`)** — ยืนยัน live บน 10.70.0.1 เรียบร้อย
 
 ### REQ-005 — Proof of Play เข้าระบบจริง ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
@@ -120,7 +140,7 @@ _(ว่าง)_
 - **`DisplayKiosk.tsx`:** KioskZone (จอจริง) บันทึก PoP เข้า server เช่นกัน
 - **`api.ts`:** เพิ่ม `reportProofOfPlay()` helper
 - เทส: typecheck 0 error, build ผ่าน, **smoke test 8/8 ผ่าน** (POST 201, GET roundtrip, ไม่มี token 401, จออื่น 403, body ผิด 400) + **เทส live ใน preview** — เปิด TV Player เล่นจริง → ข้อมูลไหลเข้าตารางทุก 15 วิ → Analytics UI แสดงรายการ COMPLETED ครบ
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 ~15:48 — `redeploy.bat`)** — ยืนยัน live บน 10.70.0.1 เรียบร้อย
 
 ### REQ-003 — Server-side scheduler ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
@@ -136,7 +156,7 @@ _(ว่าง)_
 - **`DisplayKiosk.tsx`:** รับ `SCHEDULE_CHANGED` → refetch ทันที (ไม่รอ poll 30 วิ) + ใช้ `effectivePlaylistId`
 - **`PlayerApp.tsx`:** ดึง resolve ตอน mount/เปลี่ยนจอ + ฟัง WS → ลำดับความสำคัญ **emergency overlay > schedule > campaign > base**
 - เทส: typecheck 0 error, build ผ่าน, **smoke test 19/19 ผ่าน** (resolve, display data ใช้ scheduled layout, WS push, fallback เมื่อ schedule inactive)
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 ~15:48 — `redeploy.bat`)** — ยืนยัน live บน 10.70.0.1 เรียบร้อย
 
 ### 2026-08-15 — 🤖 Freebuff
 - **ตั้ง git version control** ที่ workspace root — baseline commit ครอบ AGENTS.md + .kiro + docs + โปรเจคหลัก + prototypes (exclude .freebuff, node_modules, dist, .env, uploads, backups, logs) — กติกา commit ใน AGENTS.md §6.7

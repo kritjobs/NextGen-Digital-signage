@@ -45,6 +45,23 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.1] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-009 Automated Integration Tests)
+
+### Added
+- **ชุดเทสอัตโนมัติ (REQ-009)** — `tests/helpers.mjs` + `tests/integration.test.mjs` ใช้ `node:test` ในตัว (0 dependency เพิ่ม):
+  - ครอบคลุม security guard (401/403/SSRF), pair/heartbeat, REQ-003 scheduler resolver, REQ-005 PoP (401/403/400/roundtrip), REQ-006 6-Level priority, REQ-011 campaigns (CRUD + ชนะ/แพ้ระดับ), REQ-008 monitoring (offline→online ผ่าน ticker จริง), REQ-010 audit log, REQ-007 backup (run/download/delete + path traversal)
+  - สร้างข้อมูล `[TEST]` + ลบให้เรียบร้อย — รันซ้ำได้ไม่สะสมขยะ
+  - **safety guard** — ห้ามรันบน prod (`NODE_ENV=production` → reject)
+- `package.json` — script `test:integration` (`node --test "tests/*.test.mjs"`)
+
+### Verified
+- **9/9 ผ่าน 2 รอบติด** (~71 วิ/รอบ — หลักๆ รอ monitor ticker 35 วิ × 2) — เทสกับ dev server + dev DB
+
+### Known / Pending
+- ต้องมี dev server รันอยู่ก่อน (`npm run dev`) — ใช้ dev DB เท่านั้น
+
+---
+
 ## [0.3.0] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-007 Backup อัตโนมัติ DB + Uploads)
 
 ### Added
@@ -60,7 +77,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - typecheck 0 error, build ผ่าน, smoke test 14/14 (401, list+config, run → db JSON 21 ตาราง/6 screens + zip PK 5MB, download attachment, delete, path traversal 404) + ยืนยัน UI (Run backup now ผ่าน UI → 2 ไฟล์โผล่ในตารางจริง)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 
 ---
 
@@ -77,7 +94,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - typecheck 0 error, build ผ่าน, smoke test 9/9 (สร้าง/แก้/ลบ layout → ปรากฏใน log ครบ, filter resource/action/q, limit cap, 401 ไม่มี token) + ยืนยัน UI (login + layout + campaign + schedule entries จริง)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 
 ---
 
@@ -98,7 +115,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - typecheck 0 error, build ผ่าน, smoke test 9/9 (โครงสร้าง endpoint, ตรวจจับ offline → alert+screen_offline, recovery → เคลียร์+screen_online, 401 ไม่มี token) + ยืนยัน UI (banner + indicator)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 - ตั้ง `SLACK_ALERT_WEBHOOK_URL` + `MONITOR_OFFLINE_MINUTES` ใน .env ของ prod (ถ้าต้องการ alert ผ่าน Slack/Teams)
 
 ---
@@ -126,7 +143,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - **เทส UI เต็มวงจรใน preview:** สร้าง campaign ผ่าน UI (2 layouts) → TV Player แสดง campaign layout แทน default → **rotation A→B→A ครบ 60 วิ** (ยืนยัน 3 จุดเวลา)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 
 ---
 
@@ -147,7 +164,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - typecheck 0 error, build ผ่าน, smoke test 8/8 (conflict 85>60>30, band campaign/standby/default, ระดับสูงกว่าชนะแม้ตัวเลขน้อยกว่า, display data มี priorityLevel/contentSource) + ยืนยัน UI ใน preview (6 cards + badge + slider)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 - **หมายเหตุ:** rule เดิมที่ priority 95 (REQ003 Preview Test) ถูก cleanup ระหว่างเทส — เป็น rule ทดสอบของเดโม REQ-003
 
 ---
@@ -166,7 +183,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - **เทส live ใน preview:** เปิด TV Player เล่นจริง → PoP ไหลเข้า server ทุก ~15 วิ → หน้า Analytics & Telemetry แสดงรายการ COMPLETED จริง (Main Lobby, ชื่อ media, duration 15s)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 
 ---
 
@@ -184,7 +201,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - ลำดับความสำคัญ layout ใน Player: schedule มาก่อน campaign (เดิม campaign > schedule)
 
 ### Known / Pending
-- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+- ✅ **deploy แล้ว (2026-08-15 — `redeploy.bat`)** — ยืนยัน live บน prod เรียบร้อย
 - **REQ-011 (Open):** campaigns ฝั่ง server (ตอนนี้ CampaignManager ยังใช้ localStorage)
 
 ---
@@ -223,7 +240,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 ### Known (ข้อจำกัด)
 - **Browser (web player):** หา MAC ไม่ได้ (นโยบาย privacy ของ browser) → IP ได้จาก connection, MAC จะ "—"
 - **Android 10+:** MAC ที่ได้เป็นค่า randomized ต่อ network (อาจต่างจาก MAC ฮาร์ดแวร์ที่ router เห็น)
-- ยังไม่ deploy ขึ้น prod — ต้อง `redeploy.bat` ที่เครื่อง 10.70.0.1
+- ✅ deploy ขึ้น prod แล้ว (2026-08-15 — `redeploy.bat`)
 
 ---
 

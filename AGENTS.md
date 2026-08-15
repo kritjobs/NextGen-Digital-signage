@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**โหมดสลับ HTTP/HTTPS — ตรวจ prod ผ่าน ✅**)
+- redeploy แล้ว — generate-token บน prod ให้ URL ถูกโหมดจริง: ผ่าน Caddy → `https://10.70.0.1/display/...`, ตรง :3100 → `http://10.70.0.1:3100/display/...` — สลับโหมดด้วย `caddy/mode.conf` + `switch-mode.bat` (ไม่ต้องแก้ .env/redeploy)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**สลับโหมด HTTP/HTTPS — config เดียว ไม่ต้องแก้โค้ด**)
 - `server.ts` generate-token: display URL สร้างจาก request (`req.protocol`+Host, trust proxy เปิดอยู่) — ผ่าน Caddy ได้ https:// อัตโนมัติ, ตรง :3100 ได้ http:// — APP_URL เหลือเป็น fallback — **สลับโหมดไม่ต้องแก้ .env/redeploy**
 - `caddy/mode.conf` (http/https) + `caddy/switch-mode.bat` (เปิด/ปิด Caddy service ตามโหมด) — จอเก่ายังใช้ URL เดิมได้ (ทั้ง 2 โหมดรันพร้อมกัน)

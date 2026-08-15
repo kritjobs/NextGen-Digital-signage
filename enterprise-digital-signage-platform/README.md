@@ -164,6 +164,7 @@ enterprise-digital-signage-platform/
 | [docs/development-guide.md](docs/development-guide.md) | Workflow, coding standards, git |
 | [docs/docker-guide.md](docs/docker-guide.md) | Docker setup, deploy, troubleshoot |
 | [docs/api-reference.md](docs/api-reference.md) | REST API + WebSocket reference |
+| [docs/screen-install-guide.md](docs/screen-install-guide.md) | 📺 คู่มือติดตั้งจอ (ฉบับช่าง/ลูกค้า — ไม่ต้องเป็นโปรแกรมเมอร์) |
 | [CHANGELOG.md](CHANGELOG.md) | ประวัติการเปลี่ยนแปลง |
 | [.kiro/specs/](../.kiro/specs/nextgen-digital-signage/) | Requirements, Design, Architecture, Tasks |
 

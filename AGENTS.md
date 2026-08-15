@@ -65,6 +65,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**คู่มือติดตั้งจอฉบับลูกค้า + เครื่องมือ CA ฝั่งลูกค้า**)
+- `docs/screen-install-guide.md` — คู่มือติดตั้งจอแบบไม่เทคนิค (ทีละขั้น + screenshot description + ตารางเลือกโหมด A/B + แก้ปัญหาทั่วไป) — ลิงก์ใน README แล้ว
+- `caddy/install-ca-client.bat` — ติดตั้ง CA บนเครื่อง Windows ลูกค้าแบบคลิกเดียว (ดาวน์โหลด CA ที่ถูก → ลบเก่า → Trusted Root → ตรวจ https/sw.js) + `TRUST-CA.md` อัปเดต (CA ถูกเปลี่ยน 15 ส.ค. — ต้อง re-install)
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**โหมดสลับ HTTP/HTTPS — ตรวจ prod ผ่าน ✅**)
 - redeploy แล้ว — generate-token บน prod ให้ URL ถูกโหมดจริง: ผ่าน Caddy → `https://10.70.0.1/display/...`, ตรง :3100 → `http://10.70.0.1:3100/display/...` — สลับโหมดด้วย `caddy/mode.conf` + `switch-mode.bat` (ไม่ต้องแก้ .env/redeploy)
 

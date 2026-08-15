@@ -5,6 +5,16 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.6] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจ scr-002 offline + คู่มือช่างกลับออนไลน์)
+
+### Ops
+- **ตรวจ scr-002 (`Cafeteria Digital Menu Board` — ตึก B ชั้น 2):** offline **3,096 นาที (~2 วัน 4 ชม.)** — heartbeat สุดท้าย 13 ส.ค. 19:04 ไทย — IP สุดท้าย `172.19.0.1` (Docker bridge — มาจากเครื่อง server ไม่ใช่จอ) → ยืนยันจอถูกปิด/ถอดสายจริง ต้องตรวจทางกายภาพ
+- **พร้อมกลับ online:** pairing `CAFE-20` ยังใช้ได้ (ไม่หมดอายุ), generate-token ใช้ได้, โหมดระบบ HTTPS → URL `https://10.70.0.1/display/scr-002?token=...` + CA ตัวปัจจุบัน/หรือ native player
+- **⚠️ เนื้อหาที่ผูกว่าง:** playlist `อนุบาลวันภาษาไทย` (pl-1786423885792) = **0 items** (ล้างไปรอบ 13 ส.ค.) + จอ tags `[]` → หลังกลับ online โซน content จะว่าง — ต้องกำหนดใหม่ (เร็วสุด: ตั้ง tags จอ cafeteria+menu → tag-match; หรือ playlist ใหม่ + approve; หรือแก้ sch-002 ที่ active แค่ จ-ศ 11:00–18:00)
+- **ส่งงานช่าง:** `docs/recover-scr002.md` — checklist หน้างาน (เช็คไฟ/สาย/เน็ต → เปิด URL → ติดตั้ง CA ถ้าจำเป็น) + checklist Admin (สร้าง URL ใหม่ → กำหนดเนื้อหา → ตรวจ monitoring / `watch-screen-online.bat`)
+
+---
+
 ## [0.4.5] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจหลัง redeploy — Content Approval + Tag-Match คู่กันบน prod ✅)
 
 > redeploy เสร็จ (container ใหม่) → ตรวจบน prod จริงผ่าน **30/30** — migration 0011 รันแล้ว + pending ถูกกรอง + approve ขึ้นทันที + reject กรองออก + audit ครบ

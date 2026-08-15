@@ -63,7 +63,13 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — Content Approval + Tag-Match คู่กันบน prod ✅**)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ scr-002 offline + คู่มือช่างกลับออนไลน์**)
+- **scr-002 (`Cafeteria Digital Menu Board` — ตึก B ชั้น 2) offline ~2 วัน 4 ชม.** (heartbeat สุดท้าย 13 ส.ค. 19:04 ไทย, 3,096 นาที) — IP สุดท้าย `172.19.0.1` = Docker bridge (มาจากเครื่อง server ไม่ใช่จอ) → ยืนยันจอถูกปิด/ถอดสายจริง ต้องตรวจทางกายภาพ; `alertActive=false`; pairing `CAFE-20` ยังใช้ได้ไม่หมดอายุ; generate-token ใช้ได้
+- **เนื้อหา scr-002 ตอนกลับมา:** playlist `อนุบาลวันภาษาไทย` (pl-1786423885792) เหลือ **0 items** (ล้างไปรอบ 13 ส.ค.) + tags จอ `[]` → โซน content จะว่าง — ต้องกำหนดใหม่ (เร็วสุด: ตั้ง tags จอ cafeteria+menu → tag-match; หรือสร้าง playlist+approve; หรือแก้ sch-002) — `sch-002` active จ-ศ 11:00–18:00 เท่านั้น (ตอนนี้ resolve = default)
+- **โหมดระบบ = HTTPS** → URL จอต้อง `https://10.70.0.1/display/scr-002?token=...` + CA ตัวปัจจุบัน/หรือ native player
+- **ส่งงานช่าง:** `docs/recover-scr002.md` — checklist ช่างหน้างาน + Admin (สร้าง URL ใหม่, กำหนดเนื้อหา, ตรวจ monitoring/watch-screen-online.bat)
+
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — Content Approval + Tag-Match คู่กันบน prod ✅**) 
 - **redeploy เสร็จ → ตรวจบน prod ผ่าน 30/30:** migration **0011 รันแล้ว** (playlists 5 + layouts มี `status`/`approval_status` — เพลย์ลิสต์เดิมทั้งหมด `approved` จาก migration UPDATE); **pending ถูกกรอง** (สร้าง playlist+layout ใหม่ → โดนบังคับ `pending` แม้ client ส่ง approved → ไม่ขึ้นจอ, effectivePlaylistId=null); **approve แล้วขึ้นทันที** (PATCH approve ทั้งคู่ → display data มี playlist ใหม่ + tag_match คืน effectivePlaylistId + layout ใหม่คู่กัน, contentSource=tag_match); **reject → กรองออกอีกครั้ง** + audit บันทึก `approval_approved`/`approval_rejected` ครบ; sanity scr-001 ได้ content ปกติ (default/lay-split-3zone) — ล้างข้อมูลเทสเรียบร้อย
 - สคริปต์ตรวจซ้ำได้: `.freebuff/verify-prod-approval.mjs` (login + สร้าง/ลบข้อมูลเทสเอง) — `CHANGELOG.md` [0.4.5]
 
@@ -196,7 +202,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
 
-- [ ] **Re-pair จอ** — JWT_SECRET เปลี่ยน → display token เก่าหมดอายุ → จอต้อง pairing ใหม่ (ตอนนี้ `connectedClients: 0`)
+- [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` (หลังกลับ: กำหนดเนื้อหาใหม่ เพราะ playlist เดิมว่าง + ใช้ token ใหม่ — JWT_SECRET เปลี่ยน)
 - [x] **เปลี่ยนรหัส admin แล้ว** (2026-08-15) — ลบ default ทั้ง seed.ts/docs — วิธีเปลี่ยน: `change-admin-password.bat` หรือ `/api/auth/change-password`
 - [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`

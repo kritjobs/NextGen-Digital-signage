@@ -2,7 +2,16 @@
 
 Caddy ใช้ `tls internal` ออก certificate เอง — เบราว์เซอร์/จอต้อง**เชื่อถือ CA** ของ Caddy ถึงจะใช้ HTTPS ได้แบบไม่มีคำเตือน และ **Service Worker ถึงจะทำงาน**
 
-> ไฟล์ CA: `C:\signage\caddy\caddy-root-ca.crt` (export โดย install-caddy.bat)
+> ⚠️ **ไฟล์ CA ถูกเปลี่ยนวันที่ 15 ส.ค. (แก้ CA ผิดตัว)** — เครื่อง/จอที่ติดตั้ง CA **ก่อนหน้านั้น** ต้อง**ติดตั้งใหม่** (CA เก่าเซ็นไม่ตรง cert จริง)
+> ไฟล์ CA ปัจจุบัน (ถูกต้อง): `C:\signage\caddy\caddy-root-ca.crt`
+
+---
+
+## วิธีเร็วที่สุดบน Windows (คลิกเดียว)
+
+รัน `caddy\install-ca-client.bat` **แบบ Administrator** บนเครื่องลูกค้า — มันจะดาวน์โหลด CA ที่ถูกจาก server → ลบ CA เก่า → ติดตั้ง Trusted Root → ตรวจ https/sw.js ให้อัตโนมัติ
+
+---
 
 ---
 
@@ -36,17 +45,27 @@ Caddy ใช้ `tls internal` ออก certificate เอง — เบรา�
 
 ---
 
-## ตรวจว่า HTTPS พร้อมใช้
+## ตรวจว่า HTTPS พร้อมใช้ (หลังติดตั้ง CA)
 
 ```powershell
-# บนเครื่อง prod
-curl.exe -s https://10.70.0.1/api/health
-# ควรได้ {"status":"ok",...}
-
-# ตรวจว่า SW ถูกเสิร์ฟผ่าน HTTPS (จำเป็นสำหรับ offline)
-curl.exe -s -o NUL -w "%{http_code} %{content_type}" https://10.70.0.1/sw.js
-# ควรได้ 200 text/javascript
+# บนเครื่องลูกค้า (curl.exe มีใน Windows 10+ อยู่แล้ว)
+curl.exe --ssl-no-revoke -s -o NUL -w "health: %{http_code}" https://10.70.0.1/api/health
+curl.exe --ssl-no-revoke -s -o NUL -w "sw.js: %{http_code} %{content_type}" https://10.70.0.1/sw.js
+# ควรได้ 200 + 200 application/javascript
+# (จำเป็นต้อง --ssl-no-revoke เพราะ CA ภายในไม่มี CRL endpoint — browser ไม่ต้องใช้ flag นี้)
 ```
+
+## ตรวจว่า Service Worker ทำงานจริงบนจอ
+
+1. เปิดหน้ากิโอสก์: `https://10.70.0.1/display/<screenId>?token=<token>` (generate จากหน้า Admin)
+2. ต่อท้าย URL ด้วย `&simoffline=1` → ควรเห็น**แถบทอง "⚡ OFFLINE — เล่นจากแคช"** ที่มุมขวาบน = อ่านจาก SW cache ได้จริง
+3. (ละเอียด) DevTools → Console:
+   ```js
+   await navigator.serviceWorker.getRegistrations()
+   // ควรเห็น [{ scope: 'https://10.70.0.1/', active: { state: 'activated' } }]
+   await caches.keys()
+   // ควรเห็น signage-sw-v1-shell / -data / -media
+   ```
 
 ---
 

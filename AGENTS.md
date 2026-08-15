@@ -65,10 +65,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (Ops: **แก้ CA ผิดตัว — pin Caddy storage**)
-- **เจอ bug:** cert ที่ Caddy เสิร์ฟถูกเซ็นโดย root ที่**ไม่ใช่** `caddy-root-ca.crt` ที่ export/ติดตั้ง (openssl verify = error 20) — `caddy validate`/`caddy start` สร้าง CA ที่ `%APPDATA%` แต่ Windows service ใช้ storage คนละที่ → ทุกเครื่องที่ติดตั้ง CA ไปแล้วยังเจอ `ERR_CERT_AUTHORITY_INVALID`
-- **แก้:** pin `storage file_system { root C:/signage/caddy/storage }` ใน `caddy/Caddyfile` + `install-caddy.bat` export CA จาก path นี้เสมอ (overwrite) — **ต้องรัน install-caddy.bat ที่ prod อีกครั้ง แล้วติดตั้ง CA ใหม่ทุกเครื่อง**
-- **เดิม (HTTPS ขึ้นแล้ว):** `https://10.70.0.1/api/health` → 200, `/sw.js` → application/javascript, cert issuer = Caddy Local Authority, :80 ปล่อย Apache — **เหลือ:** ติดตั้ง CA ที่ถูกที่จอ + ตั้ง `APP_URL=https://10.70.0.1` ใน .env แล้ว redeploy
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (Ops: **CA ถูกต้องแล้ว + SW ผ่าน HTTPS เต็มรูปแบบ ✅**)
+- **แก้ CA ผิดตัวครบวงจร:** pin storage `C:/signage/caddy/storage` + install-caddy.bat restart service จริง (net stop+start) + export CA จาก pinned storage — chain verify ผ่าน (`openssl verify: OK`, leaf ใหม่ 10:34)
+- **เทส SW register ผ่าน HTTPS prod จริง (headless Edge + CDP):** secure context ✅ → SW registered+activated ที่ scope `https://10.70.0.1/` ✅ → **cache ครบ 3 กลุ่ม:** shell + display data + media (`/uploads/...webp` ผ่าน stale-while-revalidate) ✅
+- **หมายเหตุ:** curl (Schannel) เจอ `CRYPT_E_NO_REVOCATION_CHECK` (CA ภายในไม่มี CRL endpoint) — **browser ทำงานปกติ** (soft-fail) — script ที่ใช้ curl กับ prod ใช้ `curl --ssl-no-revoke`
+- **เหลือผู้ใช้:** ติดตั้ง `caddy-root-ca.crt` **ตัวใหม่** (ถูก overwrite แล้ว) ที่เครื่องอื่น/จอ + ตั้ง `APP_URL=https://10.70.0.1` ใน .env แล้ว redeploy — เครื่อง dev ติดตั้งแล้ว (thumbprint 00B0F76B)
+- ไฟล์: `caddy/Caddyfile`, `caddy/install-caddy.bat`, `tests/sw-https-check.mjs` (สคริปต์เทส SW ผ่าน HTTPS)
 
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.5]`)
 - **Ops: ชุดติดตั้ง Caddy HTTPS บน prod (LAN)** — `caddy/Caddyfile` (tls internal) + `install-caddy.bat` + `TRUST-CA.md` — ให้ SW (REQ-004) ทำงานเต็มรูปแบบบน https://10.70.0.1 — ต้องรันที่เครื่อง prod + ติดตั้ง CA ที่จอ + ตั้ง APP_URL=https แล้ว redeploy (`CHANGELOG.md` [0.3.5])

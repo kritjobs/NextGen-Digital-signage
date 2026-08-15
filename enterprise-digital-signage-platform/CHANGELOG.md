@@ -5,6 +5,15 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.9] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจ Emergency Alert ผ่าน Realtime Control ✅)
+
+### Verified (dev preview)
+- **Trigger:** Realtime Control → EMERGENCY ALERT → BROADCAST INSTANT OVERRIDE (Critical, ทุกจอ) → `POST /api/emergency/trigger 200`
+- **Overlay แดงบน TV Player ทันที:** `bg-rose-950/95 + border-rose-500 8px + animate-pulse` เต็ม canvas (738x640) + title/ข้อความ + banner admin "CRITICAL BROADCAST OVERRIDE" + การ์ดจอสถานะ EMERGENCY
+- **Clear:** ปุ่มเปลี่ยนเป็น CLEAR EMERGENCY BROADCAST → `POST /api/emergency/clear 200` → overlay หาย + player กลับเล่น content ปกติ (welcome-demo.mp4) — ไม่มีการแก้โค้ด
+
+---
+
 ## [0.4.8] — 2026-08-15  🤖 แก้ไขโดย Freebuff (ตรวจ Dual Simulator + Quick Post ผ่าน WS ✅)
 
 ### Verified (dev preview)

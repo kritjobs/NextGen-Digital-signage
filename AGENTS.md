@@ -63,7 +63,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ Dual Simulator + Quick Post ผ่าน WS — ผ่าน ✅**)
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ Emergency Alert ผ่าน Realtime Control — ผ่าน ✅**)
+- **Trigger ผ่าน UI:** Realtime Control → EMERGENCY ALERT → BROADCAST (Critical, ทุกจอ) → `POST /api/emergency/trigger 200` → **overlay แดงขึ้นบน TV Player ทันที** (`bg-rose-950/95 + border-rose 8px + animate-pulse` เต็ม canvas, title + ข้อความเทส) + banner admin "CRITICAL BROADCAST OVERRIDE" + การ์ดจอสถานะ EMERGENCY
+- **Clear ผ่าน UI:** ปุ่มสลับเป็น CLEAR EMERGENCY BROADCAST → `POST /api/emergency/clear 200` → overlay หาย + player กลับเล่นเนื้อหาปกติ — ไม่มีการแก้โค้ด
+
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจ Dual Simulator + Quick Post ผ่าน WS — ผ่าน ✅**) 
 - **Dual Simulator:** Admin Console (ซ้าย) + TV Player (ขวา) อยู่ด้วยกัน ข้อมูลจริง — **Quick Post ขึ้นจอ realtime ผ่าน WS:** `POST /api/quick-post` → broadcast `QUICK_POST` → overlay (bg-blue) โผล่บน TV Player ทันที — server log: `[WS] Connected (super_admin) Total: 2` + `POST /api/quick-post 200`
 - หมายเหตุ: ปุ่ม Quick Post ใน navbar ใช้ native `prompt()` (เครื่องมือ preview จับไม่ได้) — เทสผ่าน endpoint เดียวกัน (path เดียวกัน: POST → WS broadcast → player overlay) — ไม่มีการแก้โค้ด
 

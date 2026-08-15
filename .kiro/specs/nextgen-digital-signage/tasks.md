@@ -27,6 +27,7 @@
 - ✅ **2026-08-15 (Freebuff):** **Content Approval Workflow + Tag-Match คู่กัน ขึ้น prod แล้ว** — ตรวจ post-redeploy 30/30 ผ่าน (migration 0011 รันแล้ว, pending ถูกกรอง, approve ขึ้นทันที, reject กรองออก, audit ครบ) — ดู `CHANGELOG.md` [0.4.5]
 - ✅ **2026-08-15 (Freebuff):** **TV Player ใช้ tag-match playlist (preview ตรงกับจอจริง)** — resolve/broadcast คืน layoutId+playlistId ครบทุกรูปแบบ + PlayerApp ใช้ tag_match ก่อน currentPlaylistId (fallback เฉพาะไม่มี match) — integration 14/14 ผ่าน — ดู `CHANGELOG.md` [0.4.7]
 - ✅ **2026-08-15 (Freebuff):** **Dual Simulator + Quick Post ผ่าน WS ตรวจผ่าน** — Admin+TV Player คู่กัน, Quick Post ขึ้นจอ realtime (POST /api/quick-post → WS broadcast → overlay) — ดู `CHANGELOG.md` [0.4.8]
+- ✅ **2026-08-15 (Freebuff):** **Emergency Alert ผ่าน Realtime Control ตรวจผ่าน** — trigger → overlay แดง (pulse) บน TV Player ทันที → clear → กลับเนื้อหาปกติ — ดู `CHANGELOG.md` [0.4.9]
 
 ---
 

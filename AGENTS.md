@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.4]`)
+- **Ops: สคริปต์แก้ media URL บน prod** — `fix-prod-media.sql` + `fix-prod-media.bat` (รันที่ 10.70.0.1 หลัง redeploy: ตรวจ sample media เสิร์ฟ → psql ผ่าน docker compose exec → ชี้ med-001..008 ไป /media/sample/*) — SQL เทสผ่าน dev แล้ว (`CHANGELOG.md` [0.3.4])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.3.3]`)
 - **Fix: seed media ต้นทางตาย (403) → ไฟล์ในระบบ** — เพิ่ม `public/media/sample/` (welcome-demo.mp4 + campus-1..4.png ~11.6MB) + `seed.ts` ชี้ `/media/sample/*` (ไม่พึ่ง external) + อัปเดต dev DB — ยืนยัน kiosk เล่นวิดีโอจริง (206 + PoP 201) — ต้อง redeploy ถึงจะเข้า prod dist (`CHANGELOG.md` [0.3.3])
 

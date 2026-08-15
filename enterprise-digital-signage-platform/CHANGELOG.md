@@ -45,6 +45,16 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.4] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Ops: สคริปต์แก้ media URL บน prod)
+
+### Added
+- `fix-prod-media.sql` + `fix-prod-media.bat` — ใช้บนเครื่อง prod (10.70.0.1, หลัง `redeploy.bat`): ตรวจ `/media/sample` ถูกเสิร์ฟแล้ว → รัน SQL ผ่าน `docker compose exec signage-postgres psql` ชี้ `med-001..008` ไป `/media/sample/*` (idempotent — รันซ้ำได้) — วิธีใช้: `cd C:\signage && fix-prod-media.bat`
+
+### Verified
+- SQL รันบน dev DB ผ่าน (idempotent, ผลถูกต้อง med-001..004 → /media/sample/*)
+
+---
+
 ## [0.3.3] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Fix: สื่อตัวอย่างต้นทางตาย → ไฟล์ในระบบ)
 
 ### Fixed

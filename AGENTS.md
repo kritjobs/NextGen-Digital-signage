@@ -65,6 +65,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — เปลี่ยนรหัส admin ขึ้น prod ✅**)
+- redeploy ผ่าน (container ใหม่) — **`POST /api/auth/change-password` ทำงานบน prod** (no-token 401, with-token + รหัสเดิมถูก 200) — login รหัสใหม่ปกติ (280-char token)
+- รหัส admin ใหม่ถูกต้องทั้ง prod + dev — default password ถูกถอนแล้ว (`CHANGELOG.md` [0.4.2])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**ตรวจหลัง redeploy — Media Expiration ขึ้น prod ✅**)
 - redeploy ผ่าน — แต่ **migration ไม่รันอัตโนมัติ** (signage-migrate เป็น one-shot, compose up ไม่ rerun) → รัน `db:migrate` ไป prod DB ตรง (column `release_date` + `fallback_image_url` ลงครบ)
 - **เทสบน prod ผ่าน:** POST /api/media รับ expiresAt ได้ + `/api/display/scr-001/data` กรอง expired ออก (med-check-exp ไม่ส่ง, normal ส่ง) — ลบ media เทสแล้ว

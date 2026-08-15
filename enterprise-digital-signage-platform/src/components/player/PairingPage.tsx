@@ -4,17 +4,37 @@
  * Flow: ใส่ pairing code → verify → ได้ token → redirect ไป /display/:id
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { Monitor, Wifi, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Monitor, Wifi, CheckCircle2, AlertCircle, Loader2, QrCode, Copy, Check } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export const PairingPage: React.FC = () => {
   const [code, setCode] = useState('');
   const [status, setStatus] = useState<'idle' | 'pairing' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [pairedInfo, setPairedInfo] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-focus input
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  // ?code=XXX → pre-fill (ช่างสแกน QR จาก Admin → URL พร้อมรหัส → ไม่ต้องพิมพ์)
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get('code');
+    if (c) setCode(c.trim().toUpperCase());
+  }, []);
+
+  // Mode-aware pairing URL (window.location.origin → http/https ถูกโหมดอัตโนมัติ)
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const pairingUrl = `${baseUrl}/pair?code=${encodeURIComponent(code || '')}`;
+
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(pairingUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* ignore */ }
+  };
 
   // Check if already paired (token in localStorage)
   useEffect(() => {
@@ -154,6 +174,34 @@ export const PairingPage: React.FC = () => {
                 Connect Display
               </span>
             </button>
+
+            {/* QR — URL ถูกโหมดอัตโนมัติ (http/https ตามที่เปิดหน้านี้มา) */}
+            <div className="mt-6 bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300 mb-3">
+                <QrCode className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span>สแกน QR เพื่อเปิดหน้านี้บนมือถือ (ไม่ต้องพิมพ์ URL — ถูกโหมดอัตโนมัติ)</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <div className="bg-white p-2 rounded-xl shrink-0">
+                  <QRCodeSVG value={pairingUrl} size={150} level="H" includeMargin={true} />
+                </div>
+                <div className="text-left space-y-2 w-full max-w-xs">
+                  <div className="text-[11px] text-slate-400 font-mono break-all bg-slate-950 rounded-lg p-2 border border-slate-800">
+                    {pairingUrl}
+                  </div>
+                  <button
+                    onClick={handleCopyUrl}
+                    className="flex items-center gap-1.5 text-[11px] font-bold text-cyan-400 hover:text-cyan-300"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    <span>{copied ? 'คัดลอกแล้ว!' : 'Copy URL'}</span>
+                  </button>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    พิมพ์รหัสในช่องด้านบน หรือสแกน QR ด้วยมือถือ — รหัสจะถูกกรอกให้อัตโนมัติ
+                  </p>
+                </div>
+              </div>
+            </div>
           </form>
         ) : status === 'pairing' ? (
           <div className="py-12">

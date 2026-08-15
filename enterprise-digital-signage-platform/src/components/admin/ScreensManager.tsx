@@ -18,8 +18,12 @@ import {
   CheckCircle2, 
   AlertTriangle,
   Play,
-  Unlink
+  Unlink,
+  QrCode,
+  Copy,
+  Check
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useSignageStore } from '../../store/useSignageStore';
 import { DigitalScreen } from '../../types/signage';
 
@@ -72,6 +76,12 @@ export const ScreensManager: React.FC = () => {
 
   // Detailed Screen Inspector Modal
   const [inspectScreen, setInspectScreen] = useState<DigitalScreen | null>(null);
+  const [qrScreen, setQrScreen] = useState<DigitalScreen | null>(null);
+  const [qrCopied, setQrCopied] = useState(false);
+
+  // Mode-aware pairing URL (window.location.origin → http/https ถูกโหมดอัตโนมัติ)
+  const pairingUrlFor = (scr: DigitalScreen) =>
+    `${window.location.origin}/pair?code=${encodeURIComponent(scr.pairingCode)}`;
 
   // Bulk Actions
   const [selectedScreenIds, setSelectedScreenIds] = useState<string[]>([]);
@@ -411,6 +421,14 @@ export const ScreensManager: React.FC = () => {
                       <Sliders className="h-4 w-4" />
                       <span>Details</span>
                     </button>
+                    <button
+                      onClick={() => { setQrScreen(scr); setQrCopied(false); }}
+                      className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs transition-all"
+                      title="QR ลิงก์จับคู่ (URL ถูกโหมดอัตโนมัติ)"
+                    >
+                      <QrCode className="h-4 w-4" />
+                      <span>Pairing QR</span>
+                    </button>
                   </div>
                 </div>
 
@@ -739,6 +757,50 @@ export const ScreensManager: React.FC = () => {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pairing QR Modal — ช่างสแกนได้เลย (URL ถูกโหมดอัตโนมัติ) */}
+      {qrScreen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm p-6 text-white shadow-2xl space-y-4 text-center">
+            <div className="flex items-center justify-between">
+              <div className="text-left">
+                <span className="text-xs font-mono font-bold text-cyan-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                  {qrScreen.pairingCode}
+                </span>
+                <h3 className="text-base font-bold text-white mt-1">{qrScreen.name}</h3>
+              </div>
+              <button onClick={() => setQrScreen(null)} className="p-1 rounded-lg text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <div className="bg-white p-3 rounded-2xl w-fit mx-auto">
+              <QRCodeSVG value={pairingUrlFor(qrScreen)} size={200} level="H" includeMargin={true} />
+            </div>
+
+            <div className="text-[11px] text-slate-400 font-mono break-all bg-slate-950 rounded-xl p-3 border border-slate-800 text-left">
+              {pairingUrlFor(qrScreen)}
+            </div>
+
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(pairingUrlFor(qrScreen));
+                  setQrCopied(true);
+                  setTimeout(() => setQrCopied(false), 2000);
+                } catch { /* ignore */ }
+              }}
+              className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-300 flex items-center justify-center gap-2"
+            >
+              {qrCopied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+              {qrCopied ? 'คัดลอกแล้ว!' : 'Copy Link'}
+            </button>
+
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              สแกน QR ด้วยมือถือ → เปิดหน้า /pair พร้อมรหัสที่กรอกไว้แล้ว —
+              URL ถูกโหมดอัตโนมัติ (https/http ตามที่เปิด Admin อยู่นี้) ช่างไม่ต้องพิมพ์
+            </p>
           </div>
         </div>
       )}

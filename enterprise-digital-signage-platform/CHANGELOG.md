@@ -45,6 +45,14 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.3.8] — 2026-08-15  🤖 แก้ไขโดย Freebuff (QR จับคู่จอ — URL ถูกโหมดอัตโนมัติ)
+
+**ช่างไม่ต้องพิมพ์ URL:**
+- `PairingPage` (`/pair`): รองรับ `?code=` (pre-fill — เปิดจาก QR/ลิงก์ได้รหัสมาให้เลย) + **QR code** encode `{origin}/pair?code=...` (ถูกโหมดอัตโนมัติ http/https) + ปุ่ม Copy URL
+- `ScreensManager` (Admin): ปุ่ม **Pairing QR** บนทุกการ์ดจอ → modal QR + URL + Copy (mode-aware จาก `window.location.origin`)
+
+ตรวจ: typecheck ✅ + build ✅ + เทส preview (pre-fill LOBBY-88 + modal CAFE-20 URL ถูกต้อง)
+
 ## [0.3.7] — 2026-08-15  🤖 แก้ไขโดย Freebuff (โหมด HTTP/HTTPS สลับได้ — config เดียว)
 
 **display URL สร้างจาก request อัตโนมัติ** (`server.ts` generate-token): `req.protocol` + `Host` (trust proxy เปิดอยู่ — ผ่าน Caddy ได้ https:// อัตโนมัติ) — APP_URL เหลือเป็น fallback — **สลับโหมดไม่ต้องแก้ .env ไม่ต้อง redeploy**

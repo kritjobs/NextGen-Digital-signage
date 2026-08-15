@@ -65,6 +65,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**QR จับคู่จอ — URL ถูกโหมดอัตโนมัติ**)
+- `PairingPage`: `?code=` pre-fill + QR encode `{origin}/pair?code=...` (http/https ตามโหมดที่เปิด) + Copy URL — ช่างสแกน QR/เปิดลิงก์ได้รหัสมาให้เลย ไม่ต้องพิมพ์
+- `ScreensManager`: ปุ่ม **Pairing QR** บนทุกการ์ดจอ → modal QR + URL + Copy — ตรวจ typecheck/build + preview ผ่าน (`CHANGELOG.md` [0.3.8])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (**คู่มือติดตั้งจอฉบับลูกค้า + เครื่องมือ CA ฝั่งลูกค้า**)
 - `docs/screen-install-guide.md` — คู่มือติดตั้งจอแบบไม่เทคนิค (ทีละขั้น + screenshot description + ตารางเลือกโหมด A/B + แก้ปัญหาทั่วไป) — ลิงก์ใน README แล้ว
 - `caddy/install-ca-client.bat` — ติดตั้ง CA บนเครื่อง Windows ลูกค้าแบบคลิกเดียว (ดาวน์โหลด CA ที่ถูก → ลบเก่า → Trusted Root → ตรวจ https/sw.js) + `TRUST-CA.md` อัปเดต (CA ถูกเปลี่ยน 15 ส.ค. — ต้อง re-install)

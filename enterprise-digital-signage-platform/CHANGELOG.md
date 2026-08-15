@@ -45,6 +45,23 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.2.9] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-010 Audit log admin)
+
+### Added
+- **Audit log ย้อนหลัง (REQ-010)** — ตาราง `audit_logs` + `logAudit()` มีอยู่แล้ว (login/layout/playlist/schedule/campaign/emergency บันทึกครบ) — เพิ่มช่องทางดู:
+  - `server.ts` — `GET /api/audit-logs` (filter `action`/`resource`/`q` (email/resourceId) + `limit`/`page` + total)
+  - `auth.ts` — permission `read:audit` (admin+)
+  - `api.ts` — `auditApi.getLogs()`
+  - `AnalyticsTelemetry.tsx` — ส่วน **Admin Audit Trail**: ตาราง (เวลาแบบไทย, ผู้ใช้, action badge สีตาม severity, หมวด, resourceId, IP) + dropdown หมวด (auth/layout/playlist/schedule/campaign/media/screen/emergency) + ค้นหา
+
+### Verified
+- typecheck 0 error, build ผ่าน, smoke test 9/9 (สร้าง/แก้/ลบ layout → ปรากฏใน log ครบ, filter resource/action/q, limit cap, 401 ไม่มี token) + ยืนยัน UI (login + layout + campaign + schedule entries จริง)
+
+### Known / Pending
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
+
+---
+
 ## [0.2.8] — 2026-08-15  🤖 แก้ไขโดย Freebuff (REQ-008 Monitoring & Alerting)
 
 ### Added

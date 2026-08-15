@@ -218,6 +218,19 @@ export const analyticsApi = {
 };
 
 
+// ─── Audit Logs (REQ-010) ──────────────────────────────────
+export const auditApi = {
+  getLogs: (params?: { action?: string; resource?: string; q?: string; limit?: number; page?: number }) => {
+    const qs = new URLSearchParams();
+    if (params?.action) qs.set('action', params.action);
+    if (params?.resource) qs.set('resource', params.resource);
+    if (params?.q) qs.set('q', params.q);
+    if (params?.limit) qs.set('limit', String(params.limit));
+    if (params?.page) qs.set('page', String(params.page));
+    return request<{ data: any[]; total: number }>(`/audit-logs${qs.toString() ? `?${qs}` : ''}`);
+  },
+};
+
 // ─── Slideshows ─────────────────────────────────────────────
 export const slideshowApi = {
   getAll:     () => request<{ data: any[]; total: number }>('/slideshows'),

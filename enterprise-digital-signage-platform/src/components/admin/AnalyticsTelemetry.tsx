@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Activity, 
   HardDrive, 
@@ -14,7 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
-import { aiApi } from '../../services/api';
+import { aiApi, auditApi } from '../../services/api';
 
 export const AnalyticsTelemetry: React.FC = () => {
   const { screens, proofOfPlayLogs } = useSignageStore();
@@ -23,6 +23,27 @@ export const AnalyticsTelemetry: React.FC = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
+
+  // REQ-010: Admin Audit Trail
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditQuery, setAuditQuery] = useState('');
+  const [auditResource, setAuditResource] = useState('all');
+  const loadAuditLogs = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const res = await auditApi.getLogs({
+        q: auditQuery || undefined,
+        resource: auditResource === 'all' ? undefined : auditResource,
+        limit: 100,
+      });
+      setAuditLogs(res.data || []);
+    } catch { /* permission หรือ offline */ } finally {
+      setAuditLoading(false);
+    }
+  }, [auditQuery, auditResource]);
+
+  useEffect(() => { void loadAuditLogs(); }, [loadAuditLogs]);
 
   const onlineCount = screens.filter((s) => s.status === 'online').length;
   const onlinePercent = Math.round((onlineCount / (screens.length || 1)) * 100);
@@ -168,6 +189,90 @@ export const AnalyticsTelemetry: React.FC = () => {
                       <CheckCircle2 className="h-3 w-3" />
                       <span>{log.status.toUpperCase()}</span>
                     </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* REQ-010: Admin Audit Trail */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-cyan-400" />
+            Admin Audit Trail
+            <span className="text-[10px] font-normal text-slate-500">(REQ-010 — การกระทำของ admin ย้อนหลัง)</span>
+          </h3>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <select
+              value={auditResource}
+              onChange={(e) => setAuditResource(e.target.value)}
+              className="bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
+            >
+              <option value="all">ทุกหมวด</option>
+              <option value="auth">auth (login/logout)</option>
+              <option value="layout">layout</option>
+              <option value="playlist">playlist</option>
+              <option value="schedule">schedule</option>
+              <option value="campaign">campaign</option>
+              <option value="media">media</option>
+              <option value="screen">screen</option>
+              <option value="emergency">emergency</option>
+            </select>
+            <div className="relative w-full sm:w-56">
+              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
+              <input
+                type="text"
+                placeholder="ค้นหาอีเมล / resourceId..."
+                value={auditQuery}
+                onChange={(e) => setAuditQuery(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+            <button onClick={() => void loadAuditLogs()} className="px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 text-xs font-bold hover:bg-cyan-900 shrink-0">ค้นหา</button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto max-h-96 overflow-y-auto">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead className="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800 sticky top-0">
+              <tr>
+                <th className="py-3 px-4">เวลา</th>
+                <th className="py-3 px-4">ผู้ใช้</th>
+                <th className="py-3 px-4">การกระทำ</th>
+                <th className="py-3 px-4">หมวด</th>
+                <th className="py-3 px-4">resourceId</th>
+                <th className="py-3 px-4">IP</th>
+                <th className="py-3 px-4">ระดับ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+              {auditLoading ? (
+                <tr><td colSpan={7} className="py-6 text-center text-slate-500">กำลังโหลด...</td></tr>
+              ) : auditLogs.length === 0 ? (
+                <tr><td colSpan={7} className="py-6 text-center text-slate-500">ไม่มีข้อมูล audit (ระบบยังไม่มี activity)</td></tr>
+              ) : auditLogs.map((log) => (
+                <tr key={log.id} className="hover:bg-slate-800/40">
+                  <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('th-TH')}</td>
+                  <td className="py-3 px-4 text-white">{log.userEmail || 'system'}</td>
+                  <td className="py-3 px-4">
+                    <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                      log.severity === 'critical' ? 'bg-rose-950 text-rose-300' :
+                      log.severity === 'warning' ? 'bg-amber-950 text-amber-300' :
+                      'bg-slate-950 text-cyan-300'
+                    }`}>{log.action}</span>
+                  </td>
+                  <td className="py-3 px-4 text-slate-300">{log.resource}</td>
+                  <td className="py-3 px-4 text-slate-400">{log.resourceId || '—'}</td>
+                  <td className="py-3 px-4 text-slate-500">{log.ipAddress || '—'}</td>
+                  <td className="py-3 px-4">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold ${
+                      log.severity === 'critical' ? 'bg-rose-950 text-rose-400' :
+                      log.severity === 'warning' ? 'bg-amber-950 text-amber-400' :
+                      'bg-slate-950 text-slate-400'
+                    }`}>{log.severity.toUpperCase()}</span>
                   </td>
                 </tr>
               ))}

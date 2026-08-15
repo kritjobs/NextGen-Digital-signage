@@ -20,7 +20,7 @@
 - **REQ-007 — Scheduled DB backup อัตโนมัติ** — pg_dump ผ่าน Task Scheduler + เก็บ 7 วัน
 - ~~**REQ-008 — Monitoring/alerting**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — แจ้งเตือนเมื่อจอ offline
 - **REQ-009 — Automated tests** — integration test ของ security guard + pair/heartbeat
-- **REQ-010 — Audit log admin** — บันทึกการกระทำของ admin (login, trigger emergency, แก้ playlist ฯลฯ)
+- ~~**REQ-010 — Audit log admin**~~ ✅ เสร็จแล้ว (ดูประวัติด้านล่าง) — บันทึกการกระทำของ admin ย้อนหลัง
 
 #### 📋 ผลสำรวจความพร้อม (2026-08-15 — 🤖 Freebuff)
 
@@ -48,6 +48,18 @@ _(ว่าง)_
 ---
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
+
+### REQ-010 — Audit log admin ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
+
+**ดูการกระทำของ admin ย้อนหลังได้ในหน้า Analytics**
+
+- **เดิม:** ตาราง `audit_logs` + `logAudit()` มีอยู่แล้ว (login/layout/playlist/schedule/campaign/emergency บันทึกครบ) แต่ **ไม่มี endpoint + UI ดูย้อนหลัง**
+- **`server.ts`:** `GET /api/audit-logs` — filter action/resource/q (email/resourceId) + limit/page + total
+- **`auth.ts`:** เพิ่ม permission `read:audit` (admin)
+- **`api.ts`:** `auditApi.getLogs()`
+- **`AnalyticsTelemetry.tsx`:** ส่วน **"Admin Audit Trail"** — ตาราง (เวลาแบบไทย, ผู้ใช้, action badge สีตาม severity, หมวด, resourceId, IP) + dropdown หมวด + ค้นหา + ปุ่มค้นหา
+- เทส: typecheck 0 error, build ผ่าน, **smoke test 9/9** (สร้าง layout → create/update/delete ปรากฏใน log, filter resource/action/q, limit cap, 401) + ยืนยัน UI (ตารางมี login/layout/campaign/schedule จริง)
+- ยังไม่ deploy — ต้อง `redeploy.bat` ที่เครื่อง prod
 
 ### REQ-008 — Monitoring & Alerting ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 

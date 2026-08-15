@@ -65,6 +65,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.9]`)
+- **REQ-010 (Audit log admin) เสร็จ** — `GET /api/audit-logs` (filter/limit) + permission `read:audit` + ส่วน Admin Audit Trail ในหน้า Analytics (ตารางเวลา/ผู้ใช้/action/IP/severity + ค้นหา) — smoke test 9/9 + ยืนยัน UI — ยังไม่ deploy (`CHANGELOG.md` [0.2.9])
+
 ### 2026-08-15 — 🤖 แก้ไขโดย Freebuff (`CHANGELOG.md` → `[0.2.8]`)
 - **REQ-008 (Monitoring & Alerting) เสร็จ** — ตรวจ heartbeat ทุก 30 วิ (offline > MONITOR_OFFLINE_MINUTES) + telemetry event + Slack webhook (env) + `/api/monitoring/status` + UI: banner แจ้งจอไม่ตอบสนอง + heartbeat indicator ทุกการ์ด — smoke test 9/9 + ยืนยัน UI — ยังไม่ deploy (`CHANGELOG.md` [0.2.8])
 

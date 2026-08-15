@@ -71,6 +71,7 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   admin: [
     'read:screens', 'read:media', 'read:playlists', 'read:layouts',
     'read:schedules', 'read:analytics', 'read:emergencies', 'read:users',
+    'read:audit', // REQ-010: ดู audit log ย้อนหลัง
     'write:media', 'write:playlists', 'write:layouts', 'write:schedules',
     'write:screens', 'write:commands', 'write:emergencies',
   ],

@@ -12,7 +12,7 @@ import { db, checkDbConnection, pool } from './src/db/index.js';
 import {
   screens, mediaItems, layouts, layoutZones,
   playlists, playlistItems, schedules, campaigns,
-  emergencyAlerts, telemetryLogs, proofOfPlayLogs, layoutVersions,
+  emergencyAlerts, telemetryLogs, proofOfPlayLogs, layoutVersions, auditLogs,
 } from './src/db/schema.js';
 import { eq, desc, asc, sql, and } from 'drizzle-orm';
 import { priorityLevelOf, priorityRankOf } from './src/types/signage.js';
@@ -1585,6 +1585,37 @@ async function startServer() {
             since: s.alertSince,
           })),
         });
+      } catch (e) { next(e); }
+    });
+
+  // GET /api/audit-logs — REQ-010: ดู audit log ย้อนหลัง (admin+)
+  // filter: action, resource, q (email/resourceId), limit
+  app.get('/api/audit-logs',
+    authenticate as any, requirePermission('read:audit') as any,
+    async (req, res, next) => {
+      try {
+        const limit = Math.min(Number(req.query.limit ?? 100), 500);
+        const action = typeof req.query.action === 'string' && req.query.action ? req.query.action : null;
+        const resource = typeof req.query.resource === 'string' && req.query.resource ? req.query.resource : null;
+        const q = typeof req.query.q === 'string' && req.query.q.trim() ? req.query.q.trim() : null;
+        const page = Math.max(0, Number(req.query.page ?? 0));
+
+        const conditions = [];
+        if (action) conditions.push(eq(auditLogs.action, action));
+        if (resource) conditions.push(eq(auditLogs.resource, resource));
+        if (q) conditions.push(sql`(
+          ${auditLogs.userEmail} ILIKE ${'%' + q + '%'}
+          OR ${auditLogs.resourceId} ILIKE ${'%' + q + '%'}
+        )`);
+
+        const where = conditions.length ? and(...conditions) : undefined;
+        const rows = await db.select().from(auditLogs)
+          .where(where)
+          .orderBy(desc(auditLogs.createdAt))
+          .limit(limit)
+          .offset(page * limit);
+        const [cnt] = await db.select({ n: sql<number>`count(*)::int` }).from(auditLogs).where(where);
+        res.json({ data: rows, total: cnt?.n ?? rows.length, limit, page });
       } catch (e) { next(e); }
     });
 

@@ -5,6 +5,7 @@
  * Auto-fullscreen, auto-refresh data ทุก 30 วินาที
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { LayoutZone, MediaItem, Playlist } from '../../types/signage';
 import { ZoneWidgetRenderer } from '../widgets/ZoneWidgetRenderer';
 
@@ -21,6 +22,7 @@ export const DisplayKiosk: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [quickPost, setQuickPost] = useState<any>(null);
+  const [hideInteractQr, setHideInteractQr] = useState(false);
   // REQ-003: ref ไว้ให้ WS handler เรียก fetch ใหม่ได้ทันทีเมื่อ schedule เปลี่ยน
   const fetchDataRef = useRef<() => void>(() => {});
 
@@ -334,6 +336,18 @@ export const DisplayKiosk: React.FC = () => {
       <div className="absolute bottom-2 left-2 text-[9px] text-white/20 font-mono">
         {screen.name} • {currentTime.toLocaleTimeString()}
       </div>
+
+      {/* QR Scan-to-Interact (bottom-right) — ผู้ชมสแกนแล้วควบคุมจอได้ */}
+      {!hideInteractQr && (
+        <div
+          className="absolute bottom-3 right-3 z-30 flex flex-col items-center gap-1 rounded-xl bg-black/55 backdrop-blur px-2 py-1.5 border border-white/10 hover:bg-black/75 transition-colors cursor-pointer select-none"
+          onClick={() => setHideInteractQr(true)}
+          title="แตะเพื่อซ่อน • ผู้ชมสแกน QR เพื่อส่งข้อความ/เปลี่ยนเนื้อหา"
+        >
+          <QRCodeSVG value={`${window.location.origin}/interact/${screen.id}`} size={86} bgColor="#ffffff" fgColor="#0f172a" level="M" />
+          <span className="text-[9px] font-semibold text-white/80 tracking-wide">📱 สแกนโต้ตอบจอ</span>
+        </div>
+      )}
 
       {/* Quick Post Overlay */}
       {quickPost && (

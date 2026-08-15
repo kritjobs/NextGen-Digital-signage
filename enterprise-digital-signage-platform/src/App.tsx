@@ -18,6 +18,7 @@ import { DualSimulator } from './components/simulator/DualSimulator';
 import { LoginPage } from './components/LoginPage';
 import { DisplayKiosk } from './components/player/DisplayKiosk';
 import { PairingPage } from './components/player/PairingPage';
+import { InteractPage } from './components/player/InteractPage';
 import { useSignageStore } from './store/useSignageStore';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
@@ -44,6 +45,11 @@ export default function App() {
   // ─── Pairing Page (TV self-register) ────────────────────
   if (window.location.pathname === '/pair') {
     return <PairingPage />;
+  }
+
+  // ─── QR Scan-to-Interact (mobile page — public) ─────────
+  if (window.location.pathname.startsWith('/interact/')) {
+    return <InteractPage />;
   }
 
   // Check auth on mount

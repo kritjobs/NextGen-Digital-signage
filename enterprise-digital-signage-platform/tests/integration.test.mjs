@@ -354,6 +354,45 @@ test('10. REQ-004 SW — /sw.js ถูกเสิร์ฟ + มีกลยุ
 // ═══════════════════════════════════════════════════════════════
 // 9) REQ-007 — Backup (สร้างไฟล์จริงแล้วลบให้)
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// 11) QR Scan-to-Interact (anonymous message + admin content switch)
+// ═══════════════════════════════════════════════════════════════
+test('11. QR Interact — GET screen + anonymous show_message OK + set_playlist 403', async () => {
+  // GET ข้อมูลจอ (public)
+  const info = await raw('GET', `/interact/${testScreenId}`);
+  assert.equal(info.status, 200, 'GET /interact/:id ควร 200');
+  assert.equal(info.json?.screen?.id, testScreenId);
+  assert.ok(Array.isArray(info.json?.availableActions), 'ควรมี availableActions');
+
+  // ไม่มี id → 404
+  const nf = await raw('GET', '/interact/scr-does-not-exist');
+  assert.equal(nf.status, 404, 'จอไม่มีควร 404');
+
+  // ส่งข้อความ (anonymous) → 200
+  const msg = await raw('POST', `/interact/${testScreenId}/action`, {
+    body: { action: 'show_message', payload: { message: '[TEST] QR interact', style: 'info', duration: 5 } },
+  });
+  assert.equal(msg.status, 200, 'anonymous show_message ควร 200');
+  assert.equal(msg.json?.success, true);
+
+  // เปลี่ยน playlist โดยไม่ login → 403 (security gate)
+  const sw = await raw('POST', `/interact/${testScreenId}/action`, {
+    body: { action: 'set_playlist', payload: { playlistId: 'pl-anything' } },
+  });
+  assert.equal(sw.status, 403, 'anonymous set_playlist ควร 403');
+
+  // action ไม่รู้จัก — anonymous → 403 (security gate ก่อน), admin → 400
+  const badAnon = await raw('POST', `/interact/${testScreenId}/action`, {
+    body: { action: 'hack', payload: {} },
+  });
+  assert.equal(badAnon.status, 403, 'anonymous + action ผิดควร 403 (gate มาก่อน)');
+  const badAdmin = await raw('POST', `/interact/${testScreenId}/action`, {
+    token,
+    body: { action: 'hack', payload: {} },
+  });
+  assert.equal(badAdmin.status, 400, 'admin + action ผิดควร 400');
+});
+
 test('9. REQ-007 Backup — list/run/download/delete + path traversal', { timeout: 120_000 }, async () => {
   // list + config
   const list = await api.backups.list(token);

@@ -45,6 +45,14 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.0] — 2026-08-15  🤖 แก้ไขโดย Freebuff (QR Scan-to-Interact — สแกนแล้วควบคุมจอ)
+
+**ผู้ชมสแกน QR บนจอ → ควบคุมได้จากมือถือ (backend มีอยู่แล้ว เติม UI ครบ):**
+- **Kiosk:** QR badge มุมขวาล่าง encode `{origin}/interact/{screenId}` (โหมดถูกต้องอัตโนมัติ) + แตะเพื่อซ่อน
+- **`InteractPage` (`/interact/:screenId` — หน้าสาธารณะ):** ส่งข้อความ Quick Post (ไม่ต้อง login — ผ่าน WS ขึ้นจอทันที) + เปลี่ยน playlist/layout (ต้อง admin — ใช้ token ในมือถือนั้น)
+- **Security:** anonymous ส่งข้อความได้อย่างเดียว, เปลี่ยนเนื้อหาต้อง login (403) — action ผิด → 400
+- ตรวจ: typecheck ✅ build ✅ **integration 11/11** ✅ + เทส end-to-end ใน preview (ข้อความขึ้นจอจริงผ่าน WS + QR badge แสดง) — ต้อง redeploy ถึงขึ้น prod
+
 ## [0.3.9] — 2026-08-15  🤖 แก้ไขโดย Freebuff (Android TV — CA อัตโนมัติ ไม่ต้องติดตั้งที่จอ)
 
 **native player (`android-player/`) ฝัง Caddy CA ใน APK** — `res/raw/caddy_root_ca.crt` (ตัวถูกปัจจุบัน) + `res/xml/network_security_config.xml` + manifest `android:networkSecurityConfig` → WebView/OkHttp trust HTTPS ให้เอง **ไม่ต้องเข้า Settings → CA certificates ที่จอเลย** (cleartext ยังเปิด = รองรับโหมด http ด้วย)

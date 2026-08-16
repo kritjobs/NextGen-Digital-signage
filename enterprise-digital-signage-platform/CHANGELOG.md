@@ -20,6 +20,10 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - Preview: Realtime Control เป็นไทย (สถานะ: ออนไลน์/ออฟไลน์, ดำเนินการ: SET_VOLUME) → สลับ中文 re-render ทันที (状态: 在线/离线, 已执行) — screenshot ยืนยัน
 - typecheck 0 + build ผ่าน + integration **16/16 ผ่าน**
 
+### Deployed (prod) — 2026-08-16 ✅
+- sync 10 ไฟล์ (server.ts + src/i18n + client) → `redeploy.bat` → bundle ใหม่ `index-BdVozIW3.js` (มีคีย์ evt.*)
+- ตรวจ post-deploy: emergency **15/15** (verify-prod-emergency.mjs) + quick post เจาะจงจอ **10/10** (verify-prod-quickpost.mjs) + event log server-side i18n ทำงานบน prod (`?lang=th` → สถานะ: ออฟไลน์/ดำเนินการ: SET_VOLUME… · `?lang=zh` → 状态: 离线/已执行…) — ไม่มี migration ใหม่
+
 ---
 
 ## [0.4.15] — 2026-08-16  🤖 โดย Freebuff (แปลทุกหน้าของระบบครบ 3 ภาษา — EN/ไทย/中文 ✅)

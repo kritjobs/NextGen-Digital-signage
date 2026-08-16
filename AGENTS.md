@@ -283,7 +283,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
 
-- [ ] **⚠️ redeploy prod 0.4.16 (ลำดับถัดไป)** — โค้ด i18n event log (server.ts + bundle ใหม่) พร้อม — sync ผ่าน `Z:\` (`sync-to-prod.ps1`) → `redeploy.bat` ที่ prod → ตรวจ post-deploy (verify-prod-emergency.mjs + quickpost) — **ไม่มี migration ใหม่** รอบนี้ปลอดภัย
+- [x] **redeploy prod 0.4.16 เสร็จแล้ว (2026-08-16)** — sync 10 ไฟล์ (server.ts + i18n + client) hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BdVozIW3.js` (มีคีย์ evt.*) — ตรวจ post-deploy: emergency **15/15** + quick post **10/10** + **event log server-side i18n ทำงานบน prod** (`?lang=th` → "สถานะ: ออฟไลน์/ดำเนินการ: SET_VOLUME…" · `?lang=zh` → "状态: 离线/已执行…") — ไม่มี migration ใหม่
 - [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` — ✅ **เนื้อหาพร้อมแล้ว** (pl-cafeteria-menu + lay-menu-board + sch-002 แก้แล้ว — เปิดจอแล้วแสดงเลย) เหลือใช้ token ใหม่ (JWT_SECRET เปลี่ยน)
 - [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`

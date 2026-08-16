@@ -286,6 +286,9 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
 - [ ] **Deploy REQ-003 (server-side scheduler)** — โค้ด sync แล้ว ต้อง `redeploy.bat` ที่เครื่อง prod
 - [ ] ฟีเจอร์จาก roadmap ที่ยังไม่ทำ (offline-first ใน web player, 6-Level Priority, campaigns ฝั่ง server (REQ-011), PoP จริง, backup อัตโนมัติ, monitoring, tests, audit log — ดู requests.md)
+- [ ] **Sync + redeploy prod 0.4.14/0.4.15** — โค้ด i18n + แปลทุกหน้าพร้อมบน `C:\signage` แล้ว (หรือ sync อีกรอบผ่าน `Z:\`) ต้อง `redeploy.bat` ที่ prod + ตรวจ post-deploy (verify-prod-emergency.mjs) — **ยังค้างต้นตอ build เก่า** (`docker compose build --no-cache --progress plain signage-app` + `docker ps`/`docker compose ls`)
+- [ ] **server-side i18n สำหรับ event log** (Realtime Control) — server.ts ส่งข้อความอังกฤษ (เช่น "Device paired successfully...") ต้องรับภาษา client ผ่าน header/query แล้วแปล — ดู `CHANGELOG.md` [0.4.15]
+- [ ] **RTL support** — ยังไม่รองรับ (บันทึกใน `src/i18n/README.md`) — จำเป็นถ้าจะเพิ่มภาษาอาหรับ/ฮีบรู
 
 ---
 

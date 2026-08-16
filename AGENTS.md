@@ -283,15 +283,13 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
 
+- [ ] **⚠️ redeploy prod 0.4.16 (ลำดับถัดไป)** — โค้ด i18n event log (server.ts + bundle ใหม่) พร้อม — sync ผ่าน `Z:\` (`sync-to-prod.ps1`) → `redeploy.bat` ที่ prod → ตรวจ post-deploy (verify-prod-emergency.mjs + quickpost) — **ไม่มี migration ใหม่** รอบนี้ปลอดภัย
 - [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` — ✅ **เนื้อหาพร้อมแล้ว** (pl-cafeteria-menu + lay-menu-board + sch-002 แก้แล้ว — เปิดจอแล้วแสดงเลย) เหลือใช้ token ใหม่ (JWT_SECRET เปลี่ยน)
-- [x] **เปลี่ยนรหัส admin แล้ว** (2026-08-15) — ลบ default ทั้ง seed.ts/docs — วิธีเปลี่ยน: `change-admin-password.bat` หรือ `/api/auth/change-password`
 - [ ] **แจก WEBHOOK_TOKEN** — ระบบภายนอก (Slack/IoT/POS) ที่เรียก `/api/trigger` ต้องส่ง header `X-Webhook-Token` (เดิมเปิดสาธารณะ)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
-- [ ] **Deploy REQ-003 (server-side scheduler)** — โค้ด sync แล้ว ต้อง `redeploy.bat` ที่เครื่อง prod
-- [ ] ฟีเจอร์จาก roadmap ที่ยังไม่ทำ (offline-first ใน web player, 6-Level Priority, campaigns ฝั่ง server (REQ-011), PoP จริง, backup อัตโนมัติ, monitoring, tests, audit log — ดู requests.md)
-- [x] **Sync + redeploy prod 0.4.14/0.4.15 เสร็จแล้ว (2026-08-16)** — sync 32 ไฟล์ (hash ตรง) → `redeploy.bat` → bundle ใหม่ `index-D6m3OtjN.js` (765KB — มี marker i18n: signage_language/คอนโซลผู้ดูแล/紧急 — โค้ดใหม่ขึ้นจริง) + ตรวจ post-deploy: emergency **15/15** (verify-prod-emergency.mjs) + quick post เจาะจงจอ **10/10** (verify-prod-quickpost.mjs — WS broadcast payload targetScreenIds ครบ + audit) — **ต้นตอ build เก่าปิดแล้วสำหรับรอบนี้**
-- [x] **server-side i18n สำหรับ event log เสร็จแล้ว (0.4.16)** — server เขียน `eventKey+params` ใน details (ไม่ต้อง migration) + `GET /api/analytics/telemetry?lang=`/Accept-Language แปล message + client render ผ่าน t() → สลับภาษาทันที — ดู `CHANGELOG.md` [0.4.16] — **ต้อง sync + redeploy prod**
 - [ ] **RTL support** — ยังไม่รองรับ (บันทึกใน `src/i18n/README.md`) — จำเป็นถ้าจะเพิ่มภาษาอาหรับ/ฮีบรู
+
+**ทำเสร็จแล้ว (2026-08-16):** เปลี่ยนรหัส admin · sync + redeploy 0.4.14/0.4.15 (bundle ใหม่ขึ้นจริง + emergency 15/15 + quickpost 10/10 — ต้นตอ build เก่าปิด) · server-side i18n event log (0.4.16) · REQ-003 scheduler/REQ-011 campaigns/PoP/backup/monitoring/tests/audit log — ทั้งหมด deploy ขึ้น prod แล้ว — ดู `CHANGELOG.md`
 
 ---
 

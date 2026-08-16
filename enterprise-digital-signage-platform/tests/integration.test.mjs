@@ -723,3 +723,41 @@ test('14. Quick Post — POST → WS broadcast → targetScreenIds + anonymous r
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// 15) Webhook Trigger — X-Webhook-Token (ระบบภายนอกเรียก /api/trigger)
+// ต้องตั้ง WEBHOOK_TOKEN ใน .env (dev ตั้งค่าเดียวกับ prod เพื่อพฤติกรรมตรงกัน)
+// ═══════════════════════════════════════════════════════════════
+test('15. Webhook Trigger — X-Webhook-Token ต้องถูกต้อง (401/401/200)', async () => {
+  const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || '';
+  if (!WEBHOOK_TOKEN) {
+    console.warn('⚠️ WEBHOOK_TOKEN ไม่ได้ตั้งใน .env — ข้ามเทสนี้ (dev ควรตั้งค่าเดียวกับ prod)');
+    return;
+  }
+  const body = { action: 'refresh', target: { all: true } };
+
+  // ไม่มี token → 401 (token ถูกตั้งใน dev env → ไม่ fallback เป็น dev-open)
+  const noTok = await raw('POST', '/trigger', { body });
+  assert.equal(noTok.status, 401, 'POST /api/trigger ไม่มี X-Webhook-Token ควร 401');
+
+  // token ผิด → 401
+  const wrong = await raw('POST', '/trigger', { body, headers: { 'X-Webhook-Token': 'wrong-token-xyz' } });
+  assert.equal(wrong.status, 401, 'X-Webhook-Token ผิดควร 401');
+
+  // token ถูก + refresh → 200 + targetScreens
+  const ok = await raw('POST', '/trigger', { body, headers: { 'X-Webhook-Token': WEBHOOK_TOKEN } });
+  assert.equal(ok.status, 200, `token ถูกควร 200: ${JSON.stringify(ok.json)}`);
+  assert.ok(ok.json?.success === true, 'ควร success:true');
+  assert.ok(Number.isInteger(ok.json?.targetScreens), 'ควรมี targetScreens (จำนวนจอ)');
+
+  // token ถูก แต่ body ไม่ครบ (ไม่มี action) → 400
+  const bad = await raw('POST', '/trigger', { body: { target: { all: true } }, headers: { 'X-Webhook-Token': WEBHOOK_TOKEN } });
+  assert.equal(bad.status, 400, 'ไม่มี action ควร 400');
+
+  // by-tags — token ถูก + tags → 200 (หาไม่เจอ = targetScreens 0 ก็ยัง 200)
+  const byTags = await raw('POST', '/trigger/by-tags', {
+    body: { tags: ['no-such-tag-xyz'], action: 'refresh' },
+    headers: { 'X-Webhook-Token': WEBHOOK_TOKEN },
+  });
+  assert.equal(byTags.status, 200, `by-tags token ถูกควร 200: ${JSON.stringify(byTags.json)}`);
+});
+

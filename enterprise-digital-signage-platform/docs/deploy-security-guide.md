@@ -123,12 +123,51 @@ curl "http://localhost:3100/api/media-proxy?url=http://169.254.169.254/latest/me
 
 ---
 
+## Webhook Token (X-Webhook-Token) — สำหรับระบบภายนอก (Slack / IoT / POS / Alarm)
+
+ระบบภายนอกที่เรียก `/api/trigger`, `/api/trigger/by-tags`, `/api/integrations/slack` ต้องส่ง header **`X-Webhook-Token`**
+
+- **ค่าอยู่ที่ไหน:** `WEBHOOK_TOKEN` ใน `.env` ของ prod (`C:\signage\.env`) — **ไม่เก็บใน repo/เอกสาร** (ค่าปัจจุบันตั้งแล้ว 16 ส.ค. 2026 — ขอจาก admin)
+- **พฤติกรรม:** ไม่ส่ง / ส่งผิด → `401` · ส่งถูก → `200` · ถ้าไม่ตั้ง token ใน prod → endpoint ถูกปิด `503`
+- **เปลี่ยน/หมุนเวียน token:** แก้ `WEBHOOK_TOKEN` ใน prod `.env` (สำรอง `.env` ก่อน → `docker compose up -d signage-app`) — ระบบภายนอกต้องอัปเดต header ทันที
+
+### ตัวอย่างเรียกใช้งาน
+```bash
+# refresh — บังคับให้ทุกจอโหลด content ใหม่
+curl -X POST http://10.70.0.1:3100/api/trigger ^
+  -H "Content-Type: application/json" ^
+  -H "X-Webhook-Token: <WEBHOOK_TOKEN>" ^
+  -d "{\"action\":\"refresh\",\"target\":{\"all\":true}}"
+
+# show_message — ขึ้นข้อความบนจอกลุ่มที่เลือก (style: info/warning/urgent/success)
+curl -X POST http://10.70.0.1:3100/api/trigger ^
+  -H "Content-Type: application/json" ^
+  -H "X-Webhook-Token: <WEBHOOK_TOKEN>" ^
+  -d "{\"action\":\"show_message\",\"target\":{\"group\":\"Dining & Refreshments\"},\"payload\":{\"message\":\"Lunch service begins at 11:00\",\"style\":\"info\",\"duration\":30}}"
+
+# by-tags — ส่งให้จอที่มี tag ตรง (ANY match)
+curl -X POST http://10.70.0.1:3100/api/trigger/by-tags ^
+  -H "Content-Type: application/json" ^
+  -H "X-Webhook-Token: <WEBHOOK_TOKEN>" ^
+  -d "{\"tags\":[\"cafeteria\"],\"action\":\"refresh\"}"
+
+# slack-style — ข้อความเดียว (แสดงบนจอ target จาก config)
+curl -X POST http://10.70.0.1:3100/api/integrations/slack ^
+  -H "Content-Type: application/json" ^
+  -H "X-Webhook-Token: <WEBHOOK_TOKEN>" ^
+  -d "{\"text\":\"Meeting starts in 5 minutes\"}"
+```
+
+> หมายเหตุ: `/api/trigger` บังคับ field `action` + `target` (webhook ภายนอกที่เคยส่ง `{}` เฉยๆ ต้องเพิ่ม payload — ตรวจ `docs/api-reference.md`)
+
+---
+
 ## สรุปสิ่งที่แก้ในรอบนี้
 
 | หมวด | รายละเอียด |
 |---|---|
 | 🔴 JWT | บังคับ JWT_SECRET ใน production (fail-fast ถ้าเป็นค่า default) + **compose ส่ง secret จาก .env เข้า container** |
-| 🔴 Trigger | `/api/trigger`, `/api/trigger/by-tags`, `/api/integrations/slack` ต้องมี WEBHOOK_TOKEN หรือ JWT — ปิดใน prod ถ้าไม่ตั้ง |
+| 🔴 Trigger | `/api/trigger`, `/api/trigger/by-tags`, `/api/integrations/slack` ต้องมี WEBHOOK_TOKEN (header `X-Webhook-Token`) หรือ JWT — ปิดใน prod ถ้าไม่ตั้ง — **ตั้งแล้วใน prod .env (16 ส.ค.) + dev .env ค่าเดียวกัน + เทส 17/17 (เพิ่มเทส #15)** |
 | 🔴 WS | anonymous connections รับอย่างเดียว — ส่งข้อความปลอม emergency/quick-post ไม่ได้อีก |
 | 🔴 SSRF | `/api/media-proxy` + `/api/widgets/rss` บล็อก private/internal IP (10.x, 172.16-31, 192.168, 169.254, localhost, CGNAT) |
 | 🟠 Interact | viewer ที่ไม่ login เปลี่ยน layout/playlist ไม่ได้ (มีแต่ show_message) + rate limit 10/นาที |

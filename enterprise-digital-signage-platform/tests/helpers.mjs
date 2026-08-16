@@ -17,9 +17,9 @@ export const BASE = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100/api';
 export const TEST_ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || '';
 
 // ─── HTTP helpers ────────────────────────────────────────────
-export async function raw(method, path, { token, body, query } = {}) {
+export async function raw(method, path, { token, body, query, headers: extraHeaders } = {}) {
   const url = `${BASE}${path}${query ? '?' + new URLSearchParams(query) : ''}`;
-  const headers = {};
+  const headers = { ...(extraHeaders ?? {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   const res = await fetch(url, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined });

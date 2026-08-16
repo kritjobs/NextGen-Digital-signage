@@ -5,6 +5,20 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.17] — 2026-08-16  🤖 โดย Freebuff (แจก WEBHOOK_TOKEN — ระบบภายนอกเรียก /api/trigger ต้องส่ง X-Webhook-Token ✅)
+
+### Changed / Done
+- **WEBHOOK_TOKEN ตั้งแล้วทั้ง prod + dev .env** (ค่าเดียวกัน 64 hex — ตั้งใน prod มาก่อนแล้ว) — `/api/trigger`, `/api/trigger/by-tags`, `/api/integrations/slack` ต้องส่ง header `X-Webhook-Token` (ไม่ส่ง/ผิด → 401 · ถูก → 200 · ไม่ตั้งใน prod → 503 ปิด)
+- `tests/helpers.mjs` — `raw()` รองรับ `headers` option เพิ่ม
+- **เทสใหม่ #15** — Webhook Trigger: ไม่มี token 401 / token ผิด 401 / token ถูก + refresh 200 (targetScreens) / body ไม่ครบ 400 / by-tags 200 — **17/17 ผ่าน** (เดิม 16 + ใหม่ 1)
+- เอกสาร: `docs/deploy-security-guide.md` — เพิ่ม section “Webhook Token (X-Webhook-Token)” — ค่าอยู่ใน `.env` prod (ไม่เก็บใน repo), ตัวอย่าง curl ครบ (refresh/show_message/by-tags/slack), วิธีหมุนเวียน token
+
+### Verified
+- dev: no-token 401 · wrong 401 · good 200 (refresh → 12 จอ) · by-tags 200 (2 จอ) · slack 200 — typecheck 0 + integration **17/17**
+- **prod (ตรวจจริง):** no-token **401** · token ถูก **200** (`success:true, targetScreens:5`)
+
+---
+
 ## [0.4.16] — 2026-08-16  🤖 โดย Freebuff (i18n ฝั่ง server สำหรับ event log — Realtime Control แสดงภาษาตาม UI ✅)
 
 ### Added

@@ -49,6 +49,17 @@ _(ว่าง)_
 
 ## ประวัติ (Done — ดู CHANGELOG.md สำหรับรายละเอียด)
 
+### REQ-012 — Live Screen Preview ✅ เสร็จ (2026-08-16 — 🤖 Freebuff)
+
+**Admin เห็นสิ่งที่จอแต่ละตัวกำลังแสดงอยู่แบบเรียลไทม์ผ่าน WS — ไม่ต้องไปหน้างาน**
+
+- **เดิม:** ดูได้แค่สถานะ heartbeat/offline — ไม่รู้ว่าจอกำลังโชว์อะไรอยู่
+- **`DisplayKiosk.tsx`:** ส่ง `SCREEN_STATE` ผ่าน WS เดิม (display token) — layout/effectivePlaylistId/contentSource/priorityLevel + สื่อที่กำลังเล่นทุกโซน (title/type/url/thumb/duration/startedAt) — ตอนเชื่อม WS + สื่อเปลี่ยน + ทุก 30 วิ
+- **`server.ts`:** รับ `SCREEN_STATE` เฉพาะ display token ที่ screenId ตรงกัน (anonymous/สวมรอยถูกบล็อก) → `screenStates` ใน memory + broadcast `SCREEN_STATE_UPDATED` → monitor flip offline/online ซิงก์ `online`/`offlineSince` + `GET /api/monitoring/live` (read:analytics)
+- **Admin (`ScreensManager` + `LiveScreenPreview.tsx` ใหม่):** ปุ่ม “ดูภาพสด” → modal mini replica ของ layout (โซนตาม %) พร้อมสื่อจริง (ภาพ/วิดีโอ thumb/widget ผ่าน media-proxy) + chips source/priority/playlist/layout + รายการโซน — realtime ผ่าน WS + badge **LIVE** บนการ์ดเมื่อ state สด
+- i18n 3 ภาษา (`sm.live*`) · typecheck 0 · build ผ่าน · integration **18/18** (เทส #16) · ยืนยันใน preview (kiosk จริง scr-001 → LIVE badge + modal 3 โซน) — **ยังไม่ deploy prod** — ดู `CHANGELOG.md` [0.4.18]
+
+
 ### REQ-004 — Offline-First Web Player ✅ เสร็จ (2026-08-15 — 🤖 Freebuff)
 
 **จอเล่นเนื้อหาต่อได้เมื่อเน็ตหลุด — Service Worker + แคชอัจฉริยะ**

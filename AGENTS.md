@@ -63,6 +63,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-16 — 🤖 โดย Freebuff (**Live Screen Preview — เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์จาก Admin**)
+- **player (DisplayKiosk)**: ส่ง `SCREEN_STATE` ผ่าน WS เดิม (display token) — layout/effectivePlaylistId/contentSource/priorityLevel + สื่อที่กำลังเล่นทุกโซน (title/type/url/thumb/duration/startedAt) — ตอนเชื่อม WS + สื่อเปลี่ยน + ทุก 30 วิ
+- **server.ts**: รับ `SCREEN_STATE` เฉพาะ display token ที่ screenId ตรง (anonymous/สวมรอยถูกบล็อก) → เก็บใน memory + broadcast `SCREEN_STATE_UPDATED` → monitor flip offline/online ซิงก์สถานะ + `GET /api/monitoring/live` (permission read:analytics)
+- **Admin**: ปุ่ม “ดูภาพสด” บนการ์ดจอ → modal mini replica ของ layout พร้อมสื่อจริงทุกโซน + chips (source/priority/playlist/layout) + รายการโซน — realtime ผ่าน WS + badge **LIVE** บนการ์ด
+- ยืนยัน: preview — kiosk จริง (scr-001) → badge LIVE + modal 3 โซนเนื้อหาจริง (video/weather/ticker) — typecheck 0 + build ผ่าน + integration **18/18** (เทส #16: broadcast + live endpoint + สวมรอยถูกบล็อก) — ดู `CHANGELOG.md` [0.4.18]
+
 ### 2026-08-16 — 🤖 โดย Freebuff (**แจก WEBHOOK_TOKEN — ระบบภายนอกเรียก /api/trigger ต้องส่ง X-Webhook-Token**)
 - WEBHOOK_TOKEN มีอยู่แล้วใน prod .env (64 hex) — ตั้ง dev .env ค่าเดียวกัน (พฤติกรรมตรงกัน) — `/api/trigger`, `/by-tags`, `/integrations/slack` บังคับ header `X-Webhook-Token` (webhookAuth: ไม่ส่ง/ผิด → 401, ถูก → 200, ไม่ตั้งใน prod → 503)
 - เพิ่มเทส #15 (Webhook Trigger 401/401/200 + body ไม่ครบ 400 + by-tags) + `raw()` รองรับ headers — **17/17 ผ่าน** — ตรวจจริงบน prod: no-token 401 / ถูก 200 (refresh 5 จอ)
@@ -290,6 +296,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 - [x] **redeploy prod 0.4.16 เสร็จแล้ว (2026-08-16)** — sync 10 ไฟล์ (server.ts + i18n + client) hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BdVozIW3.js` (มีคีย์ evt.*) — ตรวจ post-deploy: emergency **15/15** + quick post **10/10** + **event log server-side i18n ทำงานบน prod** (`?lang=th` → "สถานะ: ออฟไลน์/ดำเนินการ: SET_VOLUME…" · `?lang=zh` → "状态: 离线/已执行…") — ไม่มี migration ใหม่
 - [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` — ✅ **เนื้อหาพร้อมแล้ว** (pl-cafeteria-menu + lay-menu-board + sch-002 แก้แล้ว — เปิดจอแล้วแสดงเลย) เหลือใช้ token ใหม่ (JWT_SECRET เปลี่ยน)
+- [ ] **Live Screen Preview (0.4.18) ยังไม่ deploy prod** — สร้างเสร็จ dev + เทส 18/18 — รอบหน้า sync (`sync-to-prod.ps1` ผ่าน `Z:\`) + `redeploy.bat` แล้ว prod จะเห็นปุ่ม “ดูภาพสด” บนหน้าเมทริกซ์จอ (server.ts + bundle ใหม่ + i18n — ไม่มี migration ใหม่)
 - [x] **แจก WEBHOOK_TOKEN แล้ว (0.4.17)** — ตั้งใน prod .env (มีอยู่แล้ว) + dev .env ค่าเดียวกัน — `/api/trigger`/`/by-tags`/`/integrations/slack` ต้องส่ง `X-Webhook-Token` (401/401/200) — เทสใหม่ #15 → **17/17** — เอกสาร: `docs/deploy-security-guide.md` (ค่าอยู่ใน prod .env — ขอจาก admin)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
 - [ ] **RTL support** — ยังไม่รองรับ (บันทึกใน `src/i18n/README.md`) — จำเป็นถ้าจะเพิ่มภาษาอาหรับ/ฮีบรู

@@ -5,6 +5,21 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.18] — 2026-08-16  🤖 โดย Freebuff (Live Screen Preview — เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์จาก Admin ✅)
+
+### Added
+- **Live Screen Preview (REQ-012)** — Admin ดูได้ว่าจอแต่ละตัวกำลังแสดงอะไรอยู่แบบเรียลไทม์ผ่าน WS โดยไม่ต้องไปหน้างาน:
+  - **player (`DisplayKiosk.tsx`)**: ส่ง `SCREEN_STATE` ผ่าน WS เดิม (display token) — โครงสร้าง (layout/effectivePlaylistId/contentSource/priorityLevel) + สื่อที่กำลังเล่นทุกโซน (title/type/url/thumbnail/duration/startedAt) — ส่งตอนเชื่อม WS, สื่อเปลี่ยน, และทุก 30 วิ
+  - **server.ts**: รับ `SCREEN_STATE` (**เฉพาะ display token ที่ screenId ตรงกัน** — anonymous/สวมรอยถูกบล็อก) → เก็บ `screenStates` ใน memory + broadcast `SCREEN_STATE_UPDATED` → monitor flip offline/online ซิงก์สถานะ `online`/`offlineSince` + `GET /api/monitoring/live` (catch-up ตอนโหลดหน้า, ต้องมี permission `read:analytics`)
+  - **Admin**: ปุ่ม **“ดูภาพสด”** บนการ์ดจอ (Screens Manager) → modal แสดง mini replica ของ layout (โซนตาม % ตำแหน่งจริง) พร้อมสื่อในแต่ละโซน (ภาพ/วิดีโอ thumb/ticker/clock/weather/announcement/promo/... ผ่าน media-proxy) + chips แหล่งเนื้อหา/ระดับความสำคัญ/เพลย์ลิสต์/เลย์เอาต์ + รายการโซน (ชื่อ/สื่อ/ระยะเวลา/เวลาเริ่ม) — อัปเดตเรียลไทม์ผ่าน WS (ไม่ต้อง reload) + badge **LIVE** บนการ์ดเมื่อมี state สด (< 90 วิ)
+  - i18n ครบ 3 ภาษา (`sm.live*`)
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18** (เทส #16 ใหม่: SCREEN_STATE → broadcast ครบ payload · live endpoint 200/401 · anonymous ส่งถูกบล็อก · สวมรอย screenId อื่นถูกบล็อก)
+- **ยืนยันใน preview**: เปิด kiosk จริง (display URL) → การ์ด Main Lobby ขึ้น badge LIVE + heartbeat “เมื่อสักครู่” · modal แสดง mini replica 3 โซนพร้อมเนื้อหาจริง (video/weather/ticker) + chips ไทยครบ — screenshot ยืนยัน
+
+---
+
 ## [0.4.17] — 2026-08-16  🤖 โดย Freebuff (แจก WEBHOOK_TOKEN — ระบบภายนอกเรียก /api/trigger ต้องส่ง X-Webhook-Token ✅)
 
 ### Changed / Done

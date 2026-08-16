@@ -12,7 +12,7 @@ import {
 } from '../types/signage';
 import {
   screenApi, mediaApi, layoutApi, playlistApi,
-  scheduleApi, emergencyApi, controlApi, analyticsApi,
+  scheduleApi, emergencyApi, controlApi, analyticsApi, monitoringApi,
 } from '../services/api';
 import { useLanguageStore } from './useLanguageStore';
 
@@ -32,6 +32,11 @@ interface SignageStoreState {
   // Realtime WS
   wsConnected: boolean;
   setWsConnected: (connected: boolean) => void;
+
+  // Live Screen Preview: สถานะการแสดงผลล่าสุดของแต่ละจอ (key = screenId)
+  screenStates: Record<string, any>;
+  receiveScreenState: (state: any) => void;
+  loadScreenStates: () => Promise<void>;
 
   // Core Data Collections
   screens: DigitalScreen[];
@@ -260,6 +265,20 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
 
   wsConnected: false,
   setWsConnected: (wsConnected) => set({ wsConnected }),
+
+  // Live Screen Preview: สถานะล่าสุดของแต่ละจอ (รับจาก WS broadcast + REST catch-up)
+  screenStates: {},
+  receiveScreenState: (state) => {
+    if (!state?.screenId) return;
+    set((s) => ({ screenStates: { ...s.screenStates, [state.screenId]: state } }));
+  },
+  loadScreenStates: async () => {
+    try {
+      const res = await monitoringApi.live();
+      const states = Array.isArray(res.states) ? res.states : [];
+      set({ screenStates: Object.fromEntries(states.map((st: any) => [st.screenId, st])) });
+    } catch { /* เงียบ — WS จะค่อยๆ ป้อนสถานะมาเอง */ }
+  },
 
   screens: [],
   mediaItems: [],

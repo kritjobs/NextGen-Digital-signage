@@ -21,13 +21,15 @@ import {
   Unlink,
   QrCode,
   Copy,
-  Check
+  Check,
+  Eye
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSignageStore } from '../../store/useSignageStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { TranslationKey } from '../../i18n';
 import { DigitalScreen } from '../../types/signage';
+import { LiveScreenPreview } from './LiveScreenPreview';
 
 const STATUS_T_KEY: Record<string, TranslationKey> = {
   online: 'sm.statusOnline', syncing: 'sm.statusSyncing', offline: 'sm.statusOffline',
@@ -50,6 +52,14 @@ export const ScreensManager: React.FC = () => {
     setViewMode,
     setSelectedScreenId
   } = useSignageStore();
+  const screenStates = useSignageStore((s) => s.screenStates);
+
+  // Live preview: มี state สด (< 90 วิ) → แสดง badge LIVE บนการ์ด
+  const isLiveFresh = (scr: DigitalScreen) => {
+    const st = screenStates[scr.id];
+    if (!st?.updatedAt) return false;
+    return Date.now() - new Date(st.updatedAt).getTime() < 90_000;
+  };
 
   const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,6 +88,9 @@ export const ScreensManager: React.FC = () => {
   const [newScreenGroup, setNewScreenGroup] = useState('HQ Reception');
   const [newScreenLocation, setNewScreenLocation] = useState('Building A Lobby');
   const [newScreenOrientation, setNewScreenOrientation] = useState<'landscape' | 'portrait'>('landscape');
+
+  // Live Screen Preview Modal (REQ-012): เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์
+  const [liveScreen, setLiveScreen] = useState<DigitalScreen | null>(null);
 
   // Detailed Screen Inspector Modal
   const [inspectScreen, setInspectScreen] = useState<DigitalScreen | null>(null);
@@ -408,6 +421,12 @@ export const ScreensManager: React.FC = () => {
                     <span className={`px-2 py-0.5 rounded bg-black/70 backdrop-blur text-[9px] font-mono ${heartbeatInfo(scr).stale ? 'text-rose-400' : 'text-emerald-400'}`}>
                       {heartbeatInfo(scr).label}
                     </span>
+                    {/* Live Screen Preview: มี state สด → badge LIVE */}
+                    {isLiveFresh(scr) && (
+                      <span className="px-1.5 py-0.5 rounded bg-cyan-950/90 border border-cyan-500/40 text-[9px] font-bold text-cyan-300 animate-pulse">
+                        LIVE
+                      </span>
+                    )}
                   </div>
 
                   {/* Hover Overlay - Launch Player */}
@@ -433,6 +452,14 @@ export const ScreensManager: React.FC = () => {
                     >
                       <QrCode className="h-4 w-4" />
                       <span>{t('sm.pairingQr')}</span>
+                    </button>
+                    <button
+                      onClick={() => setLiveScreen(scr)}
+                      className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-white font-semibold text-xs transition-all"
+                      title="Live Screen Preview — เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>{t('sm.livePreview')}</span>
                     </button>
                   </div>
                 </div>
@@ -670,6 +697,11 @@ export const ScreensManager: React.FC = () => {
       )}
 
       {/* Screen Details Inspector Drawer */}
+      {/* Live Screen Preview Modal — สถานะสดจาก WS (อัปเดตเรียลไทม์) */}
+      {liveScreen && (
+        <LiveScreenPreview screen={liveScreen} onClose={() => setLiveScreen(null)} />
+      )}
+
       {inspectScreen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl p-6 text-white shadow-2xl space-y-5">

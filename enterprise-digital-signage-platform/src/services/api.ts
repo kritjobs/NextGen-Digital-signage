@@ -237,6 +237,12 @@ export const auditApi = {
   },
 };
 
+// ─── Live Screen Preview ────────────────────────────────────
+export const monitoringApi = {
+  // สถานะการแสดงผลล่าสุดของทุกจอ (จาก SCREEN_STATE ของ player)
+  live: () => request<{ states: any[]; now: string }>('/monitoring/live'),
+};
+
 // ─── Backups (REQ-007) ─────────────────────────────────────
 export const backupApi = {
   list: () => request<{ data: any[]; config: any; lastRun: string | null }>('/backups'),

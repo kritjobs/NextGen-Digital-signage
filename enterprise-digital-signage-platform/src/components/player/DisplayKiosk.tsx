@@ -37,6 +37,50 @@ export const DisplayKiosk: React.FC = () => {
   // dev/test hook: ?simoffline=1 จำลองเน็ตหลุด (อ่านจาก SW cache ตรงๆ)
   const simOffline = new URLSearchParams(window.location.search).get('simoffline') === '1';
 
+  // ─── Live Screen Preview: รายงานสิ่งที่จอแสดงอยู่ (SCREEN_STATE ผ่าน WS เดิม) ───
+  const wsRef = useRef<WebSocket | null>(null);
+  const zoneStatesRef = useRef<Record<string, any>>({});
+  const sendStateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const sendScreenState = useCallback(() => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    const d = dataRef.current;
+    if (!d?.screen?.id) return;
+    const zones = (d.layout?.zones || [])
+      .map((z: any) => zoneStatesRef.current[z.id])
+      .filter(Boolean);
+    ws.send(JSON.stringify({
+      type: 'SCREEN_STATE',
+      payload: {
+        screenId: d.screen.id,
+        screenName: d.screen.name,
+        layout: {
+          id: d.layout?.id ?? null,
+          name: d.layout?.name ?? null,
+          orientation: d.layout?.orientation ?? 'landscape',
+        },
+        contentSource: d.contentSource ?? null,
+        priorityLevel: d.priorityLevel ?? null,
+        effectivePlaylistId: d.effectivePlaylistId ?? d.screen.currentPlaylistId ?? null,
+        zones,
+        updatedAt: new Date().toISOString(),
+      },
+    }));
+  }, []);
+
+  const reportZoneState = useCallback((zoneId: string, zs: any) => {
+    zoneStatesRef.current[zoneId] = zs;
+    if (sendStateTimerRef.current) clearTimeout(sendStateTimerRef.current);
+    sendStateTimerRef.current = setTimeout(sendScreenState, 250);
+  }, [sendScreenState]);
+
+  // ส่งสถานะซ้ำทุก 30 วิ (กันพลาดตอน WS ยังไม่เชื่อม + อัปเดต updatedAt ให้สดเสมอ)
+  useEffect(() => {
+    const t = setInterval(sendScreenState, 30_000);
+    return () => clearInterval(t);
+  }, [sendScreenState]);
+
   // Auto-fullscreen on first user interaction
   const enterFullscreen = () => {
     const el = document.documentElement;
@@ -215,6 +259,8 @@ export const DisplayKiosk: React.FC = () => {
     const connect = () => {
       try {
         ws = new WebSocket(wsUrl);
+        wsRef.current = ws;
+        ws.onopen = () => { sendScreenState(); };
         ws.onmessage = (event) => {
           try {
             const msg = JSON.parse(event.data);
@@ -273,9 +319,10 @@ export const DisplayKiosk: React.FC = () => {
 
     return () => {
       clearTimeout(reconnectTimer);
+      wsRef.current = null;
       ws?.close();
     };
-  }, [screenId, token]);
+  }, [screenId, token, sendScreenState]);
 
   if (error) {
     return (
@@ -366,6 +413,7 @@ export const DisplayKiosk: React.FC = () => {
             screenId={screen.id}
             screenName={screen.name}
             reportPoP={reportPoP}
+            reportZoneState={reportZoneState}
           />
         ))}
       </div>
@@ -413,9 +461,10 @@ interface KioskZoneProps {
   screenId: string;
   screenName: string;
   reportPoP: (pop: any) => void;
+  reportZoneState: (zoneId: string, zs: any) => void;
 }
 
-const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists, mediaItems, currentTime, screenId, screenName, reportPoP }) => {
+const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists, mediaItems, currentTime, screenId, screenName, reportPoP, reportZoneState }) => {
   // Zone-specific playlist takes priority, fall back to screen-level playlist only if zone has no assignment
   const zonePlaylistId = zone.playlistId || zone.playlist_id;
   const effectivePlaylistId = zonePlaylistId || screenPlaylistId;
@@ -458,6 +507,26 @@ const KioskZone: React.FC<KioskZoneProps> = ({ zone, screenPlaylistId, playlists
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
+
+  // Live Screen Preview: รายงานสื่อที่กำลังแสดงในโซนนี้ (parent รวมเป็น SCREEN_STATE)
+  useEffect(() => {
+    reportZoneState(zone.id, {
+      zoneId: zone.id,
+      zoneName: zone.name,
+      x: zone.x, y: zone.y, width: zone.width, height: zone.height,
+      zIndex: zone.zIndex || zone.z_index || 1,
+      backgroundColor: zone.backgroundColor || zone.background_color || '#000',
+      mediaType: activeMedia?.type ?? (zone.mediaType || null),
+      mediaId: activeMedia?.id ?? null,
+      mediaTitle: activeMedia?.title ?? null,
+      mediaUrl: activeMedia?.url || activeMedia?.thumbnailUrl || activeMedia?.thumbnail_url || null,
+      mediaThumb: activeMedia?.thumbnailUrl || activeMedia?.thumbnail_url || null,
+      mediaExtra: activeMedia?.contentData ? { ...activeMedia.contentData } : null,
+      itemDuration: activeItem?.duration ?? null,
+      startedAt: new Date().toISOString(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, activeMedia?.id]);
 
   return (
     <div

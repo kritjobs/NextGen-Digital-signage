@@ -27,7 +27,7 @@ import { useTranslation } from './hooks/useTranslation';
 
 export default function App() {
   const { isAuthenticated, user, checkAuth } = useAuthStore();
-  const { viewMode, activeAdminTab, isLoading, loadError, loadAllData, quickPost, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost } = useSignageStore();
+  const { viewMode, activeAdminTab, isLoading, loadError, loadAllData, quickPost, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost, receiveScreenState, loadScreenStates } = useSignageStore();
   const { theme } = useThemeStore();
   const { footerText } = useBrandingStore();
   const { t } = useTranslation();
@@ -63,8 +63,9 @@ export default function App() {
   useEffect(() => {
     if (isAuthenticated) {
       loadAllData();
+      void loadScreenStates(); // Live Screen Preview: catch-up สถานะล่าสุดของทุกจอ
     }
-  }, [isAuthenticated, loadAllData]);
+  }, [isAuthenticated, loadAllData, loadScreenStates]);
 
   // ─── Global WebSocket: ซิงก์ emergency + quick-post ไปทุกแท็บ/ทุก player ───
   // (admin ทุกหน้าเห็น banner + player ทุกตัวเห็น overlay — ไม่ต้องรอ mount เฉพาะ Player)
@@ -83,6 +84,8 @@ export default function App() {
             if (msg.type === 'EMERGENCY_TRIGGERED' && msg.payload) receiveEmergencyTrigger(msg.payload);
             if (msg.type === 'EMERGENCY_CLEARED' && msg.payload?.alertId) receiveEmergencyClear(msg.payload.alertId);
             if (msg.type === 'QUICK_POST' && msg.payload) receiveQuickPost(msg.payload);
+            // Live Screen Preview: สถานะการแสดงผลของจออัปเดต (ทุกแท็บเห็นพร้อมกัน)
+            if (msg.type === 'SCREEN_STATE_UPDATED' && msg.payload?.screenId) receiveScreenState(msg.payload);
           } catch { /* ข้ามข้อความที่ไม่ใช่ JSON */ }
         };
         ws.onclose = () => { reconnectTimer = setTimeout(connect, 5000); };
@@ -90,7 +93,7 @@ export default function App() {
     };
     connect();
     return () => { clearTimeout(reconnectTimer); ws?.close(); };
-  }, [isAuthenticated, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost]);
+  }, [isAuthenticated, receiveEmergencyTrigger, receiveEmergencyClear, receiveQuickPost, receiveScreenState]);
 
   // ─── Not Authenticated → Show Login ────────────────────
   if (!isAuthenticated) {

@@ -120,18 +120,33 @@ async function startServer() {
 
   // ─── WebSocket Hub (with Auth) ─────────────────────────
   const wss = new WebSocketServer({ server: httpServer, path: WS_PATH });
-  const connectedClients = new Map<WebSocket, { userId?: string; role?: string }>();
+  const connectedClients = new Map<WebSocket, any>();
+
+  // ─── Live Screen Preview: สถานะการแสดงผลล่าสุดของแต่ละจอ ───
+  // (จอส่ง SCREEN_STATE ผ่าน WS → เก็บที่นี่ → broadcast SCREEN_STATE_UPDATED ให้ Admin)
+  const screenStates = new Map<string, any>();
+
+  function receiveScreenState(state: any) {
+    if (!state || typeof state.screenId !== 'string' || !state.screenId) return;
+    screenStates.set(state.screenId, {
+      ...state,
+      online: true,                       // ส่ง state มาล่าสุด = จอยังมีชีวิต
+      receivedAt: new Date().toISOString(),
+    });
+    broadcast('SCREEN_STATE_UPDATED', screenStates.get(state.screenId));
+  }
 
   wss.on('connection', (ws, req) => {
     // Authenticate WebSocket via query param ?token=xxx
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     const token = url.searchParams.get('token');
-    let wsUser: { userId?: string; role?: string } = {};
+    let wsUser: any = {};
 
     if (token) {
       const payload = verifyAccessToken(token);
       if (payload) {
-        wsUser = { userId: payload.userId, role: payload.role };
+        // admin token → userId/role · display token → screenId/type='display'
+        wsUser = payload;
       }
     }
     // Allow anonymous connections for Player devices (they use API key for REST)
@@ -148,6 +163,14 @@ async function startServer() {
     ws.on('message', (raw) => {
       try {
         const msg = JSON.parse(raw.toString());
+        // Live Screen Preview: จอ (display token) รายงานสถานะการแสดงผล → เก็บ + broadcast
+        // อนุญาตเฉพาะ token ประเภท display ที่ screenId ตรงกัน (กันจออื่น/คนนอกสวม) — ใช้ได้แม้ไม่มี userId
+        if (msg.type === 'SCREEN_STATE' && msg.payload?.screenId) {
+          if (wsUser?.type === 'display' && wsUser.screenId === msg.payload.screenId) {
+            receiveScreenState(msg.payload);
+          }
+          return;
+        }
         // ⚠️ Security: anonymous connections (player devices / kiosks) are RECEIVE-ONLY.
         // Only authenticated users may relay broadcast messages (e.g. EMERGENCY_TRIGGERED,
         // QUICK_POST, SCREEN_COMMAND) to other clients through the hub.
@@ -1749,6 +1772,14 @@ async function startServer() {
       } catch (e) { next(e); }
     });
 
+  // GET /api/monitoring/live — Live Screen Preview: สถานะการแสดงผลล่าสุดของทุกจอ
+  // (catch-up สำหรับ Admin ตอนโหลดหน้า — หลังนั้นอัปเดตผ่าน WS SCREEN_STATE_UPDATED)
+  app.get('/api/monitoring/live',
+    authenticate as any, requirePermission('read:analytics') as any,
+    (_req, res) => {
+      res.json({ states: Array.from(screenStates.values()), now: new Date().toISOString() });
+    });
+
   // GET /api/audit-logs — REQ-010: ดู audit log ย้อนหลัง (admin+)
   // filter: action, resource, q (email/resourceId), limit
   app.get('/api/audit-logs',
@@ -1908,6 +1939,12 @@ async function startServer() {
           monitorState.set(s.id, { alertActive: true, alertedAt: now });
           void fireMonitorAlert('offline', s);
           broadcast('SCREEN_OFFLINE', { screenId: s.id, name: s.name, since: now.toISOString() });
+          // Live preview: ปิดสถานะสด (จอ offline — แสดง state เก่าแบบ stale)
+          const stOff = screenStates.get(s.id);
+          if (stOff) {
+            screenStates.set(s.id, { ...stOff, online: false, offlineSince: now.toISOString() });
+            broadcast('SCREEN_STATE_UPDATED', screenStates.get(s.id));
+          }
         } else if (state.alertActive && hb && !isStale) {
           // จอกลับมา online แล้ว (heartbeat สด) — ยกเลิก alert + แจ้งกลับ
           monitorState.set(s.id, { alertActive: false, alertedAt: now });
@@ -1919,6 +1956,11 @@ async function startServer() {
           });
           void fireMonitorAlert('online', s);
           broadcast('SCREEN_ONLINE', { screenId: s.id, name: s.name });
+          const stOn = screenStates.get(s.id);
+          if (stOn) {
+            screenStates.set(s.id, { ...stOn, online: true });
+            broadcast('SCREEN_STATE_UPDATED', screenStates.get(s.id));
+          }
         }
       }
     } catch (e) {

@@ -761,3 +761,72 @@ test('15. Webhook Trigger — X-Webhook-Token ต้องถูกต้อง 
   assert.equal(byTags.status, 200, `by-tags token ถูกควร 200: ${JSON.stringify(byTags.json)}`);
 });
 
+// ═══════════════════════════════════════════════════════════════
+// 16) Live Screen Preview — จอส่ง SCREEN_STATE → server เก็บ + broadcast
+//     SCREEN_STATE_UPDATED ให้ Admin เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์
+//     + REST catch-up /api/monitoring/live + กันสวมรอย screenId
+// ═══════════════════════════════════════════════════════════════
+test('16. Live Screen Preview — SCREEN_STATE → broadcast + live endpoint + สวมรอยถูกบล็อก', async () => {
+  const adminWs = await openWs(token);
+  const displayWs = await openWs(displayToken);
+  const anonWs = await openWs(null);
+  try {
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'admin WS ควรเชื่อม');
+    assert.ok(await waitFor(() => displayWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'display WS ควรเชื่อม');
+    assert.ok(await waitFor(() => anonWs.messages.some((m) => m.type === 'INIT_CONNECTED')), 'anon WS ควรเชื่อม');
+
+    // ⚠️ anonymous (ไม่มี token) ส่ง SCREEN_STATE → ต้องไม่ถูก broadcast
+    const before = adminWs.messages.length;
+    anonWs.ws.send(JSON.stringify({ type: 'SCREEN_STATE', payload: { screenId: testScreenId, zones: [] } }));
+    assert.ok(!await waitFor(() => adminWs.messages.slice(before).some((m) => m.type === 'SCREEN_STATE_UPDATED'), 800),
+      'anonymous ส่ง SCREEN_STATE ต้องถูกบล็อก (ไม่ใช่ display token)');
+
+    // ⚠️ display token ของจอเทส แต่สวม screenId จออื่น → ต้องไม่ถูก broadcast
+    const before2 = adminWs.messages.length;
+    displayWs.ws.send(JSON.stringify({ type: 'SCREEN_STATE', payload: { screenId: 'scr-not-mine', zones: [] } }));
+    assert.ok(!await waitFor(() => adminWs.messages.slice(before2).some((m) => m.type === 'SCREEN_STATE_UPDATED' && m.payload?.screenId === 'scr-not-mine'), 800),
+      'สวมรอย screenId ของจออื่นต้องถูกบล็อก');
+
+    // จอเทสส่ง state จริง → admin ได้รับ SCREEN_STATE_UPDATED + payload ครบ
+    const stPayload = {
+      screenId: testScreenId,
+      screenName: '[TEST] REQ-009 Integration',
+      layout: { id: layoutId, name: 'Test Layout', orientation: 'landscape' },
+      contentSource: 'default',
+      priorityLevel: 'default',
+      effectivePlaylistId: null,
+      zones: [{
+        zoneId: 'z1', zoneName: 'Main', x: 0, y: 0, width: 100, height: 100,
+        mediaType: 'image', mediaId, mediaTitle: 'Test Media', mediaUrl: null,
+        itemDuration: 15, startedAt: new Date().toISOString(),
+      }],
+      updatedAt: new Date().toISOString(),
+    };
+    displayWs.ws.send(JSON.stringify({ type: 'SCREEN_STATE', payload: stPayload }));
+
+    assert.ok(await waitFor(() => adminWs.messages.some((m) => m.type === 'SCREEN_STATE_UPDATED' && m.payload?.screenId === testScreenId)),
+      'admin ควรได้รับ SCREEN_STATE_UPDATED');
+    const upd = adminWs.messages.find((m) => m.type === 'SCREEN_STATE_UPDATED' && m.payload?.screenId === testScreenId);
+    assert.equal(upd.payload.screenName, stPayload.screenName, 'payload ควรมี screenName');
+    assert.equal(upd.payload.zones?.[0]?.mediaTitle, 'Test Media', 'payload ควรมีสื่อในโซน');
+    assert.equal(upd.payload.priorityLevel, 'default', 'payload ควรมี priorityLevel');
+    assert.equal(upd.payload.online, true, 'state ควร online:true');
+    assert.ok(upd.payload.receivedAt, 'ควรมี receivedAt');
+
+    // REST catch-up: GET /api/monitoring/live มี state ของจอเทส
+    const live = await raw('GET', '/monitoring/live', { token });
+    assert.equal(live.status, 200, 'live endpoint ควร 200');
+    const st = (live.json?.states || []).find((x) => x.screenId === testScreenId);
+    assert.ok(st, 'live ควรมี state ของจอเทส');
+    assert.equal(st.zones?.[0]?.mediaTitle, 'Test Media', 'live ควรมีสื่อครบ');
+
+    // ไม่มี token → 401
+    const noTok = await raw('GET', '/monitoring/live');
+    assert.equal(noTok.status, 401, 'live endpoint ไม่มี token ควร 401');
+  } finally {
+    adminWs.ws.close();
+    displayWs.ws.close();
+    anonWs.ws.close();
+  }
+});
+

@@ -25,6 +25,10 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 - ไล่ทุกหน้า: กระดานจอ (badge ออฟไลน์/ออนไลน์ + เมื่อสักครู่ ไทยครบ), Layout Studio (ตัวตรวจสอบโซน/Z-Index), คลังสื่อ, เพลย์ลิสต์, ตารางเวลา (วัน อา–ส + ฉุกเฉิน/วิกฤต), แคมเปญ, ควบคุมแบบเรียลไทม์, วิเคราะห์ (ตรวจสอบแล้ว 100%), สไลด์โชว์ (ธีมไทย), สำรองข้อมูล, ตั้งค่า AI, จำลองสองจอ + TV Player
 - typecheck 0 error + build ผ่าน + integration **16/16 ผ่าน**
 
+### Deployed (prod) — 2026-08-16 ✅
+- sync 32 ไฟล์ (0.4.14/0.4.15 ขึ้น `C:\signage` — hash ตรง) → `redeploy.bat` → **bundle ใหม่ขึ้นจริง**: `index-D6m3OtjN.js` (765KB — ใหญ่กว่าตัวเก่า `index-tH9gqdAn.js` 666KB) + มี marker i18n (`signage_language`, `คอนโซลผู้ดูแล`, `ออนไลน์`, `紧急`) → **ต้นตอ build เก่าปิดแล้วสำหรับรอบนี้**
+- ตรวจ post-deploy: emergency เจาะจงจอ **15/15** (`verify-prod-emergency.mjs` — trigger/WS broadcast/payload targetScreenIds/display data เฉพาะจอเป้าหมาย/clear/audit) + quick post เจาะจงจอ **10/10** (`verify-prod-quickpost.mjs` ใหม่ — WS ได้รับ QUICK_POST payload ครบ + audit) — ล้างข้อมูลเทสเรียบร้อย
+
 ---
 
 ## [0.4.14] — 2026-08-16  🤖 โดย Freebuff (i18n หลายภาษา — EN core + ไทย + 中文 + ขยายได้ ✅)

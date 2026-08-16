@@ -63,6 +63,10 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-16 — 🤖 โดย Freebuff (**redeploy prod 0.4.18 — Live Screen Preview ขึ้น prod แล้ว**)
+- sync 15 ไฟล์ (server.ts + LiveScreenPreview.tsx + ScreensManager/DisplayKiosk/App/store/api + i18n 3 ภาษา + เทส) hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BE47npt5.js`
+- ตรวจ post-deploy: emergency **15/15** + quickpost **10/10** + `GET /api/monitoring/live` **200** (ไม่มี token → 401) + bundle มี marker i18n “ดูภาพสด/实时预览/Live Preview” — ไม่มี migration ใหม่
+
 ### 2026-08-16 — 🤖 โดย Freebuff (**Live Screen Preview — เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์จาก Admin**)
 - **player (DisplayKiosk)**: ส่ง `SCREEN_STATE` ผ่าน WS เดิม (display token) — layout/effectivePlaylistId/contentSource/priorityLevel + สื่อที่กำลังเล่นทุกโซน (title/type/url/thumb/duration/startedAt) — ตอนเชื่อม WS + สื่อเปลี่ยน + ทุก 30 วิ
 - **server.ts**: รับ `SCREEN_STATE` เฉพาะ display token ที่ screenId ตรง (anonymous/สวมรอยถูกบล็อก) → เก็บใน memory + broadcast `SCREEN_STATE_UPDATED` → monitor flip offline/online ซิงก์สถานะ + `GET /api/monitoring/live` (permission read:analytics)
@@ -296,7 +300,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 - [x] **redeploy prod 0.4.16 เสร็จแล้ว (2026-08-16)** — sync 10 ไฟล์ (server.ts + i18n + client) hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BdVozIW3.js` (มีคีย์ evt.*) — ตรวจ post-deploy: emergency **15/15** + quick post **10/10** + **event log server-side i18n ทำงานบน prod** (`?lang=th` → "สถานะ: ออฟไลน์/ดำเนินการ: SET_VOLUME…" · `?lang=zh` → "状态: 离线/已执行…") — ไม่มี migration ใหม่
 - [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` — ✅ **เนื้อหาพร้อมแล้ว** (pl-cafeteria-menu + lay-menu-board + sch-002 แก้แล้ว — เปิดจอแล้วแสดงเลย) เหลือใช้ token ใหม่ (JWT_SECRET เปลี่ยน)
-- [ ] **Live Screen Preview (0.4.18) ยังไม่ deploy prod** — สร้างเสร็จ dev + เทส 18/18 — รอบหน้า sync (`sync-to-prod.ps1` ผ่าน `Z:\`) + `redeploy.bat` แล้ว prod จะเห็นปุ่ม “ดูภาพสด” บนหน้าเมทริกซ์จอ (server.ts + bundle ใหม่ + i18n — ไม่มี migration ใหม่)
+- [x] **Live Screen Preview (0.4.18) deploy prod แล้ว (2026-08-16)** — sync 15 ไฟล์ hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BE47npt5.js` (มีโค้ด LiveScreenPreview + คีย์ `sm.livePreview` ไทย/中文) — ตรวจ post-deploy: emergency **15/15** + quickpost **10/10** + `GET /api/monitoring/live` **200** (401 ไม่มี token) — ไม่มี migration ใหม่
 - [x] **แจก WEBHOOK_TOKEN แล้ว (0.4.17)** — ตั้งใน prod .env (มีอยู่แล้ว) + dev .env ค่าเดียวกัน — `/api/trigger`/`/by-tags`/`/integrations/slack` ต้องส่ง `X-Webhook-Token` (401/401/200) — เทสใหม่ #15 → **17/17** — เอกสาร: `docs/deploy-security-guide.md` (ค่าอยู่ใน prod .env — ขอจาก admin)
 - [ ] เทสหลัง deploy ครบ (วันที่ผู้ใช้สะดวก) — ดู checklist ใน `deploy-security-guide.md`
 - [ ] **RTL support** — ยังไม่รองรับ (บันทึกใน `src/i18n/README.md`) — จำเป็นถ้าจะเพิ่มภาษาอาหรับ/ฮีบรู

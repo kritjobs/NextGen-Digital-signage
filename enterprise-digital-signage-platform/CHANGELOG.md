@@ -17,6 +17,7 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 ### Verified
 - typecheck 0 · build ผ่าน · integration **18/18** (เทส #16 ใหม่: SCREEN_STATE → broadcast ครบ payload · live endpoint 200/401 · anonymous ส่งถูกบล็อก · สวมรอย screenId อื่นถูกบล็อก)
 - **ยืนยันใน preview**: เปิด kiosk จริง (display URL) → การ์ด Main Lobby ขึ้น badge LIVE + heartbeat “เมื่อสักครู่” · modal แสดง mini replica 3 โซนพร้อมเนื้อหาจริง (video/weather/ticker) + chips ไทยครบ — screenshot ยืนยัน
+- ✅ **deploy prod แล้ว (2026-08-16)** — sync 15 ไฟล์ hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BE47npt5.js` (marker “ดูภาพสด/实时预览/Live Preview” ใน bundle) — post-deploy: emergency **15/15** + quickpost **10/10** + `GET /api/monitoring/live` **200** (401 ไม่มี token) — ไม่มี migration ใหม่
 
 ---
 

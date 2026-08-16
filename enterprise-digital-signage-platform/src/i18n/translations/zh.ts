@@ -222,6 +222,19 @@ export const zh: Messages = {
   'rt.wsConnected': 'WebSocket 状态: 已连接',
   'rt.channel': '频道: /ws',
   'rt.oneClick': '一键操作',
+  'rt.set': '应用',
+
+  // ── 遥测事件消息（服务端 i18n）──────────────────────────
+  'evt.cmdExec': '已执行: {command} {payload}',
+  'evt.hbOnline': '状态: 在线',
+  'evt.hbOffline': '状态: 离线',
+  'evt.hbSyncing': '状态: 同步中',
+  'evt.hbEmergency': '状态: 紧急广播中',
+  'evt.hbError': '状态: 错误',
+  'evt.hbOther': '状态: {status}',
+  'evt.pairOk': '设备配对成功，配对码: {code}',
+  'evt.monOffline': '屏幕离线 — 超过 {minutes}+ 分钟无心跳',
+  'evt.monOnline': '屏幕已恢复在线（监控已解除）',
 
   // ── Analytics & Telemetry ──────────────────────────────────
   'an.title': '分析与播放证明审计追踪',

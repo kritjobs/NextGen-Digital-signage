@@ -310,6 +310,9 @@ export interface TelemetryLog {
   timestamp: string;
   eventType: 'heartbeat' | 'media_played' | 'buffer_cached' | 'offline_mode' | 'command_exec' | 'error';
   message: string;
+  /** i18n key (server-side) — ถ้ามี ให้ render ผ่าน t(eventKey, messageParams) แทน message */
+  eventKey?: string;
+  messageParams?: Record<string, string | number>;
   details?: Record<string, unknown>;
 }
 

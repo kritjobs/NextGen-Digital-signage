@@ -216,7 +216,7 @@ export const controlApi = {
 
 // ─── Analytics ──────────────────────────────────────────────
 export const analyticsApi = {
-  getTelemetry:   (limit = 100) => request<{ data: any[]; total: number }>(`/analytics/telemetry?limit=${limit}`),
+  getTelemetry:   (limit = 100, lang?: string) => request<{ data: any[]; total: number }>(`/analytics/telemetry?limit=${limit}${lang ? `&lang=${lang}` : ''}`),
   getProofOfPlay: (limit = 100) => request<{ data: any[]; total: number }>(`/analytics/proof-of-play?limit=${limit}`),
   getSummary:     () => request<any>('/analytics/summary'),
   // REQ-005: player รายงานการเล่นสื่อจริงเข้า server

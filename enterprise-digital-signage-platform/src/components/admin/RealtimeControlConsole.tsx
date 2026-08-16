@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import type { TranslationKey, TranslationVars } from '../../i18n';
 
 export const RealtimeControlConsole: React.FC = () => {
   const { t } = useTranslation();
@@ -150,7 +151,7 @@ export const RealtimeControlConsole: React.FC = () => {
                   onClick={() => handleCommand('SET_VOLUME')}
                   className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl"
                 >
-                  Set
+                  {t('rt.set')}
                 </button>
               </div>
             </div>
@@ -176,7 +177,11 @@ export const RealtimeControlConsole: React.FC = () => {
                     <span className="text-cyan-400 font-bold">[{log.screenName}]</span>
                     <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
                   </div>
-                  <p className="text-slate-200">{log.message}</p>
+                  <p className="text-slate-200">{
+                    log.eventKey
+                      ? t(log.eventKey as TranslationKey, (log.messageParams ?? {}) as TranslationVars)
+                      : log.message
+                  }</p>
                 </div>
               ))}
             </div>

@@ -61,11 +61,14 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - ❌ **ห้าม** แก้ `.env` prod โดยไม่สำรองก่อน (backup เป็น `.env.backup-<เวลา>`)
 - ✅ หลังแก้โค้ด: รัน typecheck + build ให้ผ่าน แล้ว sync ผ่าน `sync-to-prod.ps1`
 
----
+---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
-## 4. บันทึกการทำงานล่าสุด (Work Log)
+### 2026-08-16 — 🤖 โดย Freebuff (**i18n ฝั่ง server สำหรับ event log — Realtime Control ตามภาษา UI**)
+- server.ts เขียน `eventKey+params` ลง details (jsonb — ไม่ต้อง migration) ทุกจุด telemetry (command_exec/heartbeat/pair/screen_offline/screen_online) + `GET /api/analytics/telemetry` รับ `?lang=`/Accept-Language → แปลด้วย dictionary เดียวกับ client (`src/i18n/translations/*` import ตรงได้ — เป็น pure TS)
+- `src/i18n/telemetry.ts` helper แชร์ server+client; client ส่งภาษาปัจจุบัน (`getTelemetry(limit, lang)`) + optimistic log ใช้ eventKey — console render ผ่าน `t(eventKey, params)` → สลับภาษาทันที; row เก่าไม่มี eventKey → fallback message เดิม
+- ยืนยัน: API th/zh/en + Accept-Language + preview สลับไทย↔中文 re-render ทันที — typecheck 0 + build ผ่าน + integration 16/16 — ดู `CHANGELOG.md` [0.4.16]
 
-### 2026-08-16 — 🤖 โดย Freebuff (**แปล UI ครบทุกหน้า 3 ภาษา — EN/ไทย/中文**)
+### 2026-08-16 — 🤖 โดย Freebuff (**แปล UI ครบทุกหน้า 3 ภาษา — EN/ไทย/中文**) 
 - แปลทั้ง 14 หน้า: ScreensManager (status badge + heartbeat), SmartLayoutBuilder (widget catalog + zone inspector), MediaLibrary/MediaUploadModal, PlaylistEditor, SchedulerEngine (priority + วันย่อ + hint), CampaignManager, RealtimeControlConsole, AnalyticsTelemetry (summary + audit filter + severity), BackupManager, AISettings, BrandingSettings, SlideshowStudio (theme presets 8 ธีม), DualSimulator, PlayerApp chrome
 - เทคนิคที่ใช้: dynamic-key maps (`PRIORITY_T_KEY`/`THEME_NAME_KEYS`/`STATUS_T_KEY` typed เป็น `TranslationKey`) + แก้ตัวแปร `t` ชนกับ translation hook ใน PlaylistEditor
 - **ข้อจำกัด:** event log ใน Realtime Control มาจาก server.ts (ภาษาเดิม) — ต้อง server-side i18n แยก; เนื้อหา DB เป็นข้อมูล ไม่แปล
@@ -287,7 +290,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 - [ ] **Deploy REQ-003 (server-side scheduler)** — โค้ด sync แล้ว ต้อง `redeploy.bat` ที่เครื่อง prod
 - [ ] ฟีเจอร์จาก roadmap ที่ยังไม่ทำ (offline-first ใน web player, 6-Level Priority, campaigns ฝั่ง server (REQ-011), PoP จริง, backup อัตโนมัติ, monitoring, tests, audit log — ดู requests.md)
 - [x] **Sync + redeploy prod 0.4.14/0.4.15 เสร็จแล้ว (2026-08-16)** — sync 32 ไฟล์ (hash ตรง) → `redeploy.bat` → bundle ใหม่ `index-D6m3OtjN.js` (765KB — มี marker i18n: signage_language/คอนโซลผู้ดูแล/紧急 — โค้ดใหม่ขึ้นจริง) + ตรวจ post-deploy: emergency **15/15** (verify-prod-emergency.mjs) + quick post เจาะจงจอ **10/10** (verify-prod-quickpost.mjs — WS broadcast payload targetScreenIds ครบ + audit) — **ต้นตอ build เก่าปิดแล้วสำหรับรอบนี้**
-- [ ] **server-side i18n สำหรับ event log** (Realtime Control) — server.ts ส่งข้อความอังกฤษ (เช่น "Device paired successfully...") ต้องรับภาษา client ผ่าน header/query แล้วแปล — ดู `CHANGELOG.md` [0.4.15]
+- [x] **server-side i18n สำหรับ event log เสร็จแล้ว (0.4.16)** — server เขียน `eventKey+params` ใน details (ไม่ต้อง migration) + `GET /api/analytics/telemetry?lang=`/Accept-Language แปล message + client render ผ่าน t() → สลับภาษาทันที — ดู `CHANGELOG.md` [0.4.16] — **ต้อง sync + redeploy prod**
 - [ ] **RTL support** — ยังไม่รองรับ (บันทึกใน `src/i18n/README.md`) — จำเป็นถ้าจะเพิ่มภาษาอาหรับ/ฮีบรู
 
 ---

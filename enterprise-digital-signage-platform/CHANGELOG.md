@@ -5,6 +5,23 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.16] — 2026-08-16  🤖 โดย Freebuff (i18n ฝั่ง server สำหรับ event log — Realtime Control แสดงภาษาตาม UI ✅)
+
+### Added
+- **Server-side i18n สำหรับ telemetry/event log** (หน้า Realtime Control เดิมขึ้นอังกฤษ — ตอนนี้ตามภาษา UI):
+  - server.ts เขียน **`eventKey` + `params`** ลง `details` (jsonb) ทุกจุด insert telemetry — `evt.cmdExec` (command), `evt.hbOnline/Offline/Syncing/Emergency/Error/Other` (heartbeat status), `evt.pairOk` (pair), `evt.monOffline/monOnline` (monitoring) — **ไม่ต้อง migration** (ใช้คอลัมน์ `details` ที่มีอยู่)
+  - `GET /api/analytics/telemetry` รับภาษา client ผ่าน **`?lang=` หรือ `Accept-Language` header** → server แปล `message` ด้วย dictionary เดียวกับ client (`src/i18n/translations/*` — import จาก server.ts ได้โดยตรง) — row เก่าที่ไม่มี eventKey → fallback เป็น message เดิม
+  - `src/i18n/telemetry.ts` — helper แชร์ server+client (heartbeat status → key)
+  - client: `api.getTelemetry(limit, lang)` ส่งภาษาปัจจุบัน + store แมป `eventKey/messageParams` + optimistic log ใช้ `evt.cmdExec` — RealtimeControlConsole render ผ่าน `t(eventKey, params)` → **สลับภาษาทันทีโดยไม่ต้อง reload** (row เก่า fallback message)
+  - แปลปุ่ม "Set" → `rt.set` (ตั้งค่า/应用)
+
+### Verified
+- API: `?lang=th` → "สถานะ: ออฟไลน์ / ดำเนินการ: SET_VOLUME…" · `?lang=zh` → "状态: 离线 / 已执行…" · ไม่ส่ง lang → EN · Accept-Language header ใช้ได้ · row เก่า fallback
+- Preview: Realtime Control เป็นไทย (สถานะ: ออนไลน์/ออฟไลน์, ดำเนินการ: SET_VOLUME) → สลับ中文 re-render ทันที (状态: 在线/离线, 已执行) — screenshot ยืนยัน
+- typecheck 0 + build ผ่าน + integration **16/16 ผ่าน**
+
+---
+
 ## [0.4.15] — 2026-08-16  🤖 โดย Freebuff (แปลทุกหน้าของระบบครบ 3 ภาษา — EN/ไทย/中文 ✅)
 
 ### Added

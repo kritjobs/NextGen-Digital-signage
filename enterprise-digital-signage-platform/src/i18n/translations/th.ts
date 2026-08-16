@@ -220,8 +220,20 @@ export const th: Messages = {
   'rt.telemetry': 'บันทึกเทเลเมทรีแบบเรียลไทม์สด',
   'rt.autoScroll': 'เลื่อนอัตโนมัติ',
   'rt.wsConnected': 'สถานะ WebSocket: เชื่อมต่อแล้ว',
-  'rt.channel': 'ช่อง: /ws',
-  'rt.oneClick': 'คำสั่ง 1 คลิก',
+  'rt.channel': 'ช่อง: /ws',  'rt.oneClick': 'คำสั่ง 1 คลิก',
+  'rt.set': 'ตั้งค่า',
+
+  // ── ข้อความ event telemetry (i18n ฝั่ง server) ──────────────
+  'evt.cmdExec': 'ดำเนินการ: {command} {payload}',
+  'evt.hbOnline': 'สถานะ: ออนไลน์',
+  'evt.hbOffline': 'สถานะ: ออฟไลน์',
+  'evt.hbSyncing': 'สถานะ: กำลังซิงก์',
+  'evt.hbEmergency': 'สถานะ: กำลังประกาศฉุกเฉิน',
+  'evt.hbError': 'สถานะ: ข้อผิดพลาด',
+  'evt.hbOther': 'สถานะ: {status}',
+  'evt.pairOk': 'จอจับคู่สำเร็จด้วยรหัส: {code}',
+  'evt.monOffline': 'จอออฟไลน์ — ไม่มีสัญญาณเกิน {minutes}+ นาที',
+  'evt.monOnline': 'จอกลับมาออนไลน์แล้ว (ระบบตรวจพบ)',
 
   // ── Analytics & Telemetry ──────────────────────────────────
   'an.title': 'การวิเคราะห์และบันทึกหลักฐานการออกอากาศ',

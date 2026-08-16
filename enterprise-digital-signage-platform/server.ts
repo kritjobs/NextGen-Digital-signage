@@ -16,6 +16,10 @@ import {
 } from './src/db/schema.js';
 import { eq, desc, asc, sql, and } from 'drizzle-orm';
 import { priorityLevelOf, priorityRankOf } from './src/types/signage.js';
+// i18n — server-side telemetry event messages (same dictionaries as the client)
+import { translate, isSupportedLanguage } from './src/i18n/index.js';
+import type { TranslationKey, TranslationVars } from './src/i18n/index.js';
+import { heartbeatEventKey } from './src/i18n/telemetry.js';
 import { createServer as createViteServer } from 'vite';
 
 // ─── Security imports ────────────────────────────────────────
@@ -1063,7 +1067,7 @@ async function startServer() {
         else if (command === 'UNPAIR_DEVICE') await db.update(screens).set({ status: 'offline', updatedAt: now }).where(eq(screens.id, screenId));
 
         const [scr] = await db.select({ name: screens.name }).from(screens).where(eq(screens.id, screenId));
-        await db.insert(telemetryLogs).values({ screenId, screenName: scr?.name ?? 'Unknown', eventType: 'command_exec', message: `${command} ${payload ? JSON.stringify(payload) : ''}` });
+        await db.insert(telemetryLogs).values({ screenId, screenName: scr?.name ?? 'Unknown', eventType: 'command_exec', message: `${command} ${payload ? JSON.stringify(payload) : ''}`, details: { eventKey: 'evt.cmdExec', params: { command, payload: payload ? JSON.stringify(payload) : '' } } });
         await logAudit(req, 'command_sent', 'screen', screenId, { command, payload });
         broadcast('SCREEN_COMMAND', { screenId, command, payload });
         res.json({ success: true, screenId, command, payload });
@@ -1421,7 +1425,7 @@ async function startServer() {
           ...(clientIp ? { ipAddress: clientIp } : (reportedIp ? { ipAddress: reportedIp } : {})),
           ...(reportedMac ? { macAddress: reportedMac } : {}),
         }).where(eq(screens.id, screenId));
-        await db.insert(telemetryLogs).values({ screenId, screenName: screenId, eventType: 'heartbeat', message: `Status: ${status}` });
+        await db.insert(telemetryLogs).values({ screenId, screenName: screenId, eventType: 'heartbeat', message: `Status: ${status}`, details: { eventKey: heartbeatEventKey(status), params: { status } } });
         broadcast('SCREEN_HEARTBEAT', { screenId, status, storageUsageMb, uptimeSeconds });
         res.json({ success: true, receivedAt: new Date().toISOString() });
       } catch (e) { next(e); }
@@ -1468,8 +1472,20 @@ async function startServer() {
     async (req, res, next) => {
       try {
         const limit = Math.min(Number(req.query.limit ?? 100), 500);
+        // Server-side i18n: รับภาษา client ผ่าน ?lang= หรือ Accept-Language header
+        let lang = typeof req.query.lang === 'string' && isSupportedLanguage(req.query.lang)
+          ? req.query.lang
+          : (req.headers['accept-language'] ?? '').split(',')[0]?.trim().slice(0, 2).toLowerCase();
+        if (!isSupportedLanguage(lang)) lang = 'en';
         const rows = await db.select().from(telemetryLogs).orderBy(desc(telemetryLogs.createdAt)).limit(limit);
-        res.json({ data: rows, total: rows.length });
+        const data = rows.map((r) => {
+          const details = (r.details ?? {}) as Record<string, unknown>;
+          const eventKey = typeof details.eventKey === 'string' ? details.eventKey : null;
+          if (!eventKey) return r; // rows ที่เขียนก่อนมี eventKey → คืน message เดิม (fallback)
+          const params = (details.params ?? undefined) as TranslationVars | undefined;
+          return { ...r, message: translate(lang as string, eventKey as TranslationKey, params) };
+        });
+        res.json({ data, total: data.length });
       } catch (e) { next(e); }
     });
 
@@ -1574,6 +1590,7 @@ async function startServer() {
         screenId: screen.id, screenName: screen.name,
         eventType: 'command_exec',
         message: `Device paired successfully via code: ${pairingCode}`,
+        details: { eventKey: 'evt.pairOk', params: { code: pairingCode } },
       });
 
       const displayUrl = `/display/${screen.id}?token=${displayToken}`;
@@ -1886,7 +1903,7 @@ async function startServer() {
             screenId: s.id, screenName: s.name,
             eventType: 'screen_offline',
             message: `Screen offline — no heartbeat for ${MONITOR_OFFLINE_MINUTES}+ min`,
-            details: { offlineThresholdMinutes: MONITOR_OFFLINE_MINUTES, lastHeartbeat: hb.toISOString() },
+            details: { eventKey: 'evt.monOffline', params: { minutes: MONITOR_OFFLINE_MINUTES }, offlineThresholdMinutes: MONITOR_OFFLINE_MINUTES, lastHeartbeat: hb.toISOString() },
           });
           monitorState.set(s.id, { alertActive: true, alertedAt: now });
           void fireMonitorAlert('offline', s);
@@ -1898,7 +1915,7 @@ async function startServer() {
             screenId: s.id, screenName: s.name,
             eventType: 'screen_online',
             message: 'Screen back online (monitor resolved)',
-            details: { lastHeartbeat: hb.toISOString() },
+            details: { eventKey: 'evt.monOnline', lastHeartbeat: hb.toISOString() },
           });
           void fireMonitorAlert('online', s);
           broadcast('SCREEN_ONLINE', { screenId: s.id, name: s.name });

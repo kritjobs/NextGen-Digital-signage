@@ -14,6 +14,7 @@ import {
   screenApi, mediaApi, layoutApi, playlistApi,
   scheduleApi, emergencyApi, controlApi, analyticsApi,
 } from '../services/api';
+import { useLanguageStore } from './useLanguageStore';
 
 export type AppViewMode = 'admin' | 'player' | 'simulator';
 
@@ -301,7 +302,7 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
         layoutApi.getAll(),
         playlistApi.getAll(),
         scheduleApi.getAll(),
-        analyticsApi.getTelemetry(50),
+        analyticsApi.getTelemetry(50, useLanguageStore.getState().language),
         analyticsApi.getProofOfPlay(50),
       ]);
 
@@ -311,15 +312,20 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
         layouts:         layoutsRes.data.map(mapLayout),
         playlists:       playlistsRes.data.map(mapPlaylist),
         schedules:       schedulesRes.data.map(mapSchedule),
-        telemetryLogs:   telemetryRes.data.map((t: any) => ({
-          id: String(t.id),
-          screenId: t.screenId || t.screen_id || '',
-          screenName: t.screenName || t.screen_name || '',
-          timestamp: t.createdAt || t.created_at || new Date().toISOString(),
-          eventType: t.eventType || t.event_type || 'heartbeat',
-          message: t.message || '',
-          details: t.details,
-        })),
+        telemetryLogs:   telemetryRes.data.map((t: any) => {
+          const details = (t.details ?? {}) as Record<string, any>;
+          return {
+            id: String(t.id),
+            screenId: t.screenId || t.screen_id || '',
+            screenName: t.screenName || t.screen_name || '',
+            timestamp: t.createdAt || t.created_at || new Date().toISOString(),
+            eventType: t.eventType || t.event_type || 'heartbeat',
+            message: t.message || '',
+            eventKey: typeof details.eventKey === 'string' ? details.eventKey : undefined,
+            messageParams: (details.params ?? undefined) as Record<string, string | number> | undefined,
+            details,
+          };
+        }),
         proofOfPlayLogs: popRes.data.map((p: any) => ({
           id: String(p.id),
           screenId: p.screenId || p.screen_id || '',
@@ -610,13 +616,15 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
     // Call API
     controlApi.sendCommand(screenId, command, payload).catch(console.error);
 
-    // Add local telemetry log
+    // Add local telemetry log (eventKey → แสดงผ่าน t() ตามภาษาปัจจุบัน)
     state.addTelemetryLog({
       screenId,
       screenName: scr?.name || 'Unknown',
       timestamp: new Date().toISOString(),
       eventType: 'command_exec',
       message: `Executed: ${command} ${payload ? JSON.stringify(payload) : ''}`,
+      eventKey: 'evt.cmdExec',
+      messageParams: { command, payload: payload ? JSON.stringify(payload) : '' },
     });
   },
 

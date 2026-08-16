@@ -227,6 +227,19 @@ export const en = {
   'rt.wsConnected': 'WebSocket Status: Connected',
   'rt.channel': 'Channel: /ws',
   'rt.oneClick': '1-Click Actions',
+  'rt.set': 'Set',
+
+  // ── Telemetry event messages (server-side i18n) ────────────
+  'evt.cmdExec': 'Executed: {command} {payload}',
+  'evt.hbOnline': 'Status: Online',
+  'evt.hbOffline': 'Status: Offline',
+  'evt.hbSyncing': 'Status: Syncing',
+  'evt.hbEmergency': 'Status: Emergency Active',
+  'evt.hbError': 'Status: Error',
+  'evt.hbOther': 'Status: {status}',
+  'evt.pairOk': 'Device paired successfully via code: {code}',
+  'evt.monOffline': 'Screen offline — no heartbeat for {minutes}+ min',
+  'evt.monOnline': 'Screen back online (monitor resolved)',
 
   // ── Analytics & Telemetry ──────────────────────────────────
   'an.title': 'Analytics & Proof of Play Audit Trail',

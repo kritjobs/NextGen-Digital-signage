@@ -5,9 +5,9 @@
 
 ---
 
-## 📌 สถานะการพัฒนา (อัปเดต 2026-08-12 — 🤖 โดย Freebuff)
+## 📌 สถานะการพัฒนา (อัปเดต 2026-08-16 — 🤖 โดย Freebuff)
 
-- ✅ **2026-08-16 (Freebuff):** **REQ-012 Live Screen Preview เสร็จ + deploy prod แล้ว** — Admin เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์ผ่าน WS (จอส่ง `SCREEN_STATE` → server เก็บ + broadcast `SCREEN_STATE_UPDATED` → ปุ่ม “ดูภาพสด” บนการ์ดจอ + modal mini replica ของ layout พร้อมสื่อจริงทุกโซน + badge LIVE) — กันสวมรอย (display token + screenId ตรง) + `GET /api/monitoring/live` catch-up — เทสใหม่ #16 → **18/18 ผ่าน** + bundle ใหม่ `index-BE47npt5.js` ขึ้น prod + post-deploy emergency 15/15 + quickpost 10/10 — ดู `CHANGELOG.md` [0.4.18]
+- ✅ **2026-08-16 (Freebuff):** **UI ตารางเวลาแบบ Google Calendar เสร็จ (0.4.19)** — SchedulerEngine เพิ่มมุมมอง **week calendar grid** (7 วัน × แกนเวลา 06:00–24:00) — ลากได้ 3 แบบ: ย้าย (เวลา+วัน, grabOffset กันเวลาเพี้ยน), ขยายขอบล่าง, ลากบนช่องว่างสร้างใหม่ (ghost → prefilled form) + overlap collation + เส้นเวลาปัจจุบัน — typecheck 0 + build ผ่าน + integration 18/18 + ยืนยันลากครบใน preview — ดู `CHANGELOG.md` [0.4.19] — ⏳ ยังไม่ sync prod — Admin เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์ผ่าน WS (จอส่ง `SCREEN_STATE` → server เก็บ + broadcast `SCREEN_STATE_UPDATED` → ปุ่ม “ดูภาพสด” บนการ์ดจอ + modal mini replica ของ layout พร้อมสื่อจริงทุกโซน + badge LIVE) — กันสวมรอย (display token + screenId ตรง) + `GET /api/monitoring/live` catch-up — เทสใหม่ #16 → **18/18 ผ่าน** + bundle ใหม่ `index-BE47npt5.js` ขึ้น prod + post-deploy emergency 15/15 + quickpost 10/10 — ดู `CHANGELOG.md` [0.4.18]
 
 > เอกสารนี้คือแผนเริ่มต้น (Phase 0–9) — **โปรเจคถูก implement ไปแล้วเกือบทั้งหมด**
 > ตรวจสอบไฟล์จริงที่ `enterprise-digital-signage-platform/` แทนการเชื่อว่า checkbox ในนี้

@@ -21,6 +21,25 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.19] — 2026-08-16  🤖 โดย Freebuff (UI ตารางเวลาแบบ Google Calendar — ปฏิทินรายสัปดาห์ลากได้ ✅)
+
+### Added / Changed
+- **เปลี่ยน view ไทม์ไลน์ → ปฏิทินรายสัปดาห์ (Week Calendar)** ใน SchedulerEngine — สไตล์ Google Calendar:
+  - กริด **7 วัน (อา–ส) × แกนเวลา 06:00–24:00** — คอลัมน์ละ 40px/ชม. + เส้นชั่วโมง/ครึ่งชั่วโมง + เส้นแดงแสดงเวลาปัจจุบันในคอลัมน์วันนี้
+  - อีเวนต์ = บล็อกสีตาม **6-Level Priority** + วาง **side-by-side เมื่อชนกัน** (interval graph coloring) + ring สีเหลืองเมื่อขัดแย้ง + inactive ซีด
+  - **ลากย้าย** — กัน offset จุดกด (grabOffset): ลากแนวตั้งเปลี่ยนเวลา (snap 15 นาที, คงระยะเวลา) · ลากแนวนอนย้ายวัน (เอาวันต้นออก + เพิ่มวันเป้าหมาย เหมือน Google Calendar ย้าย instance) — คลิกเฉยๆ = เปิดแก้ไข
+  - **ลากขอบบน/ล่าง = ขยาย/ย่อเวลา** (snap 15 นาที)
+  - **ลากบนช่องว่าง = สร้างใหม่** — ghost สีฟ้า + เปิดฟอร์มแบบ prefilled (วัน/เวลาตามที่ลาก)
+  - ตัวนับจำนวนอีเวนต์ต่อวันใน header + legend 6 ระดับ + hint
+- i18n 3 ภาษา: `sch.viewCalendar` (ปฏิทิน/日历) · `sch.weekCalendar` · `sch.dragHint` · `sch.noRules` — เก็บคีย์ `sch.viewTimeline` ไว้ (ไม่ใช้แล้ว)
+- list view เดิมคงเดิม (มุมมอง รายการ/ปฏิทิน สลับได้)
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **ยืนยันใน preview (ลากจริงผ่าน synthetic pointer events):** ลาก Dining Hall 11:00→15:00 (คงระยะเวลา 9 ชม.) ✓ · ลากขอบล่าง Lobby 19:00→21:00 ✓ · ลาก Elevator ข้ามวัน จ→อ (7 วัน→6, **เวลาไม่เพี้ยน** 06:00–22:00 — แก้บั๊ก grabOffset ที่เจอระหว่างเทส) ✓ · ลากบนช่องว่าง → ฟอร์ม prefilled 21:00–22:00 ✓ — คืนค่าข้อมูลเทสครบ — screenshot ยืนยัน
+
+---
+
 ## [0.4.17] — 2026-08-16  🤖 โดย Freebuff (แจก WEBHOOK_TOKEN — ระบบภายนอกเรียก /api/trigger ต้องส่ง X-Webhook-Token ✅)
 
 ### Changed / Done

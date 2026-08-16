@@ -63,6 +63,11 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-16 — 🤖 โดย Freebuff (**UI ตารางเวลาแบบ Google Calendar — ปฏิทินรายสัปดาห์ลากได้ ✅**)
+- **SchedulerEngine เปลี่ยนจาก timeline แถวเดียว → week calendar grid** (7 คอลัมน์วัน × แกนเวลา 06:00–24:00) — event block ตามสัดส่วนจริง + overlap collation + เส้นเวลาปัจจุบัน + legend + ปุ่มสลับมุมมอง (ตารางเดิม/ปฏิทิน)
+- **ลากได้ 3 แบบ (pointer events + pointer capture):** ① ย้าย (เวลา+วัน, เก็บ `grabOffset` — ลากแนวนอนเวลาไม่เพี้ยน) ② ขยายขอบล่าง (resize) ③ ลากบนช่องว่างสร้างใหม่ (ghost → prefilled form ตามวัน/เวลา)
+- ยืนยันใน preview: ลากย้าย (Dining Hall 11:00→15:00), resize (Lobby →21:00), ลากข้ามวัน (เวลาคงเดิม), สร้างใหม่ (21:00–22:00 เติมถูก) — typecheck 0 + build ผ่าน + integration 18/18 — คืนข้อมูล dev หลังเทส — ดู `CHANGELOG.md` [0.4.19] — ⏳ ยังไม่ sync prod
+
 ### 2026-08-16 — 🤖 โดย Freebuff (**redeploy prod 0.4.18 — Live Screen Preview ขึ้น prod แล้ว**)
 - sync 15 ไฟล์ (server.ts + LiveScreenPreview.tsx + ScreensManager/DisplayKiosk/App/store/api + i18n 3 ภาษา + เทส) hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BE47npt5.js`
 - ตรวจ post-deploy: emergency **15/15** + quickpost **10/10** + `GET /api/monitoring/live` **200** (ไม่มี token → 401) + bundle มี marker i18n “ดูภาพสด/实时预览/Live Preview” — ไม่มี migration ใหม่
@@ -299,6 +304,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 ## 5. งานที่ค้าง / ต้องทำต่อ (Pending)
 
 - [x] **redeploy prod 0.4.16 เสร็จแล้ว (2026-08-16)** — sync 10 ไฟล์ (server.ts + i18n + client) hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BdVozIW3.js` (มีคีย์ evt.*) — ตรวจ post-deploy: emergency **15/15** + quick post **10/10** + **event log server-side i18n ทำงานบน prod** (`?lang=th` → "สถานะ: ออฟไลน์/ดำเนินการ: SET_VOLUME…" · `?lang=zh` → "状态: 离线/已执行…") — ไม่มี migration ใหม่
+- [ ] **sync + redeploy prod 0.4.19 (Scheduler ปฏิทินลากได้)** — ยังไม่ได้ sync (ต้องผ่าน Z:\ + `redeploy.bat`) — ไม่มี migration ใหม่ ปลอดภัย
 - [ ] **scr-002 กลับออนไลน์** — offline 2 วัน+ (ปิด/ถอดจริง — ตรวจทางกายภาพ) — คู่มือช่าง: `docs/recover-scr002.md` — ✅ **เนื้อหาพร้อมแล้ว** (pl-cafeteria-menu + lay-menu-board + sch-002 แก้แล้ว — เปิดจอแล้วแสดงเลย) เหลือใช้ token ใหม่ (JWT_SECRET เปลี่ยน)
 - [x] **Live Screen Preview (0.4.18) deploy prod แล้ว (2026-08-16)** — sync 15 ไฟล์ hash ตรง → `redeploy.bat` → bundle ใหม่ `index-BE47npt5.js` (มีโค้ด LiveScreenPreview + คีย์ `sm.livePreview` ไทย/中文) — ตรวจ post-deploy: emergency **15/15** + quickpost **10/10** + `GET /api/monitoring/live` **200** (401 ไม่มี token) — ไม่มี migration ใหม่
 - [x] **แจก WEBHOOK_TOKEN แล้ว (0.4.17)** — ตั้งใน prod .env (มีอยู่แล้ว) + dev .env ค่าเดียวกัน — `/api/trigger`/`/by-tags`/`/integrations/slack` ต้องส่ง `X-Webhook-Token` (401/401/200) — เทสใหม่ #15 → **17/17** — เอกสาร: `docs/deploy-security-guide.md` (ค่าอยู่ใน prod .env — ขอจาก admin)

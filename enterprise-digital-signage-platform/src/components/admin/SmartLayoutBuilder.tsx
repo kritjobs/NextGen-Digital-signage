@@ -40,6 +40,8 @@ import {
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
 import { useApiKeysStore } from '../../store/useApiKeysStore';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { TranslationKey } from '../../i18n';
 import { layoutApi } from '../../services/api';
 import { LayoutTemplate, LayoutZone, Orientation, MediaType } from '../../types/signage';
 import { LiveWeatherWidget } from '../widgets/LiveWeatherWidget';
@@ -122,6 +124,19 @@ const WIDGET_CATEGORIES: WidgetCategory[] = [
   },
 ];
 
+// === i18n label maps (widget/category names → translation keys) ===
+const WIDGET_LABEL_KEYS: Record<string, string> = {
+  video: 'lb.widVideo', image: 'lb.widImage', ticker: 'lb.widTicker', weather: 'lb.widWeather',
+  clock: 'lb.widClock', webpage: 'lb.widWebpage', announcement: 'lb.widAnnouncement', rss: 'lb.widRss',
+  youtube: 'lb.widYoutube', google_calendar: 'lb.widCalendar', google_sheets: 'lb.widSheets',
+  world_clock: 'lb.widWorldClock', menu_board: 'lb.widMenuBoard', countdown: 'lb.widCountdown',
+  currencies: 'lb.widCurrencies', hls_stream: 'lb.widHls',
+};
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  media: 'lb.catMedia', 'data-time': 'lb.catTimeDate', 'data-info': 'lb.catInfo',
+  'data-feeds': 'lb.catFeeds', business: 'lb.catBusiness',
+};
+
 // === Snap-to-grid utility ===
 const GRID_SIZE = 5; // snap to 5% increments
 const snapToGrid = (value: number, enabled: boolean): number => {
@@ -139,6 +154,7 @@ const getWidgetColorClasses = (color: string) => ({
 });
 
 export const SmartLayoutBuilder: React.FC = () => {
+  const { t } = useTranslation();
   const { layouts, playlists, addLayout, updateLayout, deleteLayout } = useSignageStore();
   const { openWeatherApiKey, googleApiKey, setOpenWeatherApiKey, setGoogleApiKey } = useApiKeysStore();
 
@@ -1208,10 +1224,10 @@ export const SmartLayoutBuilder: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <Layers className="h-5 w-5 text-cyan-400" />
-            <span>Smart Layout Builder</span>
-            <span className="ml-2 text-[10px] font-semibold bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">Pro</span>
+            <span>{t('lb.title')}</span>
+            <span className="ml-2 text-[10px] font-semibold bg-gradient-to-r from-cyan-500 to-violet-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">{t('lb.pro')}</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">Drag widgets onto the canvas to compose multi-zone layouts with precision snap-to-grid</p>
+          <p className="text-xs text-slate-400 mt-0.5">{t('lb.subtitle')}</p>
         </div>
 
         <div className="flex items-center space-x-2 flex-wrap">
@@ -1263,10 +1279,10 @@ export const SmartLayoutBuilder: React.FC = () => {
                   ? 'bg-emerald-950 border-emerald-700 text-emerald-300'
                   : 'bg-amber-950 border-amber-700 text-amber-300'
               }`}
-              title={activeLayout.status === 'published' ? 'Click to set as Draft' : 'Click to Publish'}
+              title={activeLayout.status === 'published' ? t('lb.draft') : t('lb.published')}
             >
               <span className={`w-2 h-2 rounded-full ${activeLayout.status === 'published' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-              <span>{activeLayout.status === 'published' ? 'Published' : 'Draft'}</span>
+              <span>{activeLayout.status === 'published' ? t('lb.published') : t('lb.draft')}</span>
             </button>
           )}
 
@@ -1274,20 +1290,20 @@ export const SmartLayoutBuilder: React.FC = () => {
           {activeLayout && layouts.length > 0 && (() => {
             const st = activeLayout.approvalStatus;
             const badge = st === 'approved'
-              ? { cls: 'bg-emerald-950 border-emerald-700 text-emerald-300', label: '✓ Approved' }
+              ? { cls: 'bg-emerald-950 border-emerald-700 text-emerald-300', label: t('pl.approved') }
               : st === 'rejected'
-                ? { cls: 'bg-rose-950 border-rose-700 text-rose-300', label: '✕ Rejected' }
-                : { cls: 'bg-amber-950 border-amber-700 text-amber-300', label: '⏳ Pending Approval' };
+                ? { cls: 'bg-rose-950 border-rose-700 text-rose-300', label: t('pl.rejected') }
+                : { cls: 'bg-amber-950 border-amber-700 text-amber-300', label: t('pl.pending') };
             return (
               <div className="flex items-center space-x-1.5">
                 <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border ${badge.cls}`} title="ต้องผ่าน approval ก่อนขึ้นจอ">
                   {badge.label}
                 </span>
                 {st !== 'approved' && (
-                  <button onClick={() => handleApproveLayout('approved')} className="px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold" title="อนุมัติให้ขึ้นจอได้">Approve</button>
+                  <button onClick={() => handleApproveLayout('approved')} className="px-2.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold" title="อนุมัติให้ขึ้นจอได้">{t('lb.approve')}</button>
                 )}
                 {st !== 'rejected' && (
-                  <button onClick={() => handleApproveLayout('rejected')} className="px-2.5 py-1.5 rounded-lg bg-rose-800 hover:bg-rose-700 text-white text-[10px] font-bold" title="ปฏิเสธ — ไม่ขึ้นจอ">Reject</button>
+                  <button onClick={() => handleApproveLayout('rejected')} className="px-2.5 py-1.5 rounded-lg bg-rose-800 hover:bg-rose-700 text-white text-[10px] font-bold" title="ปฏิเสธ — ไม่ขึ้นจอ">{t('lb.reject')}</button>
                 )}
               </div>
             );
@@ -1298,18 +1314,18 @@ export const SmartLayoutBuilder: React.FC = () => {
             className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all cursor-pointer"
           >
             <LayoutGrid className="h-4 w-4" />
-            <span>Templates</span>
+            <span>{t('lb.templates')}</span>
           </button>
 
           <button onClick={() => setIsCreatingNew(true)} className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/30 transition-all cursor-pointer">
             <Plus className="h-4 w-4" />
-            <span>Blank</span>
+            <span>{t('lb.blank')}</span>
           </button>
 
           <button
             onClick={() => setShowApiKeysModal(true)}
             className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold text-xs border border-slate-600 transition-all cursor-pointer"
-            title="Configure API Keys"
+            title={t('lb.configureKeys')}
           >
             <Settings className="h-4 w-4" />
           </button>
@@ -1324,7 +1340,7 @@ export const SmartLayoutBuilder: React.FC = () => {
           {/* Header */}
           <div className="flex items-center space-x-2 border-b border-slate-800 pb-2.5 mb-2 shrink-0">
             <Palette className="h-4 w-4 text-violet-400" />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Widgets</h3>
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">{t('lb.widgets')}</h3>
             <span className="text-[9px] text-slate-500 ml-auto">{WIDGET_DEFINITIONS.length}</span>
           </div>
 
@@ -1334,7 +1350,7 @@ export const SmartLayoutBuilder: React.FC = () => {
               type="text"
               value={widgetSearch}
               onChange={(e) => setWidgetSearch(e.target.value)}
-              placeholder="Search widgets..."
+              placeholder={t('lb.searchWidgets')}
               className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-7 pr-2 py-1.5 text-[10px] text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-600"
             />
             <svg className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8" strokeWidth="2"/><path d="m21 21-4.3-4.3" strokeWidth="2" strokeLinecap="round"/></svg>
@@ -1348,7 +1364,7 @@ export const SmartLayoutBuilder: React.FC = () => {
               <div className="mb-2">
                 <div className="flex items-center space-x-1.5 px-1 py-1 text-[9px] font-bold text-yellow-400 uppercase tracking-wider">
                   <span>⭐</span>
-                  <span>Favourites</span>
+                  <span>{t('lb.favourites')}</span>
                 </div>
                 <div className="space-y-1">
                   {favouriteWidgets.map((type) => {
@@ -1364,11 +1380,11 @@ export const SmartLayoutBuilder: React.FC = () => {
                         <div className="flex items-center justify-center w-6 h-6 rounded bg-slate-800 text-slate-300 shrink-0">
                           {React.cloneElement(widget.icon as React.ReactElement, { className: 'h-3.5 w-3.5' })}
                         </div>
-                        <span className="text-[10px] font-medium text-slate-200 truncate flex-1">{widget.label}</span>
+                        <span className="text-[10px] font-medium text-slate-200 truncate flex-1">{t((WIDGET_LABEL_KEYS[widget.type] || widget.label) as TranslationKey)}</span>
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleFavourite(widget.type); }}
                           className="text-yellow-400 hover:text-yellow-300 shrink-0"
-                          title="Remove from favourites"
+                          title={t('lb.removeFav')}
                         >
                           <span className="text-[10px]">★</span>
                         </button>
@@ -1405,7 +1421,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                     className={`w-full flex items-center space-x-1.5 px-1.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-colors hover:bg-slate-800/50 text-${category.color}-400`}
                   >
                     {category.icon}
-                    <span className="flex-1 text-left">{category.label}</span>
+                    <span className="flex-1 text-left">{t((CATEGORY_LABEL_KEYS[category.id] || category.label) as TranslationKey)}</span>
                     <span className="text-slate-600 text-[8px] font-normal">{filtered.length}</span>
                     <svg className={`h-3 w-3 text-slate-600 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 9-7 7-7-7"/></svg>
                   </button>
@@ -1426,12 +1442,12 @@ export const SmartLayoutBuilder: React.FC = () => {
                               {React.cloneElement(widget.icon as React.ReactElement, { className: 'h-3.5 w-3.5' })}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-medium text-slate-200 truncate">{widget.label}</p>
+                              <p className="text-[10px] font-medium text-slate-200 truncate">{t((WIDGET_LABEL_KEYS[widget.type] || widget.label) as TranslationKey)}</p>
                             </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleFavourite(widget.type); }}
                               className={`shrink-0 text-[10px] transition-colors ${isFav ? 'text-yellow-400' : 'text-slate-700 hover:text-yellow-500 opacity-0 group-hover:opacity-100'}`}
-                              title={isFav ? 'Remove from favourites' : 'Add to favourites'}
+                              title={isFav ? t('lb.removeFav') : t('lb.addFav')}
                             >
                               {isFav ? '★' : '☆'}
                             </button>
@@ -1452,7 +1468,7 @@ export const SmartLayoutBuilder: React.FC = () => {
             className="w-full flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-semibold border border-slate-700 border-dashed mt-2 transition-colors shrink-0"
           >
             <Plus className="h-3 w-3 text-cyan-400" />
-            <span>Blank Zone</span>
+            <span>{t('lb.blankZone')}</span>
           </button>
         </div>
 
@@ -1474,10 +1490,10 @@ export const SmartLayoutBuilder: React.FC = () => {
                 className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all ${
                   snapEnabled ? 'bg-cyan-950 border-cyan-700 text-cyan-300' : 'bg-slate-800 border-slate-700 text-slate-400'
                 }`}
-                title="Toggle snap-to-grid"
+                title={t('lb.snapToggle')}
               >
                 <Magnet className="h-3 w-3" />
-                <span>Snap</span>
+                <span>{t('lb.snap')}</span>
               </button>
 
               {/* Grid Toggle */}
@@ -1486,10 +1502,10 @@ export const SmartLayoutBuilder: React.FC = () => {
                 className={`flex items-center space-x-1 px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all ${
                   showGrid ? 'bg-violet-950 border-violet-700 text-violet-300' : 'bg-slate-800 border-slate-700 text-slate-400'
                 }`}
-                title="Toggle grid overlay"
+                title={t('lb.gridToggle')}
               >
                 <Grid3X3 className="h-3 w-3" />
-                <span>Grid</span>
+                <span>{t('lb.grid')}</span>
               </button>
 
               {/* Undo */}
@@ -1497,7 +1513,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                 onClick={handleUndo}
                 disabled={undoStack.length === 0}
                 className="flex items-center space-x-1 px-2 py-1 rounded-lg text-[10px] font-semibold border bg-slate-800 border-slate-700 text-slate-400 hover:text-white disabled:opacity-40 transition-all"
-                title="Undo last change"
+                title={t('lb.undo')}
               >
                 <RotateCcw className="h-3 w-3" />
               </button>
@@ -1515,10 +1531,10 @@ export const SmartLayoutBuilder: React.FC = () => {
                 className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-all ${
                   previewMode ? 'bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-600/30' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
                 }`}
-                title="Toggle live preview"
+                title={t('lb.previewToggle')}
               >
                 <Eye className="h-3 w-3" />
-                <span>{previewMode ? 'LIVE' : 'Preview'}</span>
+                <span>{previewMode ? 'LIVE' : t('lb.preview')}</span>
               </button>
             </div>
           </div>
@@ -1564,7 +1580,7 @@ export const SmartLayoutBuilder: React.FC = () => {
               {dragOverCanvas && (
                 <div className="absolute inset-0 flex items-center justify-center z-[60] pointer-events-none">
                   <div className="bg-cyan-500/20 border border-cyan-400/50 rounded-xl px-4 py-2 backdrop-blur-sm">
-                    <p className="text-cyan-300 text-xs font-bold">Drop widget here</p>
+                    <p className="text-cyan-300 text-xs font-bold">{t('lb.dropWidget')}</p>
                   </div>
                 </div>
               )}
@@ -1660,14 +1676,14 @@ export const SmartLayoutBuilder: React.FC = () => {
             <div className="flex items-center space-x-3">
               <span className="flex items-center space-x-1">
                 <Move className="h-3 w-3 text-cyan-400" />
-                <span>Drag to move</span>
+                <span>{t('lb.dragMove')}</span>
               </span>
               <span className="text-slate-600">|</span>
-              <span>Handles to resize</span>
+              <span>{t('lb.resize')}</span>
               <span className="text-slate-600">|</span>
-              <span>Snap: <span className={snapEnabled ? 'text-cyan-400 font-semibold' : 'text-slate-500'}>{snapEnabled ? `${GRID_SIZE}%` : 'OFF'}</span></span>
+              <span>{t('lb.snapPct')}<span className={snapEnabled ? 'text-cyan-400 font-semibold' : 'text-slate-500'}>{snapEnabled ? `${GRID_SIZE}%` : 'OFF'}</span></span>
             </div>
-            <span className="font-semibold text-cyan-400">{activeLayout.zones.length} Zones</span>
+            <span className="font-semibold text-cyan-400">{t('lb.zonesCount', { count: activeLayout.zones.length })}</span>
           </div>
         </div>
 
@@ -1675,7 +1691,7 @@ export const SmartLayoutBuilder: React.FC = () => {
         <div className="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-xl max-h-[680px] overflow-y-auto">
           <h3 className="text-xs font-bold text-white flex items-center space-x-2 border-b border-slate-800 pb-3">
             <Settings className="h-4 w-4 text-cyan-400" />
-            <span>Zone Inspector</span>
+            <span>{t('lb.zoneInspector')}</span>
           </h3>
 
           {selectedZone ? (
@@ -1683,7 +1699,7 @@ export const SmartLayoutBuilder: React.FC = () => {
               {/* Zone Name + Lock Toggle */}
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
-                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">Name</label>
+                  <label className="text-[10px] font-semibold text-slate-400 block mb-1">{t('lb.name')}</label>
                   <input
                     type="text"
                     value={selectedZone.name}
@@ -1700,7 +1716,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         ? 'bg-amber-950 border-amber-700 text-amber-400'
                         : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-white'
                     }`}
-                    title={selectedZone.isLocked ? 'Unlock zone (admin only can edit)' : 'Lock zone (prevent staff from editing)'}
+                    title={selectedZone.isLocked ? t('lb.unlockZone') : t('lb.lockZone')}
                   >
                     {selectedZone.isLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
                   </button>
@@ -1708,21 +1724,21 @@ export const SmartLayoutBuilder: React.FC = () => {
               </div>
               {selectedZone.isLocked && (
                 <div className="bg-amber-950/30 border border-amber-800/30 rounded-lg px-2.5 py-1.5 text-[9px] text-amber-300">
-                  🔒 Zone locked — only admins can modify this zone's settings
+                  {t('lb.lockedMsg')}
                 </div>
               )}
 
               {/* Media Type */}
               <div>
-                <label className="text-[10px] font-semibold text-slate-400 block mb-1">Widget Type</label>
+                <label className="text-[10px] font-semibold text-slate-400 block mb-1">{t('lb.widgetType')}</label>
                 <select
                   value={selectedZone.mediaType || ''}
                   onChange={(e) => handleUpdateZoneProps(selectedZone.id, { mediaType: (e.target.value || undefined) as MediaType | undefined })}
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
                 >
-                  <option value="">-- None --</option>
+                  <option value="">{t('lb.none')}</option>
                   {WIDGET_DEFINITIONS.map((w) => (
-                    <option key={w.type} value={w.type}>{w.label}</option>
+                    <option key={w.type} value={w.type}>{t((WIDGET_LABEL_KEYS[w.type] || w.label) as TranslationKey)}</option>
                   ))}
                 </select>
               </div>
@@ -1730,7 +1746,7 @@ export const SmartLayoutBuilder: React.FC = () => {
               {/* Playlist Assignment */}
               <div>
                 <label className="text-[10px] font-semibold text-slate-400 block mb-1">
-                  Zone Default Playlist
+                  {t('lb.zoneDefaultPlaylist')}
                   <span className="ml-1 text-[8px] text-slate-600 font-normal">(ต่ำสุด — ถูก override โดย Schedule)</span>
                 </label>
                 <select
@@ -1738,7 +1754,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   onChange={(e) => handleUpdateZoneProps(selectedZone.id, { playlistId: e.target.value || undefined })}
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
                 >
-                  <option value="">-- No Playlist --</option>
+                  <option value="">{t('lb.noPlaylist')}</option>
                   {playlists.map((pl) => (
                     <option key={pl.id} value={pl.id}>{pl.name} ({pl.items.length} items)</option>
                   ))}
@@ -1750,20 +1766,20 @@ export const SmartLayoutBuilder: React.FC = () => {
               {selectedZone.mediaType && (
                 <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2.5">
                   <span className="text-[10px] font-bold text-violet-400 block uppercase tracking-wider">
-                    Widget Settings — {selectedZone.mediaType}
+                    {t('lb.widgetSettings', { type: selectedZone.mediaType })}
                   </span>
 
                   {/* Clock Config */}
                   {selectedZone.mediaType === 'clock' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Timezone</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.timezone')}</label>
                         <select
                           value={selectedZone.contentData?.timezone || 'Asia/Bangkok'}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, timezone: e.target.value } })}
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
                         >
-                          <optgroup label="Asia">
+                          <optgroup label={t('lb.tzAsia')}>
                             <option value="Asia/Bangkok">Phuket / Bangkok (GMT+7)</option>
                             <option value="Asia/Tokyo">Tokyo, Japan (GMT+9)</option>
                             <option value="Asia/Shanghai">Shanghai, China (GMT+8)</option>
@@ -1773,26 +1789,26 @@ export const SmartLayoutBuilder: React.FC = () => {
                             <option value="Asia/Seoul">Seoul, Korea (GMT+9)</option>
                             <option value="Asia/Hong_Kong">Hong Kong (GMT+8)</option>
                           </optgroup>
-                          <optgroup label="Americas">
+                          <optgroup label={t('lb.tzAmericas')}>
                             <option value="America/New_York">New York (GMT-5)</option>
                             <option value="America/Chicago">Chicago (GMT-6)</option>
                             <option value="America/Los_Angeles">Los Angeles (GMT-8)</option>
                             <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
                           </optgroup>
-                          <optgroup label="Europe">
+                          <optgroup label={t('lb.tzEurope')}>
                             <option value="Europe/London">London (GMT+0)</option>
                             <option value="Europe/Paris">Paris (GMT+1)</option>
                             <option value="Europe/Berlin">Berlin (GMT+1)</option>
                             <option value="Europe/Moscow">Moscow (GMT+3)</option>
                           </optgroup>
-                          <optgroup label="Pacific / Oceania">
+                          <optgroup label={t('lb.tzPacific')}>
                             <option value="Australia/Sydney">Sydney (GMT+11)</option>
                             <option value="Pacific/Auckland">Auckland (GMT+12)</option>
                           </optgroup>
                         </select>
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Label</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.label')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.clockLabel || ''}
@@ -1802,7 +1818,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Format</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.format')}</label>
                         <select
                           value={selectedZone.contentData?.clockFormat || '24h'}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, clockFormat: e.target.value as '12h' | '24h' } })}
@@ -1819,7 +1835,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'weather' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">City</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.city')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.weatherCity || ''}
@@ -1829,7 +1845,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Temperature Unit</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.tempUnit')}</label>
                         <select
                           value={selectedZone.contentData?.weatherUnit || 'celsius'}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, weatherUnit: e.target.value as 'celsius' | 'fahrenheit' } })}
@@ -1846,7 +1862,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'ticker' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Ticker Text</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.tickerText')}</label>
                         <textarea
                           value={selectedZone.contentData?.tickerText || ''}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, tickerText: e.target.value } })}
@@ -1856,7 +1872,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Speed (px/sec)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.speed')}</label>
                         <input
                           type="number"
                           min={10}
@@ -1873,7 +1889,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'announcement' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Header</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.header')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.announcementHeader || ''}
@@ -1883,7 +1899,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Body Message</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.body')}</label>
                         <textarea
                           value={selectedZone.contentData?.announcementBody || ''}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, announcementBody: e.target.value } })}
@@ -1899,7 +1915,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'webpage' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Web URL</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.webUrl')}</label>
                         <input
                           type="url"
                           value={selectedZone.contentData?.webUrl || ''}
@@ -1915,7 +1931,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {(selectedZone.mediaType === 'video' || selectedZone.mediaType === 'image') && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Source URL</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.sourceUrl')}</label>
                         <input
                           type="url"
                           value={selectedZone.contentData?.sourceUrl || ''}
@@ -1924,7 +1940,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
                         />
                       </div>
-                      <p className="text-[9px] text-slate-600">Or assign a playlist above to use media library</p>
+                      <p className="text-[9px] text-slate-600">{t('lb.playlistHint')}</p>
                     </div>
                   )}
 
@@ -1932,7 +1948,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'rss' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">RSS Feed URL</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.rssUrl')}</label>
                         <input
                           type="url"
                           value={selectedZone.contentData?.rssUrl || ''}
@@ -1942,7 +1958,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Max Items</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.maxItems')}</label>
                         <input
                           type="number"
                           min={1}
@@ -1953,7 +1969,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Scroll Speed (px/sec)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.scrollSpeed')}</label>
                         <input
                           type="number"
                           min={10}
@@ -1970,7 +1986,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'youtube' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">YouTube Video ID or URL</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.youtubeId')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.youtubeVideoId || ''}
@@ -1987,7 +2003,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                             onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, youtubeAutoplay: e.target.checked } })}
                             className="accent-red-500 w-3 h-3"
                           />
-                          <span>Autoplay</span>
+                          <span>{t('lb.autoplay')}</span>
                         </label>
                         <label className="flex items-center space-x-1 text-[9px] text-slate-400 cursor-pointer">
                           <input
@@ -1996,7 +2012,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                             onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, youtubeMuted: e.target.checked } })}
                             className="accent-red-500 w-3 h-3"
                           />
-                          <span>Muted</span>
+                          <span>{t('lb.muted')}</span>
                         </label>
                         <label className="flex items-center space-x-1 text-[9px] text-slate-400 cursor-pointer">
                           <input
@@ -2005,10 +2021,10 @@ export const SmartLayoutBuilder: React.FC = () => {
                             onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, youtubeLoop: e.target.checked } })}
                             className="accent-red-500 w-3 h-3"
                           />
-                          <span>Loop</span>
+                          <span>{t('lb.loop')}</span>
                         </label>
                       </div>
-                      <p className="text-[9px] text-slate-600">Supports: youtube.com/watch?v=ID or youtu.be/ID</p>
+                      <p className="text-[9px] text-slate-600">{t('lb.youtubeHint')}</p>
                     </div>
                   )}
 
@@ -2016,7 +2032,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'google_calendar' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Calendar ID</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.calendarId')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.googleCalendarId || ''}
@@ -2026,7 +2042,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">API Key</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.sheetApiKey')}</label>
                         <input
                           type="password"
                           value={selectedZone.contentData?.googleCalendarApiKey || ''}
@@ -2036,7 +2052,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Days Ahead</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.daysAhead')}</label>
                         <input
                           type="number"
                           min={1}
@@ -2046,7 +2062,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
                         />
                       </div>
-                      <p className="text-[9px] text-slate-600">Requires Google Calendar API key from console.cloud.google.com</p>
+                      <p className="text-[9px] text-slate-600">{t('lb.calendarHint')}</p>
                     </div>
                   )}
 
@@ -2054,7 +2070,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'google_sheets' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Published Sheet URL</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.sheetUrl')}</label>
                         <input
                           type="url"
                           value={selectedZone.contentData?.googleSheetsUrl || ''}
@@ -2064,7 +2080,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Range (optional)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.range')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.googleSheetsRange || ''}
@@ -2074,7 +2090,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">API Key (optional, for private sheets)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.sheetApiKey')}</label>
                         <input
                           type="password"
                           value={selectedZone.contentData?.googleSheetsApiKey || ''}
@@ -2091,19 +2107,19 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'world_clock' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Style</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.style')}</label>
                         <select
                           value={selectedZone.contentData?.worldClockStyle || 'digital'}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, worldClockStyle: e.target.value as any } })}
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
                         >
-                          <option value="digital">Digital</option>
-                          <option value="analog">Analog</option>
-                          <option value="both">Both</option>
+                          <option value="digital">{t('lb.digital')}</option>
+                          <option value="analog">{t('lb.analog')}</option>
+                          <option value="both">{t('lb.both')}</option>
                         </select>
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Cities (one per line: Label|Timezone)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.citiesField')}</label>
                         <textarea
                           value={(selectedZone.contentData?.worldClockCities || []).map(c => `${c.label}|${c.timezone}`).join('\n') || 'Phuket|Asia/Bangkok\nTokyo|Asia/Tokyo\nNew York|America/New_York\nLondon|Europe/London'}
                           onChange={(e) => {
@@ -2126,7 +2142,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'menu_board' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Board Title</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.boardTitle')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.menuBoardTitle || ''}
@@ -2136,7 +2152,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Currency Symbol</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.currencySymbol')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.menuBoardCurrency || '฿'}
@@ -2145,19 +2161,19 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Theme</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.theme')}</label>
                         <select
                           value={selectedZone.contentData?.menuBoardTheme || 'dark'}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, menuBoardTheme: e.target.value as any } })}
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
                         >
-                          <option value="dark">Dark</option>
-                          <option value="light">Light</option>
-                          <option value="neon">Neon</option>
+                          <option value="dark">{t('lb.dark')}</option>
+                          <option value="light">{t('lb.light')}</option>
+                          <option value="neon">{t('lb.neon')}</option>
                         </select>
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Menu Items (JSON)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.menuItems')}</label>
                         <textarea
                           value={JSON.stringify(selectedZone.contentData?.menuBoardCategories || [{ name: 'Main Course', items: [{ name: 'Pad Thai', price: '120' }, { name: 'Green Curry', price: '150', highlight: true }] }], null, 1)}
                           onChange={(e) => { try { const cat = JSON.parse(e.target.value); handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, menuBoardCategories: cat } }); } catch {} }}
@@ -2172,7 +2188,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'countdown' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Target Date & Time</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.targetDate')}</label>
                         <input
                           type="datetime-local"
                           value={selectedZone.contentData?.countdownTarget?.slice(0, 16) || ''}
@@ -2181,7 +2197,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Label</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.label')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.countdownLabel || ''}
@@ -2191,7 +2207,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Expired Text</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.expiredText')}</label>
                         <input
                           type="text"
                           value={selectedZone.contentData?.countdownExpiredText || ''}
@@ -2201,15 +2217,15 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Style</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.style')}</label>
                         <select
                           value={selectedZone.contentData?.countdownStyle || 'simple'}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, countdownStyle: e.target.value as any } })}
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
                         >
-                          <option value="simple">Simple</option>
-                          <option value="flip">Flip Clock</option>
-                          <option value="circle">Circle Progress</option>
+                          <option value="simple">{t('lb.simple')}</option>
+                          <option value="flip">{t('lb.flipClock')}</option>
+                          <option value="circle">{t('lb.circleProgress')}</option>
                         </select>
                       </div>
                     </div>
@@ -2219,7 +2235,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'currencies' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Currency Pairs (one per line)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.currencyPairs')}</label>
                         <textarea
                           value={(selectedZone.contentData?.currencyPairs || ['USD/THB', 'EUR/THB', 'GBP/THB', 'JPY/THB']).join('\n')}
                           onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, currencyPairs: e.target.value.split('\n').filter(l => l.trim()) } })}
@@ -2229,7 +2245,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">Refresh (seconds)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.refresh')}</label>
                         <input
                           type="number"
                           min={30}
@@ -2239,7 +2255,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                           className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
                         />
                       </div>
-                      <p className="text-[9px] text-slate-600">Requires external API for live rates</p>
+                      <p className="text-[9px] text-slate-600">{t('lb.ratesHint')}</p>
                     </div>
                   )}
 
@@ -2247,7 +2263,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   {selectedZone.mediaType === 'hls_stream' && (
                     <div className="space-y-2">
                       <div>
-                        <label className="text-[9px] text-slate-500 block mb-0.5">HLS Stream URL (.m3u8)</label>
+                        <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.hlsUrl')}</label>
                         <input
                           type="url"
                           value={selectedZone.contentData?.hlsUrl || ''}
@@ -2264,7 +2280,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                             onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, hlsAutoplay: e.target.checked } })}
                             className="accent-fuchsia-500 w-3 h-3"
                           />
-                          <span>Autoplay</span>
+                          <span>{t('lb.autoplay')}</span>
                         </label>
                         <label className="flex items-center space-x-1 text-[9px] text-slate-400 cursor-pointer">
                           <input
@@ -2273,10 +2289,10 @@ export const SmartLayoutBuilder: React.FC = () => {
                             onChange={(e) => handleUpdateZoneProps(selectedZone.id, { contentData: { ...selectedZone.contentData, hlsMuted: e.target.checked } })}
                             className="accent-fuchsia-500 w-3 h-3"
                           />
-                          <span>Muted</span>
+                          <span>{t('lb.muted')}</span>
                         </label>
                       </div>
-                      <p className="text-[9px] text-slate-600">Supports .m3u8 HLS streams (CCTV, live TV, etc.)</p>
+                      <p className="text-[9px] text-slate-600">{t('lb.hlsHint')}</p>
                     </div>
                   )}
                 </div>
@@ -2284,32 +2300,32 @@ export const SmartLayoutBuilder: React.FC = () => {
 
               {/* Coordinates */}
               <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 space-y-2.5">
-                <span className="text-[10px] font-bold text-cyan-400 block uppercase tracking-wider">Position & Size</span>
+                <span className="text-[10px] font-bold text-cyan-400 block uppercase tracking-wider">{t('lb.posSize')}</span>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[9px] text-slate-500 block mb-0.5">X (%)</label>
+                    <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.x')}</label>
                     <input type="number" min={0} max={100} value={Math.round(selectedZone.x)}
                       onChange={(e) => { pushUndo(); handleUpdateZoneProps(selectedZone.id, { x: Number(e.target.value) }); }}
                       className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] text-slate-500 block mb-0.5">Y (%)</label>
+                    <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.y')}</label>
                     <input type="number" min={0} max={100} value={Math.round(selectedZone.y)}
                       onChange={(e) => { pushUndo(); handleUpdateZoneProps(selectedZone.id, { y: Number(e.target.value) }); }}
                       className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] text-slate-500 block mb-0.5">Width (%)</label>
+                    <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.width')}</label>
                     <input type="number" min={10} max={100} value={Math.round(selectedZone.width)}
                       onChange={(e) => { pushUndo(); handleUpdateZoneProps(selectedZone.id, { width: Number(e.target.value) }); }}
                       className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] text-slate-500 block mb-0.5">Height (%)</label>
+                    <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.height')}</label>
                     <input type="number" min={10} max={100} value={Math.round(selectedZone.height)}
                       onChange={(e) => { pushUndo(); handleUpdateZoneProps(selectedZone.id, { height: Number(e.target.value) }); }}
                       className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
@@ -2319,14 +2335,14 @@ export const SmartLayoutBuilder: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[9px] text-slate-500 block mb-0.5">Z-Index</label>
+                    <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.zIndex')}</label>
                     <input type="number" min={1} max={20} value={selectedZone.zIndex}
                       onChange={(e) => handleUpdateZoneProps(selectedZone.id, { zIndex: Number(e.target.value) })}
                       className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-[9px] text-slate-500 block mb-0.5">BG Color</label>
+                    <label className="text-[9px] text-slate-500 block mb-0.5">{t('lb.bgColor')}</label>
                     <input type="color" value={selectedZone.backgroundColor || '#1e293b'}
                       onChange={(e) => handleUpdateZoneProps(selectedZone.id, { backgroundColor: e.target.value })}
                       className="w-full h-7 bg-slate-900 border border-slate-700 rounded cursor-pointer"
@@ -2342,7 +2358,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                   className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-semibold border border-slate-700 transition-colors"
                 >
                   <Copy className="h-3 w-3" />
-                  <span>Duplicate</span>
+                  <span>{t('lb.duplicate')}</span>
                 </button>
                 {activeLayout.zones.length > 1 && (
                   <button
@@ -2350,7 +2366,7 @@ export const SmartLayoutBuilder: React.FC = () => {
                     className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 text-[10px] font-semibold border border-rose-800/50 transition-colors"
                   >
                     <Trash2 className="h-3 w-3" />
-                    <span>Delete</span>
+                    <span>{t('lb.delete')}</span>
                   </button>
                 )}
               </div>
@@ -2358,14 +2374,14 @@ export const SmartLayoutBuilder: React.FC = () => {
           ) : (
             <div className="text-center py-8">
               <Layers className="h-8 w-8 text-slate-700 mx-auto mb-2" />
-              <p className="text-xs text-slate-500">Select a zone on the canvas</p>
-              <p className="text-[10px] text-slate-600 mt-1">or drag a widget to create one</p>
+              <p className="text-xs text-slate-500">{t('lb.selectZone')}</p>
+              <p className="text-[10px] text-slate-600 mt-1">{t('lb.dragToCreate')}</p>
             </div>
           )}
 
           {/* Zone List */}
           <div className="border-t border-slate-800 pt-3 space-y-1.5">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">All Zones ({activeLayout.zones.length})</h4>
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">{t('lb.allZones', { count: activeLayout.zones.length })}</h4>
             {activeLayout.zones.map((zone) => (
               <div
                 key={zone.id}

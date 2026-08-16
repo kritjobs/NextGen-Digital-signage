@@ -300,7 +300,7 @@ export const PlayerApp: React.FC = () => {
 
           <div className="hidden sm:flex items-center space-x-2 bg-slate-900 px-3 py-1 rounded-xl border border-slate-800 text-[11px] text-slate-300">
             <HardDrive className="h-3.5 w-3.5 text-cyan-400" />
-            <span>Buffer Cache: 100% Synced</span>
+            <span>{t('plr.bufferCache')}</span>
           </div>
         </div>
 
@@ -318,12 +318,12 @@ export const PlayerApp: React.FC = () => {
             {isSimulatedOffline ? (
               <>
                 <WifiOff className="h-3.5 w-3.5 text-amber-400" />
-                <span>OFFLINE SIMULATION</span>
+                <span>{t('plr.offlineSimulation')}</span>
               </>
             ) : (
               <>
                 <Wifi className="h-3.5 w-3.5 text-emerald-400" />
-                <span>ONLINE CLOUD SYNC</span>
+                <span>{t('plr.onlineSync')}</span>
               </>
             )}
           </button>
@@ -342,7 +342,7 @@ export const PlayerApp: React.FC = () => {
           <button
             onClick={() => setShowPairingQr(true)}
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold flex items-center space-x-1"
-            title="Pairing QR Code & Mobile Auth"
+            title={t('plr.pairingQr')}
           >
             <QrCode className="h-4 w-4" />
           </button>
@@ -350,7 +350,7 @@ export const PlayerApp: React.FC = () => {
           <button
             onClick={toggleFullscreen}
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold"
-            title="Toggle Fullscreen TV"
+            title={t('plr.toggleFullscreen')}
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
@@ -359,7 +359,7 @@ export const PlayerApp: React.FC = () => {
             onClick={() => setViewMode('admin')}
             className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-white text-xs"
           >
-            Exit Player
+            {t('plr.exitPlayer')}
           </button>
         </div>
       </div>
@@ -467,6 +467,7 @@ const ZoneContainer: React.FC<ZoneContainerProps> = ({
 
 // Media Item Specific Renderer
 const MediaRenderer: React.FC<{ media: MediaItem; isMuted: boolean; currentTime: Date }> = ({ media, isMuted, currentTime }) => {
+  const { t } = useTranslation();
   // Fallback Image: ถ้าสื่อโหลดไม่ได้ → แสดง fallbackImageUrl แทนจอดำ (กฎทอง No Black Screen)
   const [mediaError, setMediaError] = React.useState(false);
   React.useEffect(() => { setMediaError(false); }, [media.id]);
@@ -506,7 +507,7 @@ const MediaRenderer: React.FC<{ media: MediaItem; isMuted: boolean; currentTime:
       <div className="w-full h-full bg-slate-900 border-t border-cyan-500/40 flex items-center overflow-hidden px-4">
         <div className="flex items-center space-x-2 text-cyan-400 font-bold text-xs shrink-0 pr-4 border-r border-slate-800">
           <Radio className="h-4 w-4 animate-pulse" />
-          <span>NEWS TICKER:</span>
+          <span>{t('plr.newsTicker')}</span>
         </div>
         <div className="whitespace-nowrap font-medium text-sm text-slate-100 tracking-wide animate-marquee py-1">
           {media.contentData?.tickerText || 'Welcome to our enterprise digital signage network.'}
@@ -519,7 +520,7 @@ const MediaRenderer: React.FC<{ media: MediaItem; isMuted: boolean; currentTime:
     return (
       <div className="w-full h-full p-4 bg-gradient-to-tr from-slate-900 via-slate-950 to-blue-950 flex flex-col justify-center text-white border border-slate-800">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">LOCAL WEATHER & AIR QUALITY</span>
+          <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">{t('plr.weatherAir')}</span>
           <CloudSun className="h-6 w-6 text-amber-400" />
         </div>
         <h3 className="text-xl font-bold mt-2">{media.contentData?.weatherCity || 'San Francisco, CA'}</h3>

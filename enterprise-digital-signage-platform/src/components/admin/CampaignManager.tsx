@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Play, Pause, GripVertical, Layers, Clock, RotateCcw } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { Campaign, CampaignLayoutItem } from '../../types/signage';
 import { campaignApi } from '../../services/api';
 
 export const CampaignManager: React.FC = () => {
+  const { t } = useTranslation();
   const { layouts } = useSignageStore();
   const publishedLayouts = layouts.filter(l => l.status === 'published');
 
@@ -110,13 +112,13 @@ export const CampaignManager: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <RotateCcw className="h-5 w-5 text-violet-400" />
-            <span>Campaign Manager</span>
+            <span>{t('camp.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">Create multi-layout campaigns that rotate automatically on screens</p>
+          <p className="text-xs text-slate-400 mt-0.5">{t('camp.subtitle')}</p>
         </div>
         <button onClick={openCreate} className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all">
           <Plus className="h-4 w-4" />
-          <span>New Campaign</span>
+          <span>{t('camp.new')}</span>
         </button>
       </div>
 
@@ -131,13 +133,13 @@ export const CampaignManager: React.FC = () => {
       {loading ? (
         <div className="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800">
           <RotateCcw className="h-12 w-12 text-slate-700 mx-auto mb-3 animate-spin" />
-          <p className="text-slate-400 text-sm">Loading campaigns...</p>
+          <p className="text-slate-400 text-sm">{t('camp.loading')}</p>
         </div>
       ) : campaigns.length === 0 ? (
         <div className="text-center py-16 bg-slate-900/50 rounded-2xl border border-slate-800">
           <RotateCcw className="h-12 w-12 text-slate-700 mx-auto mb-3" />
-          <p className="text-slate-400 text-sm">No campaigns yet</p>
-          <p className="text-slate-600 text-xs mt-1">Create a campaign to rotate multiple layouts automatically (saved to server, applies to all screens below schedule priority)</p>
+          <p className="text-slate-400 text-sm">{t('camp.empty')}</p>
+          <p className="text-slate-600 text-xs mt-1">{t('camp.emptyHint')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -156,10 +158,10 @@ export const CampaignManager: React.FC = () => {
                     <p className="text-[10px] text-slate-500">{campaign.layoutSequence.length} layouts • {total}s total • {campaign.cycleMode}</p>
                   </div>
                   <div className="flex items-center space-x-1.5">
-                    <button onClick={() => toggleActive(campaign.id)} className={`p-1.5 rounded-lg ${campaign.isActive ? 'bg-emerald-950 text-emerald-400' : 'bg-slate-800 text-slate-500'}`} title={campaign.isActive ? 'Pause' : 'Activate'}>
+                    <button onClick={() => toggleActive(campaign.id)} className={`p-1.5 rounded-lg ${campaign.isActive ? 'bg-emerald-950 text-emerald-400' : 'bg-slate-800 text-slate-500'}`} title={campaign.isActive ? t('camp.pause') : t('camp.activate')}>
                       {campaign.isActive ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
                     </button>
-                    <button onClick={() => openEdit(campaign)} className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[10px] font-bold">Edit</button>
+                    <button onClick={() => openEdit(campaign)} className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white text-[10px] font-bold">{t('camp.edit')}</button>
                     <button onClick={() => deleteCampaign(campaign.id)} className="p-1.5 rounded-lg bg-slate-800 text-rose-400 hover:text-rose-300">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -188,27 +190,27 @@ export const CampaignManager: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl">
             <div className="p-5 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white">{editId ? 'Edit Campaign' : 'Create Campaign'}</h3>
+              <h3 className="text-lg font-bold text-white">{editId ? t('camp.editTitle') : t('camp.createTitle')}</h3>
             </div>
 
             <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
               <div>
-                <label className="text-xs text-slate-400 block mb-1">Campaign Name</label>
+                <label className="text-xs text-slate-400 block mb-1">{t('camp.name')}</label>
                 <input type="text" value={formName} onChange={e => setFormName(e.target.value)} placeholder="e.g. Morning Rotation" className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500" />
               </div>
 
               <div>
-                <label className="text-xs text-slate-400 block mb-1">Cycle Mode</label>
+                <label className="text-xs text-slate-400 block mb-1">{t('camp.cycleMode')}</label>
                 <select value={formMode} onChange={e => setFormMode(e.target.value as any)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white">
-                  <option value="sequential">Sequential (in order)</option>
-                  <option value="random">Random</option>
+                  <option value="sequential">{t('camp.sequential')}</option>
+                  <option value="random">{t('camp.random')}</option>
                 </select>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-slate-400">Layout Sequence</label>
-                  <span className="text-[10px] text-violet-400">Total: {totalDuration}s ({Math.round(totalDuration / 60)}min)</span>
+                  <label className="text-xs text-slate-400">{t('camp.layoutSequence')}</label>
+                  <span className="text-[10px] text-violet-400">{t('camp.total')}{totalDuration}s ({Math.round(totalDuration / 60)}min)</span>
                 </div>
 
                 <div className="space-y-2">
@@ -246,15 +248,15 @@ export const CampaignManager: React.FC = () => {
 
                 <button onClick={addSequenceItem} className="mt-2 w-full flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-dashed border-slate-700">
                   <Plus className="h-3 w-3" />
-                  <span>Add Layout</span>
+                  <span>{t('camp.addLayout')}</span>
                 </button>
               </div>
             </div>
 
             <div className="p-5 border-t border-slate-800 flex justify-end space-x-2">
-              <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancel</button>
+              <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-slate-400 hover:text-white text-sm">{t('camp.cancel')}</button>
               <button onClick={handleSave} className="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-sm">
-                {editId ? 'Save Changes' : 'Create Campaign'}
+                {editId ? t('camp.saveChanges') : t('camp.createTitle')}
               </button>
             </div>
           </div>

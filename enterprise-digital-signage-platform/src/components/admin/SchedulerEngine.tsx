@@ -4,6 +4,8 @@ import {
   Edit3, X, AlertTriangle, Check, Save, Eye, Play, Megaphone, Power
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { TranslationKey } from '../../i18n';
 import { ScheduleItem, PRIORITY_LEVELS, priorityLevelOf } from '../../types/signage';
 
 // REQ-006: 6-Level Priority — ระดับของเลข priority ตัวหนึ่ง (band mapping)
@@ -13,7 +15,15 @@ const LEVEL_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   campaign: Megaphone, default: Layers, standby: Power,
 };
 
-const DAYS_LABEL = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_T_KEYS: TranslationKey[] = ['sch.day0', 'sch.day1', 'sch.day2', 'sch.day3', 'sch.day4', 'sch.day5', 'sch.day6'];
+const PRIORITY_T_KEY: Record<string, TranslationKey> = {
+  emergency: 'sch.priEmergency', critical: 'sch.priCritical', scheduled: 'sch.priScheduled',
+  campaign: 'sch.priCampaign', default: 'sch.priDefault', standby: 'sch.priStandby',
+};
+const PRIORITY_DESC_KEY: Record<string, TranslationKey> = {
+  emergency: 'sch.descEmergency', critical: 'sch.descCritical', scheduled: 'sch.descScheduled',
+  campaign: 'sch.descCampaign', default: 'sch.descDefault', standby: 'sch.descStandby',
+};
 const HOURS = Array.from({ length: 18 }, (_, i) => i + 6); // 06:00–23:00
 
 // Screen groups derived from screens
@@ -57,6 +67,7 @@ function detectConflicts(schedules: ScheduleItem[]): Map<string, string[]> {
 }
 
 export const SchedulerEngine: React.FC = () => {
+  const { t } = useTranslation();
   const { schedules, playlists, layouts, screens, addSchedule, updateSchedule, deleteSchedule, applyScheduleToScreens, resolveSchedules } = useSignageStore();
   const screenGroups = useScreenGroups();
 
@@ -145,25 +156,25 @@ export const SchedulerEngine: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Calendar className="h-5 w-5 text-cyan-400" />
-            <span>Time & Priority Scheduler Engine</span>
+            <span>{t('sch.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400">Configure time-based broadcast triggers, conflict resolution, and priority rules</p>
+          <p className="text-xs text-slate-400">{t('sch.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
           <div className="flex bg-slate-950 border border-slate-700 rounded-xl p-0.5">
             <button onClick={() => setViewMode('list')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${viewMode === 'list' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}>
-              List
+              {t('sch.viewList')}
             </button>
             <button onClick={() => setViewMode('timeline')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${viewMode === 'timeline' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}>
-              Timeline
+              {t('sch.viewTimeline')}
             </button>
           </div>
           <button onClick={openCreate}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/30">
-            <Plus className="h-4 w-4" /> Create Rule
+            <Plus className="h-4 w-4" /> {t('sch.createRule')}
           </button>
         </div>
       </div>
@@ -176,9 +187,9 @@ export const SchedulerEngine: React.FC = () => {
             <div key={lv.level} className={`${lv.card} border p-3 rounded-xl flex items-center gap-3`}>
               <div className={`p-2 rounded-lg ${lv.iconBg}`}><Icon className={`h-5 w-5 ${lv.iconText}`} /></div>
               <div>
-                <div className={`text-[10px] font-bold uppercase ${lv.text}`}>PRIORITY {lv.min}-{lv.max}</div>
-                <h4 className="font-bold text-white text-xs">{lv.label} <span className="text-slate-400 font-normal">· {lv.labelTh}</span></h4>
-                <p className="text-[9px] text-slate-500 mt-0.5">{lv.desc}</p>
+                <div className={`text-[10px] font-bold uppercase ${lv.text}`}>{t('sch.priority')}{lv.min}-{lv.max}</div>
+                <h4 className="font-bold text-white text-xs">{t(PRIORITY_T_KEY[lv.level])}</h4>
+                <p className="text-[9px] text-slate-500 mt-0.5">{t(PRIORITY_DESC_KEY[lv.level])}</p>
               </div>
             </div>
           );
@@ -190,8 +201,8 @@ export const SchedulerEngine: React.FC = () => {
         <div className="bg-amber-950/30 border border-amber-600/30 rounded-xl p-3 flex items-center gap-3">
           <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-amber-300">Schedule Conflict Detected</p>
-            <p className="text-[11px] text-amber-400/80">{conflicts.size} rules have overlapping time windows on the same screens. Higher priority will override.</p>
+            <p className="text-xs font-semibold text-amber-300">{t('sch.conflict')}</p>
+            <p className="text-[11px] text-amber-400/80">{t('sch.conflictDetail', { count: conflicts.size })}</p>
           </div>
         </div>
       )}
@@ -201,7 +212,7 @@ export const SchedulerEngine: React.FC = () => {
       {viewMode === 'timeline' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl overflow-x-auto">
           <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <Eye className="h-4 w-4 text-cyan-400" /> Daily Timeline (06:00 – 24:00)
+            <Eye className="h-4 w-4 text-cyan-400" /> {t('sch.dailyTimeline')}
           </h3>
 
           {/* Time Header */}
@@ -265,10 +276,10 @@ export const SchedulerEngine: React.FC = () => {
           <div className="flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-slate-800 text-[10px]">
             {PRIORITY_LEVELS.map((lv) => (
               <span key={lv.level} className="flex items-center gap-1">
-                <span className={`w-3 h-3 rounded ${lv.dot}`} /> {lv.label} ({lv.min}-{lv.max})
+                <span className={`w-3 h-3 rounded ${lv.dot}`} /> {t(PRIORITY_T_KEY[lv.level])} ({lv.min}-{lv.max})
               </span>
             ))}
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded ring-1 ring-amber-400 bg-transparent" /> Conflict</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded ring-1 ring-amber-400 bg-transparent" /> {t('sch.conflictLabel')}</span>
           </div>
         </div>
       )}
@@ -279,7 +290,7 @@ export const SchedulerEngine: React.FC = () => {
         <div className="space-y-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Zap className="h-4 w-4 text-cyan-400" />
-            Active Broadcast Rules ({schedules.length})
+            {t('sch.activeRules', { count: schedules.length })}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -296,19 +307,19 @@ export const SchedulerEngine: React.FC = () => {
                   {/* Header row */}
                   <div className="flex items-center justify-between">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${levelDef(sch.priority).badge}`}>
-                      {levelDef(sch.priority).label} · {sch.priority}
+                      {t(PRIORITY_T_KEY[levelDef(sch.priority).level])} · {sch.priority}
                     </span>
                     <div className="flex items-center gap-2">
                       {hasConflict && (
                         <span className="text-[9px] text-amber-400 flex items-center gap-0.5" title={`Conflicts with: ${conflicts.get(sch.id)?.join(', ')}`}>
-                          <AlertTriangle className="h-3 w-3" /> Conflict
+                          <AlertTriangle className="h-3 w-3" /> {t('sch.conflictLabel')}
                         </span>
                       )}
                       <button onClick={() => updateSchedule(sch.id, { isActive: !sch.isActive })}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           sch.isActive ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-950 text-slate-500 border border-slate-700'
                         }`}>
-                        {sch.isActive ? '● ON' : '○ OFF'}
+                        {sch.isActive ? t('sch.on') : t('sch.off')}
                       </button>
                     </div>
                   </div>
@@ -318,18 +329,18 @@ export const SchedulerEngine: React.FC = () => {
 
                   {/* Details */}
                   <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1.5">
-                    <div className="flex justify-between"><span className="text-slate-500">Layout:</span><span className="text-cyan-400 font-medium">{layout?.name || '—'}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Playlist:</span><span className="text-indigo-400 font-medium">{playlist?.name || '—'}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Time Window:</span><span className="font-mono text-white">{sch.startTime} – {sch.endTime}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Screens:</span><span className="text-slate-300">{sch.screenGroupIds.length > 0 ? sch.screenGroupIds.join(', ') : 'All'}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">{t('sch.layout')}</span><span className="text-cyan-400 font-medium">{layout?.name || '—'}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">{t('sch.playlist')}</span><span className="text-indigo-400 font-medium">{playlist?.name || '—'}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">{t('sch.timeWindow')}</span><span className="font-mono text-white">{sch.startTime} – {sch.endTime}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">{t('sch.screens')}</span><span className="text-slate-300">{sch.screenGroupIds.length > 0 ? sch.screenGroupIds.join(', ') : t('sch.all')}</span></div>
                   </div>
 
                   {/* Days */}
                   <div className="flex gap-1">
-                    {DAYS_LABEL.map((d, i) => (
-                      <span key={d} className={`text-[9px] font-bold px-2 py-0.5 rounded ${
+                    {DAY_T_KEYS.map((dk, i) => (
+                      <span key={dk} className={`text-[9px] font-bold px-2 py-0.5 rounded ${
                         sch.daysOfWeek.includes(i) ? 'bg-cyan-600 text-white' : 'bg-slate-950 text-slate-600'
-                      }`}>{d}</span>
+                      }`}>{t(dk)}</span>
                     ))}
                   </div>
 
@@ -338,11 +349,11 @@ export const SchedulerEngine: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEdit(sch)}
                         className="flex items-center gap-1 text-xs text-slate-400 hover:text-cyan-400">
-                        <Edit3 className="h-3.5 w-3.5" /> Edit
+                        <Edit3 className="h-3.5 w-3.5" /> {t('sch.edit')}
                       </button>
                       <button onClick={() => applyScheduleToScreens(sch.id)}
                         className="flex items-center gap-1 text-xs text-emerald-500 hover:text-emerald-300 bg-emerald-950/50 hover:bg-emerald-950 px-2 py-1 rounded-lg">
-                        <Play className="h-3 w-3" /> Apply Now
+                        <Play className="h-3 w-3" /> {t('sch.applyNow')}
                       </button>
                     </div>
                     <button onClick={() => deleteSchedule(sch.id)}
@@ -365,9 +376,9 @@ export const SchedulerEngine: React.FC = () => {
             <div className="p-5 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900 z-10">
               <div>
                 <h3 className="text-base font-bold text-white">
-                  {editingId ? 'Edit Schedule Rule' : 'Create Schedule Rule'}
+                  {editingId ? t('sch.editTitle') : t('sch.createTitle')}
                 </h3>
-                <p className="text-[9px] text-amber-400 mt-0.5">⚡ 6-Level Priority: Emergency(91-100) &gt; Critical(81-90) &gt; Scheduled(41-80) &gt; Campaign(21-40) &gt; Default(11-20) &gt; Standby(1-10) — สูงกว่าชนะเมื่อชนกัน</p>
+                <p className="text-[9px] text-amber-400 mt-0.5">{t('sch.priorityHint')}</p>
               </div>
               <button onClick={() => setIsFormOpen(false)} className="text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
@@ -375,7 +386,7 @@ export const SchedulerEngine: React.FC = () => {
             <form onSubmit={handleSave} className="p-5 space-y-4 text-xs">
               {/* Name */}
               <div>
-                <label className="text-slate-300 block mb-1 font-medium">Rule Name</label>
+                <label className="text-slate-300 block mb-1 font-medium">{t('sch.ruleName')}</label>
                 <input type="text" value={formData.name} onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                   placeholder="e.g. Daily Cafeteria Lunch Menu"
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white focus:border-cyan-500 focus:outline-none" required />
@@ -384,14 +395,14 @@ export const SchedulerEngine: React.FC = () => {
               {/* Layout + Playlist */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1 font-medium">Layout</label>
+                  <label className="text-slate-300 block mb-1 font-medium">{t('sch.layoutField')}</label>
                   <select value={formData.layoutId} onChange={(e) => setFormData(p => ({ ...p, layoutId: e.target.value }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white">
                     {layouts.filter(l => l.status !== 'draft').map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="text-slate-300 block mb-1 font-medium">Playlist</label>
+                  <label className="text-slate-300 block mb-1 font-medium">{t('sch.playlistField')}</label>
                   <select value={formData.playlistId} onChange={(e) => setFormData(p => ({ ...p, playlistId: e.target.value }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white">
                     {playlists.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -402,12 +413,12 @@ export const SchedulerEngine: React.FC = () => {
               {/* Time Range */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1 font-medium">Start Time</label>
+                  <label className="text-slate-300 block mb-1 font-medium">{t('sch.startTime')}</label>
                   <input type="time" value={formData.startTime} onChange={(e) => setFormData(p => ({ ...p, startTime: e.target.value }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white font-mono" />
                 </div>
                 <div>
-                  <label className="text-slate-300 block mb-1 font-medium">End Time</label>
+                  <label className="text-slate-300 block mb-1 font-medium">{t('sch.endTime')}</label>
                   <input type="time" value={formData.endTime} onChange={(e) => setFormData(p => ({ ...p, endTime: e.target.value }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white font-mono" />
                 </div>
@@ -416,12 +427,12 @@ export const SchedulerEngine: React.FC = () => {
               {/* Date Range */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1 font-medium">Start Date</label>
+                  <label className="text-slate-300 block mb-1 font-medium">{t('sch.startDate')}</label>
                   <input type="date" value={formData.startDate} onChange={(e) => setFormData(p => ({ ...p, startDate: e.target.value }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white font-mono" />
                 </div>
                 <div>
-                  <label className="text-slate-300 block mb-1 font-medium">End Date</label>
+                  <label className="text-slate-300 block mb-1 font-medium">{t('sch.endDate')}</label>
                   <input type="date" value={formData.endDate} onChange={(e) => setFormData(p => ({ ...p, endDate: e.target.value }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-white font-mono" />
                 </div>
@@ -429,13 +440,13 @@ export const SchedulerEngine: React.FC = () => {
 
               {/* Days of Week */}
               <div>
-                <label className="text-slate-300 block mb-2 font-medium">Days of Week</label>
+                <label className="text-slate-300 block mb-2 font-medium">{t('sch.daysOfWeek')}</label>
                 <div className="flex gap-1">
-                  {DAYS_LABEL.map((d, i) => (
-                    <button key={d} type="button" onClick={() => toggleDay(i)}
+                  {DAY_T_KEYS.map((dk, i) => (
+                    <button key={dk} type="button" onClick={() => toggleDay(i)}
                       className={`flex-1 py-2 rounded-lg font-bold text-[11px] transition-all ${
                         formData.daysOfWeek.includes(i) ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'bg-slate-950 text-slate-500 border border-slate-700 hover:border-slate-500'
-                      }`}>{d}</button>
+                      }`}>{t(dk)}</button>
                   ))}
                 </div>
               </div>
@@ -443,7 +454,7 @@ export const SchedulerEngine: React.FC = () => {
               {/* Priority — REQ-006: slider ครอบ 5 ระดับ (1-90) ส่วน Emergency (91-100) สงวนไว้ให้ระบบฉุกเฉิน */}
               <div>
                 <label className="text-slate-300 block mb-1 font-medium">
-                  Priority Weight: <span className={`font-mono font-bold ${levelDef(formData.priority).text}`}>{formData.priority} <span className="text-[9px] font-normal uppercase opacity-80">({levelDef(formData.priority).label})</span></span>
+                  {t('sch.priorityWeight')}<span className={`font-mono font-bold ${levelDef(formData.priority).text}`}>{formData.priority} <span className="text-[9px] font-normal uppercase opacity-80">({t(PRIORITY_T_KEY[levelDef(formData.priority).level])})</span></span>
                 </label>
                 <input type="range" min="1" max="90" value={formData.priority}
                   onChange={(e) => setFormData(p => ({ ...p, priority: Number(e.target.value) }))}
@@ -455,7 +466,7 @@ export const SchedulerEngine: React.FC = () => {
 
               {/* Screen Groups */}
               <div>
-                <label className="text-slate-300 block mb-2 font-medium">Target Screen Groups <span className="text-slate-500">(empty = all)</span></label>
+                <label className="text-slate-300 block mb-2 font-medium">{t('sch.targetGroups')}<span className="text-slate-500">{t('sch.emptyAll')}</span></label>
                 <div className="flex flex-wrap gap-2">
                   {screenGroups.map(g => (
                     <button key={g} type="button" onClick={() => toggleGroup(g)}
@@ -463,16 +474,16 @@ export const SchedulerEngine: React.FC = () => {
                         formData.screenGroupIds.includes(g) ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-400 border border-slate-700 hover:border-slate-500'
                       }`}>{g}</button>
                   ))}
-                  {screenGroups.length === 0 && <span className="text-slate-500 text-[11px]">No screen groups defined</span>}
+                  {screenGroups.length === 0 && <span className="text-slate-500 text-[11px]">{t('sch.noGroups')}</span>}
                 </div>
               </div>
 
               {/* Footer */}
               <div className="pt-4 flex justify-end gap-2 border-t border-slate-800">
-                <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button type="button" onClick={() => setIsFormOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">{t('sch.cancel')}</button>
                 <button type="submit" className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl text-white flex items-center gap-1.5">
                   <Save className="h-3.5 w-3.5" />
-                  {editingId ? 'Save Changes' : 'Create Rule'}
+                  {editingId ? t('sch.saveChanges') : t('sch.createRule')}
                 </button>
               </div>
             </form>

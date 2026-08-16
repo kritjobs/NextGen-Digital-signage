@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Monitor, 
   Grid, 
@@ -25,9 +25,17 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { TranslationKey } from '../../i18n';
 import { DigitalScreen } from '../../types/signage';
 
+const STATUS_T_KEY: Record<string, TranslationKey> = {
+  online: 'sm.statusOnline', syncing: 'sm.statusSyncing', offline: 'sm.statusOffline',
+  emergency: 'sm.statusEmergency', error: 'sm.statusError',
+};
+
 export const ScreensManager: React.FC = () => {
+  const { t } = useTranslation();
   const { 
     screens, 
     layouts, 
@@ -56,15 +64,12 @@ export const ScreensManager: React.FC = () => {
   }, [refreshScreens]);
 
   // REQ-008: heartbeat helpers — อัปล่าสุด/ระยะเวลา offline
-  const heartbeatInfo = useMemo(() => {
-    const now = Date.now();
-    return (scr: DigitalScreen) => {
-      if (!scr.lastHeartbeat) return { label: 'no heartbeat', minutes: null, stale: false };
-      const t = new Date(scr.lastHeartbeat).getTime();
-      const minutes = Math.max(0, Math.floor((now - t) / 60_000));
-      return { label: minutes < 1 ? '❤️ just now' : `❤️ ${minutes}m`, minutes, stale: minutes >= 5 };
-    };
-  }, []);
+  const heartbeatInfo = (scr: DigitalScreen) => {
+    if (!scr.lastHeartbeat) return { label: t('sm.noHeartbeat'), minutes: null, stale: false };
+    const hb = new Date(scr.lastHeartbeat).getTime();
+    const minutes = Math.max(0, Math.floor((Date.now() - hb) / 60_000));
+    return { label: minutes < 1 ? t('sm.justNow') : `❤️ ${minutes}m`, minutes, stale: minutes >= 5 };
+  };
   const offlineScreens = screens.filter((s) => s.status === 'offline' && heartbeatInfo(s).stale);
   
   // Modal for adding a new screen
@@ -197,9 +202,9 @@ export const ScreensManager: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <Monitor className="h-5 w-5 text-cyan-400" />
-            <span>Enterprise Displays Matrix</span>
+            <span>{t('sm.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400">Manage real-time digital signage displays, pair smart TVs, and monitor live status</p>
+          <p className="text-xs text-slate-400">{t('sm.subtitle')}</p>
         </div>
 
         <div className="flex items-center space-x-3 w-full sm:w-auto">
@@ -229,7 +234,7 @@ export const ScreensManager: React.FC = () => {
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" />
-            <span>Pair New Display</span>
+            <span>{t('sm.pairNew')}</span>
           </button>
         </div>
       </div>
@@ -241,7 +246,7 @@ export const ScreensManager: React.FC = () => {
           <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
           <input
             type="text"
-            placeholder="Search screen name, location, code..."
+            placeholder={t('sm.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
@@ -254,7 +259,7 @@ export const ScreensManager: React.FC = () => {
           onChange={(e) => setSelectedGroup(e.target.value)}
           className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
         >
-          <option value="all">All Groups ({screens.length})</option>
+          <option value="all">{t('sm.allGroups', { count: screens.length })}</option>
           {groups.map((grp) => (
             <option key={grp} value={grp}>{grp}</option>
           ))}
@@ -266,11 +271,11 @@ export const ScreensManager: React.FC = () => {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
         >
-          <option value="all">All Statuses</option>
-          <option value="online">Online</option>
-          <option value="syncing">Syncing</option>
-          <option value="offline">Offline</option>
-          <option value="emergency">Emergency Active</option>
+          <option value="all">{t('sm.allStatuses')}</option>
+          <option value="online">{t('sm.statusOnline')}</option>
+          <option value="syncing">{t('sm.statusSyncing')}</option>
+          <option value="offline">{t('sm.statusOffline')}</option>
+          <option value="emergency">{t('sm.statusEmergency')}</option>
         </select>
       </div>
 
@@ -278,9 +283,9 @@ export const ScreensManager: React.FC = () => {
       {selectedScreenIds.length > 0 && (
         <div className="flex items-center justify-between bg-cyan-950/50 border border-cyan-800/50 rounded-xl p-3 flex-wrap gap-2">
           <div className="flex items-center space-x-3">
-            <span className="text-xs font-bold text-cyan-300">{selectedScreenIds.length} screen{selectedScreenIds.length > 1 ? 's' : ''} selected</span>
-            <button onClick={selectAllInGroup} className="text-[10px] text-cyan-400 hover:text-cyan-300 underline">Select all visible</button>
-            <button onClick={clearSelection} className="text-[10px] text-slate-400 hover:text-white underline">Clear</button>
+            <span className="text-xs font-bold text-cyan-300">{t('sm.selectedCount', { count: selectedScreenIds.length })}</span>
+            <button onClick={selectAllInGroup} className="text-[10px] text-cyan-400 hover:text-cyan-300 underline">{t('sm.selectAllVisible')}</button>
+            <button onClick={clearSelection} className="text-[10px] text-slate-400 hover:text-white underline">{t('sm.clear')}</button>
           </div>
           <div className="flex items-center space-x-2 flex-wrap gap-1">
             {/* Bulk Assign Layout */}
@@ -289,11 +294,11 @@ export const ScreensManager: React.FC = () => {
               onChange={(e) => setBulkLayoutId(e.target.value)}
               className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-[10px] text-white"
             >
-              <option value="">Assign Layout...</option>
+              <option value="">{t('sm.assignLayout')}</option>
               {layouts.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
             {bulkLayoutId && (
-              <button onClick={handleBulkAssignLayout} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold rounded-lg">Apply</button>
+              <button onClick={handleBulkAssignLayout} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold rounded-lg">{t('sm.apply')}</button>
             )}
 
             {/* Bulk Assign Playlist */}
@@ -302,16 +307,16 @@ export const ScreensManager: React.FC = () => {
               onChange={(e) => setBulkPlaylistId(e.target.value)}
               className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-[10px] text-white"
             >
-              <option value="">Assign Playlist...</option>
+              <option value="">{t('sm.assignPlaylist')}</option>
               {playlists.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             {bulkPlaylistId && (
-              <button onClick={handleBulkAssignPlaylist} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold rounded-lg">Apply</button>
+              <button onClick={handleBulkAssignPlaylist} className="px-2 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold rounded-lg">{t('sm.apply')}</button>
             )}
 
             {/* Bulk Commands */}
-            <button onClick={() => handleBulkCommand('REBOOT')} className="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold rounded-lg">Reboot All</button>
-            <button onClick={() => handleBulkCommand('REFRESH_CONTENT')} className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg">Refresh All</button>
+            <button onClick={() => handleBulkCommand('REBOOT')} className="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-white text-[10px] font-bold rounded-lg">{t('sm.rebootAll')}</button>
+            <button onClick={() => handleBulkCommand('REFRESH_CONTENT')} className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg">{t('sm.refreshAll')}</button>
           </div>
         </div>
       )}
@@ -374,7 +379,7 @@ export const ScreensManager: React.FC = () => {
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 bg-slate-950">
                         <Monitor className="h-10 w-10 mb-2 opacity-50" />
-                        <span className="text-xs">No Signal Preview</span>
+                        <span className="text-xs">{t('sm.noSignal')}</span>
                       </div>
                     );
                   })()}
@@ -393,7 +398,7 @@ export const ScreensManager: React.FC = () => {
                       <span className={`h-2 w-2 rounded-full ${
                         scr.status === 'online' ? 'bg-emerald-400' : scr.status === 'emergency' ? 'bg-rose-400 animate-ping' : 'bg-slate-500'
                       }`} />
-                      <span className="uppercase">{scr.status}</span>
+                      <span className="uppercase">{t(STATUS_T_KEY[scr.status] ?? 'sm.statusOffline')}</span>
                     </span>
 
                     <span className="px-2 py-0.5 rounded bg-black/70 backdrop-blur text-[10px] font-mono font-bold text-slate-300">
@@ -412,14 +417,14 @@ export const ScreensManager: React.FC = () => {
                       className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg transition-all"
                     >
                       <Play className="h-4 w-4" />
-                      <span>Launch Player</span>
+                      <span>{t('sm.launchPlayer')}</span>
                     </button>
                     <button
                       onClick={() => setInspectScreen(scr)}
                       className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-all"
                     >
                       <Sliders className="h-4 w-4" />
-                      <span>Details</span>
+                      <span>{t('sm.details')}</span>
                     </button>
                     <button
                       onClick={() => { setQrScreen(scr); setQrCopied(false); }}
@@ -427,7 +432,7 @@ export const ScreensManager: React.FC = () => {
                       title="QR ลิงก์จับคู่ (URL ถูกโหมดอัตโนมัติ)"
                     >
                       <QrCode className="h-4 w-4" />
-                      <span>Pairing QR</span>
+                      <span>{t('sm.pairingQr')}</span>
                     </button>
                   </div>
                 </div>
@@ -448,14 +453,14 @@ export const ScreensManager: React.FC = () => {
                     <div className="flex items-center justify-between text-slate-300">
                       <span className="flex items-center space-x-1.5 text-slate-400">
                         <Layers className="h-3.5 w-3.5 text-cyan-400" />
-                        <span>Layout:</span>
+                        <span>{t('sm.layout')}</span>
                       </span>
                       <span className="font-medium text-slate-200 line-clamp-1">{currentLayout?.name || 'Standard'}</span>
                     </div>
                     <div className="flex items-center justify-between text-slate-300">
                       <span className="flex items-center space-x-1.5 text-slate-400">
                         <Maximize2 className="h-3.5 w-3.5 text-indigo-400" />
-                        <span>Playlist:</span>
+                        <span>{t('sm.playlist')}</span>
                       </span>
                       <span className="font-medium text-slate-200 line-clamp-1">{currentPlaylist?.name || 'Default Sequence'}</span>
                     </div>
@@ -466,7 +471,7 @@ export const ScreensManager: React.FC = () => {
                     <div className="flex justify-between text-[10px] text-slate-400">
                       <span className="flex items-center space-x-1">
                         <HardDrive className="h-3 w-3 text-slate-500" />
-                        <span>Local Media Buffer:</span>
+                        <span>{t('sm.localBuffer')}</span>
                       </span>
                       <span className="font-mono font-medium text-slate-300">{scr.storageUsageMb}MB / {scr.storageTotalMb}MB ({storagePercent}%)</span>
                     </div>
@@ -485,35 +490,35 @@ export const ScreensManager: React.FC = () => {
                 <div className="px-4 py-2.5 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2">
                     <button
-                      title="Reboot Engine"
+                      title={t('sm.rebootEngine')}
                       onClick={() => sendCommandToScreen(scr.id, 'REBOOT')}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition-colors"
                     >
                       <RefreshCw className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      title="Take Screenshot"
+                      title={t('sm.takeScreenshot')}
                       onClick={() => sendCommandToScreen(scr.id, 'TAKE_SCREENSHOT')}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition-colors"
                     >
                       <Camera className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      title={scr.isMuted ? 'Unmute' : 'Mute'}
+                      title={scr.isMuted ? t('sm.unmute') : t('sm.mute')}
                       onClick={() => updateScreen(scr.id, { isMuted: !scr.isMuted })}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-slate-800 transition-colors"
                     >
                       {scr.isMuted ? <VolumeX className="h-3.5 w-3.5 text-rose-400" /> : <Volume2 className="h-3.5 w-3.5" />}
                     </button>
                     <button
-                      title="Unpair Device (remote reset)"
-                      onClick={() => { if (confirm(`Unpair "${scr.name}"? The display will return to pairing screen.`)) sendCommandToScreen(scr.id, 'UNPAIR_DEVICE'); }}
+                      title={t('sm.unpairDevice')}
+                      onClick={() => { if (confirm(t('sm.unpairConfirm', { name: scr.name }))) sendCommandToScreen(scr.id, 'UNPAIR_DEVICE'); }}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
                     >
                       <Unlink className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      title="Force Display (bring signage to front)"
+                      title={t('sm.forceDisplay')}
                       onClick={() => sendCommandToScreen(scr.id, 'FORCE_DISPLAY')}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800 transition-colors"
                     >
@@ -525,7 +530,7 @@ export const ScreensManager: React.FC = () => {
                     onClick={() => setInspectScreen(scr)}
                     className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
                   >
-                    Configure →
+                    {t('sm.configure')}
                   </button>
                 </div>
 
@@ -540,12 +545,12 @@ export const ScreensManager: React.FC = () => {
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Display Name & Group</th>
-                  <th className="py-3 px-4">Location</th>
-                  <th className="py-3 px-4">IP Address</th>
-                  <th className="py-3 px-4">Layout / Playlist</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{t('sm.status')}</th>
+                  <th className="py-3 px-4">{t('sm.displayNameGroup')}</th>
+                  <th className="py-3 px-4">{t('sm.location')}</th>
+                  <th className="py-3 px-4">{t('sm.ipAddress')}</th>
+                  <th className="py-3 px-4">{t('sm.layoutPlaylist')}</th>
+                  <th className="py-3 px-4 text-right">{t('sm.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -561,7 +566,7 @@ export const ScreensManager: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 font-medium text-white">
                       <div>{scr.name}</div>
-                      <div className="text-[10px] text-slate-500">{scr.group} • Code: {scr.pairingCode}</div>
+                      <div className="text-[10px] text-slate-500">{scr.group} • {t('sm.code')}{scr.pairingCode}</div>
                     </td>
                     <td className="py-3 px-4 text-slate-400">{scr.location}</td>
                     <td className="py-3 px-4 font-mono text-slate-400">{scr.ipAddress || <span className="text-slate-600">—</span>}</td>
@@ -573,13 +578,13 @@ export const ScreensManager: React.FC = () => {
                         onClick={() => handleLaunchPlayer(scr.id)}
                         className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg text-[10px]"
                       >
-                        Launch TV
+                        {t('sm.launchTv')}
                       </button>
                       <button
                         onClick={() => setInspectScreen(scr)}
                         className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg text-[10px]"
                       >
-                        Edit
+                        {t('sm.edit')}
                       </button>
                     </td>
                   </tr>
@@ -594,12 +599,12 @@ export const ScreensManager: React.FC = () => {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 text-white shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-1">Pair New Digital Display</h3>
-            <p className="text-xs text-slate-400 mb-4">Registers a new Smart TV screen into your cloud matrix</p>
+            <h3 className="text-lg font-bold text-white mb-1">{t('sm.pairTitle')}</h3>
+            <p className="text-xs text-slate-400 mb-4">{t('sm.pairSubtitle')}</p>
 
             <form onSubmit={handleCreateScreen} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Display Name</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">{t('sm.displayName')}</label>
                 <input
                   type="text"
                   placeholder="e.g. West Wing Corridor Screen"
@@ -611,7 +616,7 @@ export const ScreensManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Display Group</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">{t('sm.displayGroup')}</label>
                 <input
                   type="text"
                   placeholder="e.g. Executive Tower"
@@ -622,7 +627,7 @@ export const ScreensManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Physical Location</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">{t('sm.physicalLocation')}</label>
                 <input
                   type="text"
                   placeholder="e.g. Building B - Ground Floor"
@@ -633,14 +638,14 @@ export const ScreensManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Orientation</label>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">{t('sm.orientation')}</label>
                 <select
                   value={newScreenOrientation}
                   onChange={(e) => setNewScreenOrientation(e.target.value as any)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
                 >
-                  <option value="landscape">Landscape (16:9)</option>
-                  <option value="portrait">Portrait (9:16)</option>
+                  <option value="landscape">{t('sm.landscape')}</option>
+                  <option value="portrait">{t('sm.portrait')}</option>
                 </select>
               </div>
 
@@ -650,13 +655,13 @@ export const ScreensManager: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
                 >
-                  Cancel
+                  {t('sm.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg"
                 >
-                  Generate Pairing Code & Save
+                  {t('sm.generatePairing')}
                 </button>
               </div>
             </form>
@@ -682,25 +687,25 @@ export const ScreensManager: React.FC = () => {
             {/* Config Form */}
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Assigned Smart Layout</label>
+                <label className="text-slate-400 block mb-1">{t('sm.assignedLayout')}</label>
                 <select
                   value={inspectScreen.currentLayoutId || ''}
                   onChange={(e) => { updateScreen(inspectScreen.id, { currentLayoutId: e.target.value } as any); setInspectScreen({ ...inspectScreen, currentLayoutId: e.target.value }); }}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
                 >
-                  <option value="">-- Auto (from Schedule) --</option>
+                  <option value="">{t('sm.autoFromSchedule')}</option>
                   {layouts.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Assigned Playlist Sequence</label>
+                <label className="text-slate-400 block mb-1">{t('sm.assignedPlaylist')}</label>
                 <select
                   value={inspectScreen.currentPlaylistId || ''}
                   onChange={(e) => { updateScreen(inspectScreen.id, { currentPlaylistId: e.target.value } as any); setInspectScreen({ ...inspectScreen, currentPlaylistId: e.target.value }); }}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
                 >
-                  <option value="">-- Auto (from Schedule) --</option>
+                  <option value="">{t('sm.autoFromSchedule')}</option>
                   {playlists.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
@@ -738,7 +743,7 @@ export const ScreensManager: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Audio Volume ({inspectScreen.volume}%)</label>
+                <label className="text-slate-400 block mb-1">{t('sm.audioVolume', { pct: inspectScreen.volume })}</label>
                 <input
                   type="range"
                   min="0"
@@ -750,12 +755,12 @@ export const ScreensManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Network Info</label>
+                <label className="text-slate-400 block mb-1">{t('sm.networkInfo')}</label>
                 <div className="font-mono text-[11px] text-slate-300 bg-slate-950 p-2 rounded-xl space-y-0.5">
-                  <div>IP: {inspectScreen.ipAddress || <span className="text-slate-600">— (รอ device รายงานตัว)</span>}</div>
-                  <div>MAC: {inspectScreen.macAddress || <span className="text-slate-600">— (Android player จะรายงานจริง)</span>}</div>
+                  <div>{t('sm.ip')}{inspectScreen.ipAddress || <span className="text-slate-600">— (รอ device รายงานตัว)</span>}</div>
+                  <div>{t('sm.mac')}{inspectScreen.macAddress || <span className="text-slate-600">— (Android player จะรายงานจริง)</span>}</div>
                   <div className="text-slate-500">
-                    Last beat: {inspectScreen.lastHeartbeat ? new Date(inspectScreen.lastHeartbeat).toLocaleString('th-TH') : '—'}
+                    {t('sm.lastBeat')}{inspectScreen.lastHeartbeat ? new Date(inspectScreen.lastHeartbeat).toLocaleString('th-TH') : '—'}
                   </div>
                 </div>
               </div>
@@ -769,13 +774,13 @@ export const ScreensManager: React.FC = () => {
                 }}
                 className="text-xs font-semibold text-rose-400 hover:text-rose-300"
               >
-                Delete Screen
+                {t('sm.deleteScreen')}
               </button>
               <button
                 onClick={() => setInspectScreen(null)}
                 className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl text-xs text-white"
               >
-                Done
+                {t('sm.done')}
               </button>
             </div>
           </div>
@@ -815,7 +820,7 @@ export const ScreensManager: React.FC = () => {
               className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-300 flex items-center justify-center gap-2"
             >
               {qrCopied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
-              {qrCopied ? 'คัดลอกแล้ว!' : 'Copy Link'}
+              {qrCopied ? t('sm.copied') : t('sm.copyLink')}
             </button>
 
             <p className="text-[11px] text-slate-500 leading-relaxed">

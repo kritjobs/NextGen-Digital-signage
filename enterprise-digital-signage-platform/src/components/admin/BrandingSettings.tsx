@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Palette, RotateCcw, Upload, Eye } from 'lucide-react';
 import { useBrandingStore, BrandingConfig } from '../../store/useBrandingStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const branding = useBrandingStore();
   const [form, setForm] = useState<Partial<BrandingConfig>>({
     platformName: branding.platformName,
@@ -46,9 +48,9 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
           <div>
             <h3 className="text-lg font-bold text-white flex items-center space-x-2">
               <Palette className="h-5 w-5 text-violet-400" />
-              <span>White-Label Branding</span>
+              <span>{t('br.title')}</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Customize logo, name, and colors</p>
+            <p className="text-xs text-slate-400 mt-0.5">{t('br.subtitle')}</p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white text-xl px-2">✕</button>
         </div>
@@ -57,7 +59,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
         <div className="p-5 space-y-4 overflow-y-auto flex-1">
           {/* Platform Name */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-1">Platform Name</label>
+            <label className="text-xs font-semibold text-slate-400 block mb-1">{t('br.platformName')}</label>
             <input
               type="text"
               value={form.platformName || ''}
@@ -69,7 +71,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
 
           {/* Subtitle */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-1">Subtitle</label>
+            <label className="text-xs font-semibold text-slate-400 block mb-1">{t('br.subtitleLabel')}</label>
             <input
               type="text"
               value={form.platformSubtitle || ''}
@@ -81,7 +83,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
 
           {/* Logo URL */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-1">Logo</label>
+            <label className="text-xs font-semibold text-slate-400 block mb-1">{t('br.logo')}</label>
             
             {/* Upload / Drag-Drop area */}
             <div
@@ -134,15 +136,15 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
                 <div className="flex items-center justify-center space-x-3">
                   <img src={form.logoUrl} alt="Logo" className="h-12 w-12 object-contain rounded-lg border border-slate-700 bg-slate-800 p-1" />
                   <div className="text-left">
-                    <p className="text-[10px] text-slate-300 font-medium">Logo uploaded</p>
+                    <p className="text-[10px] text-slate-300 font-medium">{t('br.logoUploaded')}</p>
                     <p className="text-[9px] text-slate-500 truncate max-w-[180px]">{form.logoUrl}</p>
                   </div>
                 </div>
               ) : (
                 <div>
                   <Upload className="h-6 w-6 text-slate-500 mx-auto mb-1" />
-                  <p className="text-[10px] text-slate-400">Click to upload or drag & drop logo here</p>
-                  <p className="text-[9px] text-slate-600">PNG, SVG, JPG (max 2MB)</p>
+                  <p className="text-[10px] text-slate-400">{t('br.logoDrop')}</p>
+                  <p className="text-[9px] text-slate-600">{t('br.logoFormats')}</p>
                 </div>
               )}
             </div>
@@ -153,7 +155,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
                 type="text"
                 value={form.logoUrl || ''}
                 onChange={e => setForm({ ...form, logoUrl: e.target.value })}
-                placeholder="Or paste URL: /uploads/logo.png"
+                placeholder={t('br.logoUrl')}
                 className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-[10px] text-white focus:outline-none focus:border-violet-500 font-mono"
               />
             </div>
@@ -162,7 +164,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
           {/* Colors */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-1">Primary Color</label>
+              <label className="text-xs font-semibold text-slate-400 block mb-1">{t('br.primaryColor')}</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
@@ -179,7 +181,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-400 block mb-1">Accent Color</label>
+              <label className="text-xs font-semibold text-slate-400 block mb-1">{t('br.accentColor')}</label>
               <div className="flex items-center space-x-2">
                 <input
                   type="color"
@@ -199,10 +201,10 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
 
           {/* Login Page */}
           <div className="border-t border-slate-800 pt-4">
-            <h4 className="text-xs font-bold text-slate-300 mb-3">Login Page</h4>
+            <h4 className="text-xs font-bold text-slate-300 mb-3">{t('br.loginPage')}</h4>
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] text-slate-500 block mb-0.5">Title</label>
+                <label className="text-[10px] text-slate-500 block mb-0.5">{t('br.loginTitle')}</label>
                 <input
                   type="text"
                   value={form.loginTitle || ''}
@@ -211,7 +213,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
                 />
               </div>
               <div>
-                <label className="text-[10px] text-slate-500 block mb-0.5">Subtitle</label>
+                <label className="text-[10px] text-slate-500 block mb-0.5">{t('br.loginSubtitle')}</label>
                 <input
                   type="text"
                   value={form.loginSubtitle || ''}
@@ -224,7 +226,7 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
 
           {/* Footer */}
           <div>
-            <label className="text-xs font-semibold text-slate-400 block mb-1">Footer Text</label>
+            <label className="text-xs font-semibold text-slate-400 block mb-1">{t('br.footerText')}</label>
             <input
               type="text"
               value={form.footerText || ''}
@@ -238,11 +240,11 @@ export const BrandingSettings: React.FC<{ isOpen: boolean; onClose: () => void }
         <div className="p-5 border-t border-slate-800 flex items-center justify-between shrink-0">
           <button onClick={handleReset} className="flex items-center space-x-1 text-slate-400 hover:text-white text-xs">
             <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset to Default</span>
+            <span>{t('br.reset')}</span>
           </button>
           <div className="flex items-center space-x-2">
-            <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-white text-sm">Cancel</button>
-            <button onClick={handleSave} className="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-sm">Save Branding</button>
+            <button onClick={onClose} className="px-4 py-2 text-slate-400 hover:text-white text-sm">{t('br.cancel')}</button>
+            <button onClick={handleSave} className="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-sm">{t('br.save')}</button>
           </div>
         </div>
       </div>

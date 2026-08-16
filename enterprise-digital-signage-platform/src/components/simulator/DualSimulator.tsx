@@ -4,8 +4,10 @@ import { ScreensManager } from '../admin/ScreensManager';
 import { SmartLayoutBuilder } from '../admin/SmartLayoutBuilder';
 import { PlayerApp } from '../player/PlayerApp';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const DualSimulator: React.FC = () => {
+  const { t } = useTranslation();
   const { activeAdminTab } = useSignageStore();
 
   return (
@@ -14,8 +16,8 @@ export const DualSimulator: React.FC = () => {
         <div className="flex items-center space-x-2">
           <Monitor className="h-5 w-5 text-indigo-400" />
           <div>
-            <h2 className="text-base font-bold text-white">Side-by-Side Dual Simulator</h2>
-            <p className="text-xs text-slate-400">Live preview of Admin Controller actions syncing immediately to Smart TV Display</p>
+            <h2 className="text-base font-bold text-white">{t('dual.title')}</h2>
+            <p className="text-xs text-slate-400">{t('dual.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -27,7 +29,7 @@ export const DualSimulator: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-xs font-bold text-cyan-400">
             <span className="flex items-center space-x-1.5">
               <SlidersHorizontal className="h-4 w-4" />
-              <span>ADMIN CONSOLE</span>
+              <span>{t('dual.adminConsole')}</span>
             </span>
           </div>
 
@@ -41,7 +43,7 @@ export const DualSimulator: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-xs font-bold text-emerald-400">
             <span className="flex items-center space-x-1.5">
               <Tv className="h-4 w-4" />
-              <span>LIVE SMART TV RENDERER</span>
+              <span>{t('dual.liveRenderer')}</span>
             </span>
           </div>
 

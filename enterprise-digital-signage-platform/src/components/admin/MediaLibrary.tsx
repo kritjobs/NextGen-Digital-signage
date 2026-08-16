@@ -19,11 +19,13 @@ import {
   X
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { MediaItem, MediaType } from '../../types/signage';
 import { aiApi } from '../../services/api';
 import { MediaUploadModal } from './MediaUploadModal';
 
 export const MediaLibrary: React.FC = () => {
+  const { t } = useTranslation();
   const { mediaItems, addMediaItem, deleteMediaItem } = useSignageStore();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -157,9 +159,9 @@ export const MediaLibrary: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <Film className="h-5 w-5 text-cyan-400" />
-            <span>Digital Media Asset Library</span>
+            <span>{t('ml.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400">Manage 4K video clips, high-res posters, tickers, and interactive widgets</p>
+          <p className="text-xs text-slate-400">{t('ml.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -168,14 +170,14 @@ export const MediaLibrary: React.FC = () => {
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
           >
             <Sparkles className="h-4 w-4" />
-            <span>AI Create</span>
+            <span>{t('ml.aiCreate')}</span>
           </button>
           <button
             onClick={() => setIsUploadModalOpen(true)}
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
           >
             <Upload className="h-4 w-4" />
-            <span>Upload Files</span>
+            <span>{t('ml.uploadFiles')}</span>
           </button>
           <button
             id="btn-add-media"
@@ -183,7 +185,7 @@ export const MediaLibrary: React.FC = () => {
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/30 transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" />
-            <span>Add Media Asset</span>
+            <span>{t('ml.addMedia')}</span>
           </button>
         </div>
       </div>
@@ -194,7 +196,7 @@ export const MediaLibrary: React.FC = () => {
           <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
           <input
             type="text"
-            placeholder="Search title, tag..."
+            placeholder={t('ml.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
@@ -206,13 +208,13 @@ export const MediaLibrary: React.FC = () => {
           onChange={(e) => setTypeFilter(e.target.value)}
           className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
         >
-          <option value="all">All Media Types ({mediaItems.length})</option>
-          <option value="video">Videos</option>
-          <option value="image">Images / Posters</option>
-          <option value="ticker">RSS News Tickers</option>
-          <option value="weather">Weather Widgets</option>
-          <option value="clock">Clock Widgets</option>
-          <option value="announcement">Announcements</option>
+          <option value="all">{t('ml.allTypes', { count: mediaItems.length })}</option>
+          <option value="video">{t('ml.typeVideos')}</option>
+          <option value="image">{t('ml.typeImages')}</option>
+          <option value="ticker">{t('ml.typeTickers')}</option>
+          <option value="weather">{t('ml.typeWeather')}</option>
+          <option value="clock">{t('ml.typeClock')}</option>
+          <option value="announcement">{t('ml.typeAnnouncements')}</option>
         </select>
       </div>
 
@@ -256,7 +258,7 @@ export const MediaLibrary: React.FC = () => {
                 className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-1 text-white text-xs font-bold"
               >
                 <Maximize2 className="h-4 w-4 text-cyan-400" />
-                <span>Preview</span>
+                <span>{t('ml.preview')}</span>
               </button>
             </div>
 
@@ -279,20 +281,20 @@ export const MediaLibrary: React.FC = () => {
               <div className="flex items-center space-x-2">
                 {m.releaseDate && new Date(m.releaseDate) > new Date() && (
                   <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold bg-cyan-500/20 text-cyan-300" title={`เปิดตัว: ${new Date(m.releaseDate).toLocaleString()}`}>
-                    🔒 Embargo
+                    🔒 {t('ml.embargo')}
                   </span>
                 )}
                 {m.expiresAt && (
                   <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${
                     new Date(m.expiresAt) < new Date() ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'
                   }`}>
-                    {new Date(m.expiresAt) < new Date() ? '⛔ Expired' : `⏰ ${new Date(m.expiresAt).toLocaleDateString()}`}
+                    {new Date(m.expiresAt) < new Date() ? `⛔ ${t('ml.expired')}` : `⏰ ${new Date(m.expiresAt).toLocaleDateString()}`}
                   </span>
                 )}
                 <button
                   onClick={() => deleteMediaItem(m.id)}
                   className="text-slate-500 hover:text-rose-400 p-1"
-                  title="Delete Media"
+                  title={t('ml.deleteMedia')}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -306,12 +308,12 @@ export const MediaLibrary: React.FC = () => {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 text-white shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-1">Add Media Asset to Library</h3>
-            <p className="text-xs text-slate-400 mb-4">Add high-definition video, image, ticker, or smart widget</p>
+            <h3 className="text-lg font-bold text-white mb-1">{t('ml.addTitle')}</h3>
+            <p className="text-xs text-slate-400 mb-4">{t('ml.addSubtitle')}</p>
 
             <form onSubmit={handleCreateMedia} className="space-y-4 text-xs">
               <div>
-                <label className="text-slate-300 block mb-1">Media Asset Title</label>
+                <label className="text-slate-300 block mb-1">{t('ml.titleField')}</label>
                 <input
                   type="text"
                   placeholder="e.g. Q1 Welcome Promo 2026"
@@ -324,37 +326,37 @@ export const MediaLibrary: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-slate-300 block mb-1">Asset Type</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.assetType')}</label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as MediaType)}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white"
                   >
-                    <optgroup label="Media">
-                      <option value="image">🖼️ Image / Poster</option>
-                      <option value="video">🎬 HD Video MP4</option>
+                    <optgroup label={t('ml.catMedia')}>
+                      <option value="image">{t('ml.optImage')}</option>
+                      <option value="video">{t('ml.optVideo')}</option>
                     </optgroup>
-                    <optgroup label="Widgets — Time">
-                      <option value="clock">🕐 Clock Widget</option>
-                      <option value="worldclock">🌍 World Clock (Multi-timezone)</option>
-                      <option value="countdown">⏱️ Countdown Timer</option>
+                    <optgroup label={t('ml.catWidgetsTime')}>
+                      <option value="clock">{t('ml.optClock')}</option>
+                      <option value="worldclock">{t('ml.optWorldClock')}</option>
+                      <option value="countdown">{t('ml.optCountdown')}</option>
                     </optgroup>
-                    <optgroup label="Widgets — Content">
-                      <option value="ticker">📰 News Ticker / Scrolling Text</option>
-                      <option value="announcement">📢 Announcement Card</option>
-                      <option value="kpi">📈 KPI / Metrics Card</option>
-                      <option value="qrcode">📋 QR Code</option>
+                    <optgroup label={t('ml.catWidgetsContent')}>
+                      <option value="ticker">{t('ml.optTicker')}</option>
+                      <option value="announcement">{t('ml.optAnnouncement')}</option>
+                      <option value="kpi">{t('ml.optKpi')}</option>
+                      <option value="qrcode">{t('ml.optQr')}</option>
                     </optgroup>
-                    <optgroup label="Widgets — Business">
-                      <option value="promo">🏷️ Price / Promo Card</option>
-                      <option value="weather">🌤️ Weather Widget</option>
-                      <option value="webpage">🌐 Web Page (iframe)</option>
+                    <optgroup label={t('ml.catWidgetsBusiness')}>
+                      <option value="promo">{t('ml.optPromo')}</option>
+                      <option value="weather">{t('ml.optWeather')}</option>
+                      <option value="webpage">{t('ml.optWebpage')}</option>
                     </optgroup>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-slate-300 block mb-1">Duration (Seconds)</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.duration')}</label>
                   <input
                     type="number"
                     min="5"
@@ -368,32 +370,32 @@ export const MediaLibrary: React.FC = () => {
 
               {/* Expiration Date */}
               <div>
-                <label className="text-slate-300 block mb-1">Expiration Date (optional)</label>
+                <label className="text-slate-300 block mb-1">{t('ml.expiration')}</label>
                 <input
                   type="datetime-local"
                   value={expiresAt}
                   onChange={(e) => setExpiresAt(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">Media will auto-hide from player after this date</p>
+                <p className="text-[10px] text-slate-500 mt-1">{t('ml.autoHide')}</p>
               </div>
 
               {/* Release Date (Embargo) */}
               <div>
-                <label className="text-slate-300 block mb-1">Release Date — Embargo (optional)</label>
+                <label className="text-slate-300 block mb-1">{t('ml.releaseDate')}</label>
                 <input
                   type="datetime-local"
                   value={releaseDate}
                   onChange={(e) => setReleaseDate(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-xs"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">Media will NOT show on screens until this date (e.g. เปิดตัวสินค้า)</p>
+                <p className="text-[10px] text-slate-500 mt-1">{t('ml.releaseHint')}</p>
               </div>
 
               {/* Fallback Image */}
               {(type === 'image' || type === 'video') && (
                 <div>
-                  <label className="text-slate-300 block mb-1">Fallback Image URL (optional)</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.fallbackUrl')}</label>
                   <input
                     type="url"
                     placeholder="https://.../backup.png"
@@ -407,7 +409,7 @@ export const MediaLibrary: React.FC = () => {
 
               {(type === 'image' || type === 'video') && (
                 <div>
-                  <label className="text-slate-300 block mb-1">Direct Media URL</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.directUrl')}</label>
                   <input
                     type="url"
                     placeholder="https://images.unsplash.com/..."
@@ -420,7 +422,7 @@ export const MediaLibrary: React.FC = () => {
 
               {type === 'ticker' && (
                 <div>
-                  <label className="text-slate-300 block mb-1">Scrolling News Ticker Text</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.tickerText')}</label>
                   <textarea
                     rows={2}
                     value={tickerText}
@@ -432,7 +434,7 @@ export const MediaLibrary: React.FC = () => {
 
               {type === 'weather' && (
                 <div>
-                  <label className="text-slate-300 block mb-1">Location City Name</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.cityName')}</label>
                   <input
                     type="text"
                     value={weatherCity}
@@ -445,7 +447,7 @@ export const MediaLibrary: React.FC = () => {
               {type === 'announcement' && (
                 <div className="space-y-2">
                   <div>
-                    <label className="text-slate-300 block mb-1">Headline</label>
+                    <label className="text-slate-300 block mb-1">{t('ml.headline')}</label>
                     <input
                       type="text"
                       value={announcementHeader}
@@ -454,7 +456,7 @@ export const MediaLibrary: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-slate-300 block mb-1">Body Text</label>
+                    <label className="text-slate-300 block mb-1">{t('ml.bodyText')}</label>
                     <textarea
                       rows={2}
                       value={announcementBody}
@@ -468,12 +470,12 @@ export const MediaLibrary: React.FC = () => {
               {type === 'countdown' && (
                 <div className="space-y-2">
                   <div>
-                    <label className="text-slate-300 block mb-1">Target Date & Time</label>
+                    <label className="text-slate-300 block mb-1">{t('ml.targetDate')}</label>
                     <input type="datetime-local" value={countdownDate} onChange={(e) => setCountdownDate(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
                   </div>
                   <div>
-                    <label className="text-slate-300 block mb-1">Label Text</label>
+                    <label className="text-slate-300 block mb-1">{t('ml.labelText')}</label>
                     <input type="text" value={countdownLabel} onChange={(e) => setCountdownLabel(e.target.value)}
                       placeholder="e.g. Grand Opening In..."
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
@@ -484,13 +486,13 @@ export const MediaLibrary: React.FC = () => {
               {type === 'qrcode' && (
                 <div className="space-y-2">
                   <div>
-                    <label className="text-slate-300 block mb-1">QR Code Data (URL or text)</label>
+                    <label className="text-slate-300 block mb-1">{t('ml.qrData')}</label>
                     <input type="text" value={qrCodeData} onChange={(e) => setQrCodeData(e.target.value)}
                       placeholder="https://yoursite.com or WiFi:SSID"
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white font-mono text-[11px]" />
                   </div>
                   <div>
-                    <label className="text-slate-300 block mb-1">Display Label</label>
+                    <label className="text-slate-300 block mb-1">{t('ml.displayLabel')}</label>
                     <input type="text" value={qrCodeLabel} onChange={(e) => setQrCodeLabel(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
                   </div>
@@ -501,25 +503,25 @@ export const MediaLibrary: React.FC = () => {
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-slate-300 block mb-1">Promo Title</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.promoTitle')}</label>
                       <input type="text" value={promoTitle} onChange={(e) => setPromoTitle(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
                     </div>
                     <div>
-                      <label className="text-slate-300 block mb-1">Description</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.description')}</label>
                       <input type="text" value={promoDesc} onChange={(e) => setPromoDesc(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-slate-300 block mb-1">Sale Price</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.salePrice')}</label>
                       <input type="text" value={promoPrice} onChange={(e) => setPromoPrice(e.target.value)}
                         placeholder="฿199"
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white text-lg font-bold" />
                     </div>
                     <div>
-                      <label className="text-slate-300 block mb-1">Original Price</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.originalPrice')}</label>
                       <input type="text" value={promoOrigPrice} onChange={(e) => setPromoOrigPrice(e.target.value)}
                         placeholder="฿399"
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white line-through opacity-60" />
@@ -532,19 +534,19 @@ export const MediaLibrary: React.FC = () => {
                 <div className="space-y-2">
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-slate-300 block mb-1">Value</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.value')}</label>
                       <input type="text" value={kpiValue} onChange={(e) => setKpiValue(e.target.value)}
                         placeholder="1,234"
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white text-lg font-bold" />
                     </div>
                     <div>
-                      <label className="text-slate-300 block mb-1">Label</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.label')}</label>
                       <input type="text" value={kpiLabel} onChange={(e) => setKpiLabel(e.target.value)}
                         placeholder="Total Sales"
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
                     </div>
                     <div>
-                      <label className="text-slate-300 block mb-1">Trend</label>
+                      <label className="text-slate-300 block mb-1">{t('ml.trend')}</label>
                       <input type="text" value={kpiTrend} onChange={(e) => setKpiTrend(e.target.value)}
                         placeholder="+12%"
                         className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
@@ -555,17 +557,17 @@ export const MediaLibrary: React.FC = () => {
 
               {type === 'worldclock' && (
                 <div>
-                  <label className="text-slate-300 block mb-1">Cities (comma separated)</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.cities')}</label>
                   <input type="text" value={worldClockCities} onChange={(e) => setWorldClockCities(e.target.value)}
                     placeholder="Bangkok,Tokyo,London,New York"
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white" />
-                  <p className="text-[10px] text-slate-500 mt-1">Use timezone city names. Max 4-6 for best display.</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{t('ml.citiesHint')}</p>
                 </div>
               )}
 
               {type === 'webpage' && (
                 <div>
-                  <label className="text-slate-300 block mb-1">Web Page URL</label>
+                  <label className="text-slate-300 block mb-1">{t('ml.webUrl')}</label>
                   <input type="url" value={webpageUrl} onChange={(e) => setWebpageUrl(e.target.value)}
                     placeholder="https://dashboard.example.com"
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white font-mono text-[11px]" />
@@ -573,7 +575,7 @@ export const MediaLibrary: React.FC = () => {
               )}
 
               <div>
-                <label className="text-slate-300 block mb-1">Tags (Comma Separated)</label>
+                <label className="text-slate-300 block mb-1">{t('ml.tags')}</label>
                 <input
                   type="text"
                   placeholder="lobby, corporate, 2026"
@@ -589,13 +591,13 @@ export const MediaLibrary: React.FC = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 text-slate-400 hover:text-white"
                 >
-                  Cancel
+                  {t('ml.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold rounded-xl text-white shadow-lg"
                 >
-                  Add Media
+                  {t('ml.addMediaSubmit')}
                 </button>
               </div>
             </form>
@@ -619,7 +621,7 @@ export const MediaLibrary: React.FC = () => {
                 <img src={previewMedia.url || previewMedia.thumbnailUrl} alt="" className="w-full h-full object-contain" />
               ) : (
                 <div className="p-6 text-center space-y-2 bg-gradient-to-tr from-slate-900 to-indigo-950 w-full h-full flex flex-col justify-center">
-                  <span className="text-cyan-400 font-bold uppercase">{previewMedia.type} WIDGET PREVIEW</span>
+                  <span className="text-cyan-400 font-bold uppercase">{t('ml.widgetPreview', { type: previewMedia.type })}</span>
                   <p className="text-sm text-slate-200 font-semibold">{previewMedia.contentData?.announcementHeader || previewMedia.contentData?.weatherCity || previewMedia.contentData?.tickerText}</p>
                 </div>
               )}
@@ -627,7 +629,7 @@ export const MediaLibrary: React.FC = () => {
 
             <div className="flex justify-end">
               <button onClick={() => setPreviewMedia(null)} className="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold">
-                Close
+                {t('ml.close')}
               </button>
             </div>
           </div>
@@ -644,7 +646,7 @@ export const MediaLibrary: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Bot className="h-5 w-5 text-purple-400" />
-                <h3 className="text-lg font-bold">AI Content Generator</h3>
+                <h3 className="text-lg font-bold">{t('ml.aiGenerator')}</h3>
               </div>
               <button onClick={() => { setIsAiModalOpen(false); setAiResult(null); setAiError(null); }} className="text-slate-400 hover:text-white">
                 <X className="h-5 w-5" />
@@ -654,24 +656,24 @@ export const MediaLibrary: React.FC = () => {
             <div className="space-y-4 text-xs">
               {/* Task Type */}
               <div>
-                <label className="text-slate-300 block mb-1 font-medium">Generation Type</label>
+                <label className="text-slate-300 block mb-1 font-medium">{t('ml.genType')}</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button onClick={() => setAiTaskType('text_generation')}
                     className={`p-3 rounded-xl border text-left ${aiTaskType === 'text_generation' ? 'border-purple-500 bg-purple-500/10' : 'border-slate-700 hover:border-slate-500'}`}>
-                    <span className="font-bold text-white block">📝 Text Content</span>
-                    <span className="text-[10px] text-slate-400">Announcements, Tickers, Headlines</span>
+                    <span className="font-bold text-white block">{t('ml.textContent')}</span>
+                    <span className="text-[10px] text-slate-400">{t('ml.genText')}</span>
                   </button>
                   <button onClick={() => setAiTaskType('image_generation')}
                     className={`p-3 rounded-xl border text-left ${aiTaskType === 'image_generation' ? 'border-purple-500 bg-purple-500/10' : 'border-slate-700 hover:border-slate-500'}`}>
-                    <span className="font-bold text-white block">🖼️ Image / Poster</span>
-                    <span className="text-[10px] text-slate-400">Banners, Posters, Backgrounds</span>
+                    <span className="font-bold text-white block">{t('ml.imagePoster')}</span>
+                    <span className="text-[10px] text-slate-400">{t('ml.genVisual')}</span>
                   </button>
                 </div>
               </div>
 
               {/* Prompt */}
               <div>
-                <label className="text-slate-300 block mb-1 font-medium">Describe what you want</label>
+                <label className="text-slate-300 block mb-1 font-medium">{t('ml.genPrompt')}</label>
                 <textarea rows={3} value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}
                   placeholder={aiTaskType === 'text_generation'
                     ? 'e.g. Write a school announcement about upcoming sports day event in Thai...'
@@ -691,7 +693,7 @@ export const MediaLibrary: React.FC = () => {
                 setIsAiGenerating(false);
               }} disabled={isAiGenerating || !aiPrompt.trim()}
                 className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                {isAiGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate with AI</>}
+                {isAiGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> {t('ml.generating')}</> : <><Sparkles className="h-4 w-4" /> {t('ml.generateWithAi')}</>}
               </button>
 
               {/* Error */}
@@ -702,7 +704,7 @@ export const MediaLibrary: React.FC = () => {
               {/* Result */}
               {aiResult && (
                 <div className="space-y-3 p-3 bg-slate-950 border border-slate-700 rounded-xl">
-                  <span className="text-[10px] text-purple-400 font-bold uppercase">AI Result:</span>
+                  <span className="text-[10px] text-purple-400 font-bold uppercase">{t('ml.aiResult')}</span>
                   {aiResult.text && <p className="text-sm text-white whitespace-pre-wrap">{aiResult.text}</p>}
                   {aiResult.imageUrl && <img src={aiResult.imageUrl} alt="AI Generated" className="w-full rounded-lg" />}
                   <button onClick={() => {
@@ -722,7 +724,7 @@ export const MediaLibrary: React.FC = () => {
                     addMediaItem(newMedia);
                     setIsAiModalOpen(false); setAiResult(null); setAiPrompt('');
                   }} className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs">
-                    ✅ Add to Media Library
+                    {t('ml.addToLibrary')}
                   </button>
                 </div>
               )}

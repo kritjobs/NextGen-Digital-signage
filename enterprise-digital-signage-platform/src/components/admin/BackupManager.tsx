@@ -14,6 +14,7 @@ import {
   CalendarClock,
 } from 'lucide-react';
 import { backupApi } from '../../services/api';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface BackupItem {
   name: string;
@@ -30,6 +31,7 @@ interface BackupConfig {
 }
 
 export const BackupManager: React.FC = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<BackupItem[]>([]);
   const [config, setConfig] = useState<BackupConfig | null>(null);
   const [lastRun, setLastRun] = useState<string | null>(null);
@@ -98,7 +100,7 @@ export const BackupManager: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
             <DatabaseBackup className="h-5 w-5 text-amber-400" />
-            Backup & Restore
+            {t('bk.title')}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
             สำรองข้อมูลฐานข้อมูล (JSON) + ไฟล์มีเดีย (ZIP) — ดาวน์โหลดเก็บไว้ที่อื่นได้ (REQ-007)
@@ -118,7 +120,7 @@ export const BackupManager: React.FC = () => {
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white transition-colors"
           >
             {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <DatabaseBackup className="h-3.5 w-3.5" />}
-            {running ? 'กำลัง backup...' : 'Run backup now'}
+            {running ? 'กำลัง backup...' : t('bk.runNow')}
           </button>
         </div>
       </div>

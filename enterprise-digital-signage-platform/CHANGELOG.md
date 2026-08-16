@@ -5,6 +5,28 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.15] — 2026-08-16  🤖 โดย Freebuff (แปลทุกหน้าของระบบครบ 3 ภาษา — EN/ไทย/中文 ✅)
+
+### Added
+- **แปล UI ครบทุกหน้า admin/player เป็นไทย + จีน (English ยังเป็นแกนหลัก):**
+  - **ScreensManager (เมทริกซ์จอแสดงผล)** — status badge (ออนไลน์/ออฟไลน์/กำลังซิงก์/กำลังประกาศฉุกเฉิน/ข้อผิดพลาด), heartbeat (❤️ เมื่อสักครู่/ไม่มีสัญญาณ), ปุ่ม/โมดัล/ตัวกรองทั้งหมด
+  - **SmartLayoutBuilder (สตูดิโอเลย์เอาต์อัจฉริยะ)** — widget catalog + หมวดหมู่, zone inspector (Position & Size/X/Y/Width/Height/Z-Index/BG Color/Duplicate/Delete), All Zones, โซนว่าง, เลเยอร์, ปุ่มทั้งหมด
+  - **MediaLibrary + MediaUploadModal** — ปุ่ม/แท็บ/โมดัล/ตัวเลือก (รวม AI modal + option labels)
+  - **PlaylistEditor** — ทุก label/ปุ่ม/สถานะ + แก้ชื่อตัวแปร `t` ที่ชนกับ translation hook ใน `map(t => ...)`
+  - **SchedulerEngine (ตารางเวลาออกอากาศ)** — priority cards (ฉุกเฉิน/วิกฤต/กำหนดการ/แคมเปญ/ค่าเริ่มต้น/สแตนด์บาย) + คำอธิบาย + วันย่อ (อา จ อ พ พฤ ศ ส) + ไฮน์ 6 ระดับ + วันที่ในโมดัล
+  - **CampaignManager, RealtimeControlConsole, AnalyticsTelemetry** (summary cards, Admin Audit Trail, resource filter, severity/status badges), **BackupManager, AISettings, BrandingSettings, SlideshowStudio** (theme presets ทั้ง 8 ธีม + คำอธิบาย + tab หมวด), **DualSimulator, PlayerApp chrome** (buffer/cloud sync/exit player)
+  - แปลคีย์ที่ตกหล่นอีกชุด (lb.zIndex, ai.baseUrl, ml.optQr, ss.fontThai, ss.transitionKenBurns ฯลฯ)
+
+### Notes
+- ข้อความ event log (Realtime Control) มาจาก **server (server.ts)** — ยังเป็นภาษาเดิม ต้องทำ server-side i18n แยก
+- เนื้อหาจาก DB (ชื่อจอ/เพลย์ลิสต์/ชื่อ media/ธีมที่ผู้ใช้สร้าง) เป็นข้อมูล ไม่ใช่ UI — ไม่แปล
+
+### Verified (dev preview, ภาษาไทย)
+- ไล่ทุกหน้า: กระดานจอ (badge ออฟไลน์/ออนไลน์ + เมื่อสักครู่ ไทยครบ), Layout Studio (ตัวตรวจสอบโซน/Z-Index), คลังสื่อ, เพลย์ลิสต์, ตารางเวลา (วัน อา–ส + ฉุกเฉิน/วิกฤต), แคมเปญ, ควบคุมแบบเรียลไทม์, วิเคราะห์ (ตรวจสอบแล้ว 100%), สไลด์โชว์ (ธีมไทย), สำรองข้อมูล, ตั้งค่า AI, จำลองสองจอ + TV Player
+- typecheck 0 error + build ผ่าน + integration **16/16 ผ่าน**
+
+---
+
 ## [0.4.14] — 2026-08-16  🤖 โดย Freebuff (i18n หลายภาษา — EN core + ไทย + 中文 + ขยายได้ ✅)
 
 ### Added

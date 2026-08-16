@@ -14,9 +14,11 @@ import {
   X
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { aiApi, auditApi } from '../../services/api';
 
 export const AnalyticsTelemetry: React.FC = () => {
+  const { t } = useTranslation();
   const { screens, proofOfPlayLogs } = useSignageStore();
   const [isAiDiagOpen, setIsAiDiagOpen] = useState(false);
   const [aiDiagResult, setAiDiagResult] = useState<string | null>(null);
@@ -77,9 +79,9 @@ export const AnalyticsTelemetry: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <Activity className="h-5 w-5 text-emerald-400" />
-            <span>Analytics & Proof of Play Audit Trail</span>
+            <span>{t('an.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400">Track display uptime metrics, bandwidth, media buffer hit rate, and audit playback logs</p>
+          <p className="text-xs text-slate-400">{t('an.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -96,14 +98,14 @@ export const AnalyticsTelemetry: React.FC = () => {
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg transition-all cursor-pointer"
           >
             <Bot className="h-4 w-4" />
-            <span>AI Diagnose</span>
+            <span>{t('an.aiDiagnose')}</span>
           </button>
           <button
             onClick={handleExportCSV}
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold text-xs border border-slate-700 shadow-lg transition-all cursor-pointer"
           >
             <Download className="h-4 w-4" />
-            <span>Export CSV</span>
+            <span>{t('an.exportCsv')}</span>
           </button>
         </div>
       </div>
@@ -113,38 +115,38 @@ export const AnalyticsTelemetry: React.FC = () => {
         
         <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-xl space-y-2">
           <div className="flex justify-between items-center text-xs text-slate-400">
-            <span>Matrix Health Uptime</span>
+            <span>{t('an.healthUptime')}</span>
             <Server className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-black text-white">{onlinePercent}%</div>
-          <p className="text-[10px] text-slate-400">{onlineCount} of {screens.length} displays online and syncing</p>
+          <p className="text-[10px] text-slate-400">{t('an.onlineSummary', { online: onlineCount, total: screens.length })}</p>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-xl space-y-2">
           <div className="flex justify-between items-center text-xs text-slate-400">
-            <span>Buffer Cache Hit Rate</span>
+            <span>{t('an.bufferHitRate')}</span>
             <HardDrive className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-cyan-400">{cacheHitRatePercent}%</div>
-          <p className="text-[10px] text-slate-400">Seamless offline playback protection active</p>
+          <p className="text-[10px] text-slate-400">{t('an.offlineProtection')}</p>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-xl space-y-2">
           <div className="flex justify-between items-center text-xs text-slate-400">
-            <span>Total Buffer Storage</span>
+            <span>{t('an.totalBuffer')}</span>
             <HardDrive className="h-4 w-4 text-indigo-400" />
           </div>
           <div className="text-2xl font-black text-white">{(totalBufferUsageMb / 1024).toFixed(2)} GB</div>
-          <p className="text-[10px] text-slate-400">of {(totalStorageCapacityMb / 1024).toFixed(0)} GB allocated across matrix</p>
+          <p className="text-[10px] text-slate-400">{t('an.allocSummary', { gb: (totalStorageCapacityMb / 1024).toFixed(0) })}</p>
         </div>
 
         <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-xl space-y-2">
           <div className="flex justify-between items-center text-xs text-slate-400">
-            <span>Audit Proof of Play</span>
+            <span>{t('an.auditPoP')}</span>
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
           </div>
-          <div className="text-2xl font-black text-emerald-400">100% Verified</div>
-          <p className="text-[10px] text-slate-400">Tamper-proof broadcast log verification</p>
+          <div className="text-2xl font-black text-emerald-400">{t('an.verifiedPct')}</div>
+          <p className="text-[10px] text-slate-400">{t('an.tamperProof')}</p>
         </div>
 
       </div>
@@ -152,13 +154,13 @@ export const AnalyticsTelemetry: React.FC = () => {
       {/* Proof of Play Audit Trail Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-          <h3 className="text-base font-bold text-white">Proof of Play Verified Audit Trail</h3>
+          <h3 className="text-base font-bold text-white">{t('an.verifiedTrail')}</h3>
 
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
-              placeholder="Search screen or media..."
+              placeholder={t('an.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500"
@@ -170,11 +172,11 @@ export const AnalyticsTelemetry: React.FC = () => {
           <table className="w-full text-left text-xs text-slate-300">
             <thead className="bg-slate-950 text-slate-400 uppercase font-bold text-[10px] tracking-wider border-b border-slate-800">
               <tr>
-                <th className="py-3 px-4">Timestamp</th>
-                <th className="py-3 px-4">Display Name</th>
-                <th className="py-3 px-4">Played Media Asset</th>
-                <th className="py-3 px-4">Duration</th>
-                <th className="py-3 px-4">Audit Status</th>
+                <th className="py-3 px-4">{t('an.timestamp')}</th>
+                <th className="py-3 px-4">{t('an.displayName')}</th>
+                <th className="py-3 px-4">{t('an.mediaAsset')}</th>
+                <th className="py-3 px-4">{t('an.duration')}</th>
+                <th className="py-3 px-4">{t('an.auditStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
@@ -187,7 +189,7 @@ export const AnalyticsTelemetry: React.FC = () => {
                   <td className="py-3 px-4">
                     <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px]">
                       <CheckCircle2 className="h-3 w-3" />
-                      <span>{log.status.toUpperCase()}</span>
+                      <span>{t('an.statusCompleted')}</span>
                     </span>
                   </td>
                 </tr>
@@ -202,7 +204,7 @@ export const AnalyticsTelemetry: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
           <h3 className="text-base font-bold text-white flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-cyan-400" />
-            Admin Audit Trail
+            {t('an.auditTrail')}
             <span className="text-[10px] font-normal text-slate-500">(REQ-010 — การกระทำของ admin ย้อนหลัง)</span>
           </h3>
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -211,15 +213,15 @@ export const AnalyticsTelemetry: React.FC = () => {
               onChange={(e) => setAuditResource(e.target.value)}
               className="bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-cyan-500"
             >
-              <option value="all">ทุกหมวด</option>
-              <option value="auth">auth (login/logout)</option>
-              <option value="layout">layout</option>
-              <option value="playlist">playlist</option>
-              <option value="schedule">schedule</option>
-              <option value="campaign">campaign</option>
-              <option value="media">media</option>
-              <option value="screen">screen</option>
-              <option value="emergency">emergency</option>
+              <option value="all">{t('an.resAll')}</option>
+              <option value="auth">{t('an.resAuth')}</option>
+              <option value="layout">{t('an.resLayout')}</option>
+              <option value="playlist">{t('an.resPlaylist')}</option>
+              <option value="schedule">{t('an.resSchedule')}</option>
+              <option value="campaign">{t('an.resCampaign')}</option>
+              <option value="media">{t('an.resMedia')}</option>
+              <option value="screen">{t('an.resScreen')}</option>
+              <option value="emergency">{t('an.resEmergency')}</option>
             </select>
             <div className="relative w-full sm:w-56">
               <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
@@ -272,7 +274,7 @@ export const AnalyticsTelemetry: React.FC = () => {
                       log.severity === 'critical' ? 'bg-rose-950 text-rose-400' :
                       log.severity === 'warning' ? 'bg-amber-950 text-amber-400' :
                       'bg-slate-950 text-slate-400'
-                    }`}>{log.severity.toUpperCase()}</span>
+                    }`}>{t(log.severity === 'critical' ? 'an.sevCritical' : log.severity === 'warning' ? 'an.sevWarning' : 'an.sevInfo')}</span>
                   </td>
                 </tr>
               ))}
@@ -286,10 +288,10 @@ export const AnalyticsTelemetry: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2"><Bot className="h-5 w-5 text-purple-400" /><h3 className="font-bold text-white">AI System Diagnosis</h3></div>
+              <div className="flex items-center gap-2"><Bot className="h-5 w-5 text-purple-400" /><h3 className="font-bold text-white">{t('an.aiDiagnosis')}</h3></div>
               <button onClick={() => setIsAiDiagOpen(false)} className="text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
-            {isAiLoading ? (<div className="py-8 text-center"><Loader2 className="h-8 w-8 text-purple-400 animate-spin mx-auto mb-3" /><p className="text-sm text-slate-400">Analyzing screens...</p></div>) : aiDiagResult ? (<div className="p-4 bg-slate-950 border border-slate-700 rounded-xl"><p className="text-sm text-white whitespace-pre-wrap leading-relaxed">{aiDiagResult}</p></div>) : null}
+            {isAiLoading ? (<div className="py-8 text-center"><Loader2 className="h-8 w-8 text-purple-400 animate-spin mx-auto mb-3" /><p className="text-sm text-slate-400">{t('an.analyzing')}</p></div>) : aiDiagResult ? (<div className="p-4 bg-slate-950 border border-slate-700 rounded-xl"><p className="text-sm text-white whitespace-pre-wrap leading-relaxed">{aiDiagResult}</p></div>) : null}
           </div>
         </div>
       )}

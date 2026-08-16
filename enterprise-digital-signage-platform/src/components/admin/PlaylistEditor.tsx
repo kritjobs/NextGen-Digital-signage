@@ -5,10 +5,12 @@ import {
   GripVertical, Save, Check, Search, X, LayoutGrid, List
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 import { playlistApi } from '../../services/api';
 import { Playlist, PlaylistItem, MediaType } from '../../types/signage';
 
 export const PlaylistEditor: React.FC = () => {
+  const { t } = useTranslation();
   const { playlists, mediaItems, screens, addPlaylist, updatePlaylist, deletePlaylist } = useSignageStore();
 
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string>(playlists[0]?.id || '');
@@ -212,9 +214,9 @@ export const PlaylistEditor: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <ListVideo className="h-5 w-5 text-cyan-400" />
-            <span>Playlist Sequence Builder</span>
+            <span>{t('pl.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400">Drag to reorder, click to edit. Changes auto-save.</p>
+          <p className="text-xs text-slate-400">{t('pl.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -239,7 +241,7 @@ export const PlaylistEditor: React.FC = () => {
                   if (nextPlaylist) setSelectedPlaylistId(nextPlaylist.id);
                 }
               }}
-              title="Delete this playlist"
+              title={t('pl.deletePlaylist')}
               className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/50 transition-colors"
             >
               <Trash2 className="h-4 w-4" />
@@ -247,7 +249,7 @@ export const PlaylistEditor: React.FC = () => {
           )}
           <button onClick={() => setIsCreatingNew(true)} className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs shadow-lg shadow-cyan-600/30">
             <Plus className="h-4 w-4" />
-            <span>New Playlist</span>
+            <span>{t('pl.newPlaylist')}</span>
           </button>
         </div>
       </div>
@@ -259,7 +261,7 @@ export const PlaylistEditor: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-4">
             <div>
               <h3 className="text-base font-bold text-white">{activePlaylist.name}</h3>
-              <p className="text-xs text-slate-400">{activePlaylist.description || 'No description'}</p>
+              <p className="text-xs text-slate-400">{activePlaylist.description || t('pl.noDescription')}</p>
               {/* REQ-TagMatch: tags สำหรับ auto-match กับจอ */}
               <div className="flex items-center gap-2 mt-2">
                 <input
@@ -276,10 +278,10 @@ export const PlaylistEditor: React.FC = () => {
               {(() => {
                 const st = activePlaylist.approvalStatus;
                 const badge = st === 'approved'
-                  ? { cls: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400', label: '✓ Approved' }
+                  ? { cls: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400', label: t('pl.approved') }
                   : st === 'rejected'
-                    ? { cls: 'border-rose-500/30 bg-rose-500/5 text-rose-400', label: '✕ Rejected' }
-                    : { cls: 'border-amber-500/30 bg-amber-500/5 text-amber-400', label: '⏳ Pending Approval' };
+                    ? { cls: 'border-rose-500/30 bg-rose-500/5 text-rose-400', label: t('pl.rejected') }
+                    : { cls: 'border-amber-500/30 bg-amber-500/5 text-amber-400', label: t('pl.pending') };
                 return (
                   <>
                     <span className={`px-2.5 py-1 rounded-lg border text-[11px] font-medium ${badge.cls}`} title="ต้องผ่าน approval ก่อนขึ้นจอ">
@@ -291,7 +293,7 @@ export const PlaylistEditor: React.FC = () => {
                         className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold"
                         title="อนุมัติให้ขึ้นจอได้"
                       >
-                        Approve
+                        {t('lb.approve')}
                       </button>
                     )}
                     {st !== 'rejected' && (
@@ -300,7 +302,7 @@ export const PlaylistEditor: React.FC = () => {
                         className="px-2.5 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-500 text-white text-[11px] font-bold"
                         title="ปฏิเสธ — ไม่ขึ้นจอ"
                       >
-                        Reject
+                        {t('lb.reject')}
                       </button>
                     )}
                   </>
@@ -312,9 +314,9 @@ export const PlaylistEditor: React.FC = () => {
                 lastSaved ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400' :
                 'border-slate-700 bg-slate-950 text-slate-500'
               }`}>
-                {isSaving ? <><Save className="h-3 w-3 animate-pulse" /> Saving...</> :
-                 lastSaved ? <><Check className="h-3 w-3" /> Saved {lastSaved}</> :
-                 <><Save className="h-3 w-3" /> Auto-save</>}
+                {isSaving ? <><Save className="h-3 w-3 animate-pulse" /> {t('pl.saving')}</> :
+                 lastSaved ? <><Check className="h-3 w-3" /> {t('pl.saved')}{lastSaved}</> :
+                 <><Save className="h-3 w-3" /> {t('pl.autoSave')}</>}
               </span>
 
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-400 font-mono font-bold">
@@ -324,7 +326,7 @@ export const PlaylistEditor: React.FC = () => {
 
               <button onClick={() => setIsMediaPickerOpen(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
                 <Plus className="h-3.5 w-3.5" />
-                Add Media
+                {t('pl.addMedia')}
               </button>
             </div>
           </div>
@@ -334,9 +336,9 @@ export const PlaylistEditor: React.FC = () => {
             {activePlaylist.items.length === 0 ? (
               <div className="py-16 text-center bg-slate-950/50 rounded-xl border-2 border-dashed border-slate-800">
                 <ListVideo className="h-10 w-10 text-slate-700 mx-auto mb-3" />
-                <p className="text-sm text-slate-500">No media in this playlist</p>
+                <p className="text-sm text-slate-500">{t('pl.empty')}</p>
                 <button onClick={() => setIsMediaPickerOpen(true)} className="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl">
-                  + Add First Media
+                  {t('pl.addFirstMedia')}
                 </button>
               </div>
             ) : (
@@ -393,7 +395,7 @@ export const PlaylistEditor: React.FC = () => {
 
                     {/* Duration */}
                     <div className="shrink-0">
-                      <label className="text-[9px] text-slate-500 block mb-0.5 text-center">Duration</label>
+                      <label className="text-[9px] text-slate-500 block mb-0.5 text-center">{t('pl.duration')}</label>
                       <input
                         type="number" min="3" max="300"
                         value={item.duration}
@@ -404,16 +406,16 @@ export const PlaylistEditor: React.FC = () => {
 
                     {/* Transition */}
                     <div className="shrink-0">
-                      <label className="text-[9px] text-slate-500 block mb-0.5 text-center">Transition</label>
+                      <label className="text-[9px] text-slate-500 block mb-0.5 text-center">{t('pl.transition')}</label>
                       <select
                         value={item.transition}
                         onChange={(e) => handleUpdateItem(item.id, { transition: e.target.value as any })}
                         className="bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1 text-white text-[11px] focus:border-cyan-500 focus:outline-none"
                       >
-                        <option value="fade">Fade</option>
-                        <option value="slide">Slide</option>
-                        <option value="zoom">Zoom</option>
-                        <option value="none">Cut</option>
+                        <option value="fade">{t('pl.transitionFade')}</option>
+                        <option value="slide">{t('pl.transitionSlide')}</option>
+                        <option value="zoom">{t('pl.transitionZoom')}</option>
+                        <option value="none">{t('pl.transitionCut')}</option>
                       </select>
                     </div>
 
@@ -448,7 +450,7 @@ export const PlaylistEditor: React.FC = () => {
             {/* Picker Header */}
             <div className="p-5 border-b border-slate-800">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-bold text-white">Add Media to Playlist</h3>
+                <h3 className="text-base font-bold text-white">{t('pl.addMedia')}</h3>
                 <button onClick={() => setIsMediaPickerOpen(false)} className="text-slate-400 hover:text-white">
                   <X className="h-5 w-5" />
                 </button>
@@ -458,7 +460,7 @@ export const PlaylistEditor: React.FC = () => {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
                   <input
                     type="text"
-                    placeholder="Search media by title or type..."
+                    placeholder={t('pl.searchMedia')}
                     value={pickerSearch}
                     onChange={(e) => setPickerSearch(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
@@ -477,21 +479,21 @@ export const PlaylistEditor: React.FC = () => {
               </div>
               {/* Type Filter Tabs */}
               <div className="flex items-center gap-1 mt-3 overflow-x-auto">
-                {['all', 'image', 'video', 'slideshow'].map(t => (
-                  <button key={t} onClick={() => setPickerTypeFilter(t)}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-colors ${pickerTypeFilter === t ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
-                    {t === 'all' ? `All (${mediaItems.length})` : `${t.charAt(0).toUpperCase() + t.slice(1)} (${mediaItems.filter(m => m.type === t).length})`}
+                {['all', 'image', 'video', 'slideshow'].map(pt => (
+                  <button key={pt} onClick={() => setPickerTypeFilter(pt)}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-colors ${pickerTypeFilter === pt ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-400 hover:text-white'}`}>
+                    {pt === 'all' ? t('pl.allCount', { count: mediaItems.length }) : `${pt.charAt(0).toUpperCase() + pt.slice(1)} (${mediaItems.filter(m => m.type === pt).length})`}
                   </button>
                 ))}
               </div>
               {/* Bulk Actions */}
               {pickerSelected.length > 0 && (
                 <div className="flex items-center justify-between mt-3 bg-cyan-950/40 border border-cyan-800/40 rounded-xl px-3 py-2">
-                  <span className="text-xs font-semibold text-cyan-300">{pickerSelected.length} selected</span>
+                  <span className="text-xs font-semibold text-cyan-300">{t('pl.selectedCount', { count: pickerSelected.length })}</span>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setPickerSelected(filteredPickerMedia.filter(m => !activePlaylist?.items.some(i => i.mediaId === m.id)).map(m => m.id))} className="text-[10px] text-cyan-400 hover:text-cyan-300 underline">Select All</button>
-                    <button onClick={() => setPickerSelected([])} className="text-[10px] text-slate-400 hover:text-white underline">Clear</button>
-                    <button onClick={() => { handleAddMultipleMedia(pickerSelected); }} className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold rounded-lg">Add Selected</button>
+                    <button onClick={() => setPickerSelected(filteredPickerMedia.filter(m => !activePlaylist?.items.some(i => i.mediaId === m.id)).map(m => m.id))} className="text-[10px] text-cyan-400 hover:text-cyan-300 underline">{t('pl.selectAll')}</button>
+                    <button onClick={() => setPickerSelected([])} className="text-[10px] text-slate-400 hover:text-white underline">{t('pl.clear')}</button>
+                    <button onClick={() => { handleAddMultipleMedia(pickerSelected); }} className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold rounded-lg">{t('pl.addSelected')}</button>
                   </div>
                 </div>
               )}
@@ -524,7 +526,7 @@ export const PlaylistEditor: React.FC = () => {
                           }`}>✓</div>
                         )}
                         {alreadyInPlaylist && (
-                          <div className="absolute top-1.5 right-1.5 z-10 bg-slate-800 text-[8px] text-slate-400 px-1.5 py-0.5 rounded">Added</div>
+                          <div className="absolute top-1.5 right-1.5 z-10 bg-slate-800 text-[8px] text-slate-400 px-1.5 py-0.5 rounded">{t('pl.added')}</div>
                         )}
                         {/* Thumbnail */}
                         <div className="aspect-video bg-slate-950">
@@ -578,7 +580,7 @@ export const PlaylistEditor: React.FC = () => {
                           <h4 className="font-semibold text-white text-xs truncate">{m.title}</h4>
                           <span className="text-[10px] text-slate-500">{m.type} • {m.duration}s • {m.sizeMb || 0} MB</span>
                         </div>
-                        {alreadyInPlaylist && <span className="text-[9px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded">Added</span>}
+                        {alreadyInPlaylist && <span className="text-[9px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded">{t('pl.added')}</span>}
                       </div>
                     );
                   })}
@@ -587,7 +589,7 @@ export const PlaylistEditor: React.FC = () => {
 
               {filteredPickerMedia.length === 0 && (
                 <div className="py-8 text-center text-slate-500 text-xs">
-                  No media found matching "{pickerSearch}"
+                  {t('pl.noMatch', { query: pickerSearch })}
                 </div>
               )}
             </div>
@@ -599,23 +601,23 @@ export const PlaylistEditor: React.FC = () => {
       {isCreatingNew && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 text-white shadow-2xl">
-            <h3 className="text-base font-bold mb-4">Create New Playlist</h3>
+            <h3 className="text-base font-bold mb-4">{t('pl.createTitle')}</h3>
             <form onSubmit={handleCreatePlaylist} className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 block mb-1">Name</label>
+                <label className="text-slate-300 block mb-1">{t('pl.name')}</label>
                 <input type="text" placeholder="e.g. Morning Reception" value={newPlaylistName}
                   onChange={(e) => setNewPlaylistName(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white" required />
               </div>
               <div>
-                <label className="text-slate-300 block mb-1">Description</label>
+                <label className="text-slate-300 block mb-1">{t('pl.description')}</label>
                 <input type="text" placeholder="Short summary" value={newPlaylistDesc}
                   onChange={(e) => setNewPlaylistDesc(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white" />
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-                <button type="button" onClick={() => setIsCreatingNew(false)} className="px-4 py-2 text-slate-400">Cancel</button>
-                <button type="submit" className="px-4 py-2 bg-cyan-600 font-bold rounded-xl text-white">Create</button>
+                <button type="button" onClick={() => setIsCreatingNew(false)} className="px-4 py-2 text-slate-400">{t('pl.cancel')}</button>
+                <button type="submit" className="px-4 py-2 bg-cyan-600 font-bold rounded-xl text-white">{t('pl.create')}</button>
               </div>
             </form>
           </div>

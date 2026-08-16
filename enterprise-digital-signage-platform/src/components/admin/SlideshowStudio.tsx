@@ -14,8 +14,21 @@ import {
 import { slideshowApi } from '../../services/api';
 import { aiApi } from '../../services/api';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
+import type { TranslationKey } from '../../i18n';
 
 // ─── Theme Presets with Preview Images ──────────────────────
+const THEME_NAME_KEYS: Record<string, TranslationKey> = {
+  'luxury-gold': 'ss.themeLuxuryGold', 'grand-atrium': 'ss.themeGrandAtrium', 'corporate-blue': 'ss.themeCorporateBlue',
+  'neon-nights': 'ss.themeNeonNights', 'flash-sale': 'ss.themeFlashSale', 'nature-fresh': 'ss.themeNatureFresh',
+  'ivory-silk': 'ss.themeIvorySilk', 'sunset-warm': 'ss.themeSunsetWarm',
+};
+const THEME_DESC_KEYS: Record<string, TranslationKey> = {
+  'luxury-gold': 'ss.descLuxuryGold', 'grand-atrium': 'ss.descGrandAtrium', 'corporate-blue': 'ss.descCorporateBlue',
+  'neon-nights': 'ss.descNeonNights', 'flash-sale': 'ss.descFlashSale', 'nature-fresh': 'ss.descNatureFresh',
+  'ivory-silk': 'ss.descIvorySilk', 'sunset-warm': 'ss.descSunsetWarm',
+};
+
 const THEME_PRESETS = [
   { id: 'luxury-gold', name: 'Obsidian & Gold', category: 'Luxury', accentColor: '#F2CA50', titleFont: 'Playfair Display', transition: 'kenburns', overlayOpacity: 50, previewImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80', description: 'Elegant premium feel with golden accents' },
   { id: 'grand-atrium', name: 'Grand Atrium', category: 'Luxury', accentColor: '#E9C349', titleFont: 'Playfair Display', transition: 'fade', overlayOpacity: 45, previewImage: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=400&q=80', description: 'Refined elegance for hospitality' },
@@ -65,6 +78,7 @@ function loadGoogleFont(fontName: string) {
 
 
 export const SlideshowStudio: React.FC = () => {
+  const { t } = useTranslation();
   const { mediaItems } = useSignageStore();
   const [slideshows, setSlideshows] = useState<SlideshowData[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -189,22 +203,22 @@ export const SlideshowStudio: React.FC = () => {
       <div className="flex items-center justify-between px-4 py-2 bg-slate-900/80 border-b border-white/10 backdrop-blur-xl shrink-0">
         <div className="flex items-center gap-3">
           <Presentation className="h-5 w-5 text-amber-400" />
-          <span className="font-bold text-sm text-white">Slideshow Studio</span>
-          <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider bg-amber-400/10 px-2 py-0.5 rounded">Pro</span>
-          {isSaving && <span className="text-[10px] text-slate-400 animate-pulse"><Save className="h-3 w-3 inline" /> Saving...</span>}
+          <span className="font-bold text-sm text-white">{t('ss.title')}</span>
+          <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider bg-amber-400/10 px-2 py-0.5 rounded">{t('ss.pro')}</span>
+          {isSaving && <span className="text-[10px] text-slate-400 animate-pulse"><Save className="h-3 w-3 inline" /> {t('ss.saving')}</span>}
         </div>
         <div className="flex items-center gap-2">
           <select value={selectedId || ''} onChange={(e) => { setSelectedId(e.target.value); setEditingSlideIndex(0); }}
             className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
             {slideshows.map(s => <option key={s.id} value={s.id}>{s.title} ({s.slides?.length || 0})</option>)}
           </select>
-          <button onClick={handleCreate} className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg"><Plus className="h-3 w-3 inline" /> New</button>
+          <button onClick={handleCreate} className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg"><Plus className="h-3 w-3 inline" /> {t('ss.new')}</button>
           <button onClick={() => setIsPreviewOpen(true)} disabled={!activeSlideshow?.slides?.length}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg disabled:opacity-30"><Play className="h-3 w-3 inline" /> Preview</button>
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg disabled:opacity-30"><Play className="h-3 w-3 inline" /> {t('ss.preview')}</button>
           <button onClick={() => setIsAiSlideOpen(true)}
-            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg"><Wand2 className="h-3 w-3 inline" /> AI Write</button>
+            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg"><Wand2 className="h-3 w-3 inline" /> {t('ss.aiWrite')}</button>
           <button onClick={handlePublish} disabled={!activeSlideshow?.slides?.length}
-            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg disabled:opacity-30"><Sparkles className="h-3 w-3 inline" /> Publish</button>
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg disabled:opacity-30"><Sparkles className="h-3 w-3 inline" /> {t('ss.publish')}</button>
         </div>
       </div>
 
@@ -215,10 +229,10 @@ export const SlideshowStudio: React.FC = () => {
             {/* Tool Tabs */}
             <nav className="p-3 space-y-1">
               {([
-                { id: 'slides', icon: Layers, label: 'Slides', badge: false },
-                { id: 'text', icon: Type, label: 'Text', badge: false },
-                { id: 'effects', icon: Wand2, label: 'Effects', badge: true },
-                { id: 'layout', icon: Layout, label: 'Layout', badge: false },
+                { id: 'slides', icon: Layers, label: t('ss.tabSlides'), badge: false },
+                { id: 'text', icon: Type, label: t('ss.tabText'), badge: false },
+                { id: 'effects', icon: Wand2, label: t('ss.tabEffects'), badge: true },
+                { id: 'layout', icon: Layout, label: t('ss.tabLayout'), badge: false },
               ] as const).map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
@@ -238,8 +252,8 @@ export const SlideshowStudio: React.FC = () => {
               {activeTab === 'slides' && (
                 <>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] text-slate-400 font-semibold">{activeSlideshow.slides.length} Slides</span>
-                    <button onClick={() => setIsMediaPickerOpen(true)} className="text-[10px] text-amber-400 hover:text-amber-300 font-bold">+ Add</button>
+                    <span className="text-[11px] text-slate-400 font-semibold">{t('ss.slidesCount', { count: activeSlideshow.slides.length })}</span>
+                    <button onClick={() => setIsMediaPickerOpen(true)} className="text-[10px] text-amber-400 hover:text-amber-300 font-bold">{t('ss.add')}</button>
                   </div>
                   {activeSlideshow.slides.map((slide, idx) => (
                     <div key={slide.id} onClick={() => setEditingSlideIndex(idx)}
@@ -250,13 +264,13 @@ export const SlideshowStudio: React.FC = () => {
                       <div className="shrink-0 w-12 h-7 rounded overflow-hidden bg-slate-800">
                         {getSlideThumb(slide) ? <img src={getSlideThumb(slide)} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-slate-900" />}
                       </div>
-                      <span className="flex-1 text-[10px] text-white truncate">{slide.headlineText || `Slide ${idx+1}`}</span>
+                      <span className="flex-1 text-[10px] text-white truncate">{slide.headlineText || t('ss.slideN', { n: idx + 1 })}</span>
                       <button onClick={(e) => { e.stopPropagation(); removeSlide(idx); }} className="text-slate-600 hover:text-rose-400"><Trash2 className="h-3 w-3" /></button>
                     </div>
                   ))}
                   {activeSlideshow.slides.length === 0 && (
                     <button onClick={() => setIsMediaPickerOpen(true)} className="w-full py-8 border-2 border-dashed border-slate-700 rounded-xl text-slate-500 text-xs hover:border-amber-500/50 hover:text-amber-400">
-                      <ImageIcon className="h-6 w-6 mx-auto mb-1 opacity-50" /> Add First Slide
+                      <ImageIcon className="h-6 w-6 mx-auto mb-1 opacity-50" /> {t('ss.addFirstSlide')}
                     </button>
                   )}
                 </>
@@ -266,10 +280,10 @@ export const SlideshowStudio: React.FC = () => {
                 <div className="space-y-3">
                   {/* Font Selector */}
                   <div>
-                    <label className="text-[10px] text-slate-500 block mb-1">Font Family</label>
+                    <label className="text-[10px] text-slate-500 block mb-1">{t('ss.fontFamily')}</label>
                     <select value={activeSlideshow.titleFont} onChange={(e) => { updateSlideshow({ titleFont: e.target.value }); loadGoogleFont(e.target.value); }}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white">
-                      <optgroup label="── English ──">
+                      <optgroup label={t('ss.fontEnglish')}>
                         <option value="Inter">Inter (Modern)</option>
                         <option value="Playfair Display">Playfair Display (Luxury)</option>
                         <option value="Montserrat">Montserrat (Clean)</option>
@@ -281,7 +295,7 @@ export const SlideshowStudio: React.FC = () => {
                         <option value="Lora">Lora (Classic)</option>
                         <option value="DM Sans">DM Sans (Geometric)</option>
                       </optgroup>
-                      <optgroup label="── ไทย (Thai) ──">
+                      <optgroup label={t('ss.fontThai')}>
                         <option value="Noto Sans Thai">Noto Sans Thai</option>
                         <option value="Sarabun">Sarabun (อ่านง่าย)</option>
                         <option value="Prompt">Prompt (สมัยใหม่)</option>
@@ -292,7 +306,7 @@ export const SlideshowStudio: React.FC = () => {
                         <option value="Pridi">Pridi (คลาสสิก)</option>
                         <option value="IBM Plex Sans Thai">IBM Plex Sans Thai</option>
                       </optgroup>
-                      <optgroup label="── 中文 (Chinese) ──">
+                      <optgroup label={t('ss.fontChinese')}>
                         <option value="Noto Sans SC">Noto Sans SC (简体)</option>
                         <option value="Noto Sans TC">Noto Sans TC (繁體)</option>
                         <option value="Noto Serif SC">Noto Serif SC (宋体)</option>
@@ -300,7 +314,7 @@ export const SlideshowStudio: React.FC = () => {
                         <option value="Ma Shan Zheng">Ma Shan Zheng (毛笔)</option>
                         <option value="ZCOOL QingKe HuangYou">ZCOOL QingKe (活泼)</option>
                       </optgroup>
-                      <optgroup label="── Display / Decorative ──">
+                      <optgroup label={t('ss.fontDecorative')}>
                         <option value="Righteous">Righteous</option>
                         <option value="Permanent Marker">Permanent Marker</option>
                         <option value="Pacifico">Pacifico</option>
@@ -315,7 +329,7 @@ export const SlideshowStudio: React.FC = () => {
                   {/* Font Size Controls */}
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-slate-500 block mb-0.5">Headline Size</label>
+                      <label className="text-[10px] text-slate-500 block mb-0.5">{t('ss.headlineSize')}</label>
                       <div className="flex items-center gap-1">
                         <button onClick={() => updateSlide(editingSlideIndex, { headlineFontSize: Math.max(16, (activeSlide as any).headlineFontSize || 48) - 4 })}
                           className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white text-xs flex items-center justify-center">−</button>
@@ -325,7 +339,7 @@ export const SlideshowStudio: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-500 block mb-0.5">Body Size</label>
+                      <label className="text-[10px] text-slate-500 block mb-0.5">{t('ss.bodySize')}</label>
                       <div className="flex items-center gap-1">
                         <button onClick={() => updateSlide(editingSlideIndex, { bodyFontSize: Math.max(10, ((activeSlide as any).bodyFontSize || 14) - 2) })}
                           className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white text-xs flex items-center justify-center">−</button>
@@ -336,25 +350,25 @@ export const SlideshowStudio: React.FC = () => {
                     </div>
                   </div>
 
-                  <div><label className="text-[10px] text-slate-500">Headline</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.headline')}</label>
                     <input type="text" value={activeSlide.headlineText || ''} onChange={(e) => updateSlide(editingSlideIndex, { headlineText: e.target.value || null })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white mt-0.5" placeholder="Main title" /></div>
-                  <div><label className="text-[10px] text-slate-500">Subtitle</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.subtitle')}</label>
                     <input type="text" value={activeSlide.subtitleText || ''} onChange={(e) => updateSlide(editingSlideIndex, { subtitleText: e.target.value || null })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white mt-0.5" placeholder="Badge text" /></div>
-                  <div><label className="text-[10px] text-slate-500">Body</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.body')}</label>
                     <textarea rows={2} value={activeSlide.bodyText || ''} onChange={(e) => updateSlide(editingSlideIndex, { bodyText: e.target.value || null })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white mt-0.5" /></div>
-                  <div><label className="text-[10px] text-slate-500">CTA Button</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.ctaButton')}</label>
                     <input type="text" value={activeSlide.ctaText || ''} onChange={(e) => updateSlide(editingSlideIndex, { ctaText: e.target.value || null })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white mt-0.5" placeholder="e.g. Discover More" /></div>
-                  <div><label className="text-[10px] text-slate-500">Position</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.position')}</label>
                     <select value={activeSlide.textPosition} onChange={(e) => updateSlide(editingSlideIndex, { textPosition: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white mt-0.5">
-                      <option value="bottom-left">Bottom Left</option><option value="bottom-center">Bottom Center</option><option value="center">Center</option><option value="top-left">Top Left</option>
+                      <option value="bottom-left">{t('ss.bottomLeft')}</option><option value="bottom-center">{t('ss.bottomCenter')}</option><option value="center">{t('ss.center')}</option><option value="top-left">{t('ss.topLeft')}</option>
                     </select></div>
                   {/* Text Color */}
-                  <div><label className="text-[10px] text-slate-500">Text Color</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.textColor')}</label>
                     <input type="color" value={activeSlide.textColor} onChange={(e) => updateSlide(editingSlideIndex, { textColor: e.target.value })}
                       className="w-full h-7 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer mt-0.5" /></div>
                 </div>
@@ -363,16 +377,16 @@ export const SlideshowStudio: React.FC = () => {
               {activeTab === 'effects' && (
                 <div className="space-y-4">
                   <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Active FX
-                    <span className="text-[9px] text-slate-500 ml-auto">Per slide</span>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" /> {t('ss.activeFx')}
+                    <span className="text-[9px] text-slate-500 ml-auto">{t('ss.perSlide')}</span>
                   </div>
 
                   {/* Animation Effects — Capsule Toggles */}
                   <div className="space-y-2">
-                    <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Animation</span>
+                    <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">{t('ss.animation')}</span>
                     {[
-                      { key: 'kenBurns', label: 'Ken Burns Zoom', desc: 'Slow zoom motion', icon: ZoomIn, color: 'amber' },
-                      { key: 'parallax', label: 'Parallax Depth', desc: '3D depth effect', icon: Layers, color: 'cyan' },
+                      { key: 'kenBurns', label: t('ss.fxKenBurns'), desc: t('ss.fxKenBurnsDesc'), icon: ZoomIn, color: 'amber' },
+                      { key: 'parallax', label: t('ss.fxParallax'), desc: t('ss.fxParallaxDesc'), icon: Layers, color: 'cyan' },
                     ].map(fx => (
                       <div key={fx.key}
                         className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
@@ -396,24 +410,24 @@ export const SlideshowStudio: React.FC = () => {
 
                   {/* Image Filters */}
                   <div className="space-y-2 pt-2 border-t border-slate-800">
-                    <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Image Filters</span>
+                    <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">{t('ss.imageFilters')}</span>
 
                     {/* Vignette */}
                     <div className="p-3 rounded-xl border border-slate-800 bg-slate-950/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-300 font-medium">Vignette</span>
+                        <span className="text-xs text-slate-300 font-medium">{t('ss.vignette')}</span>
                         <div className={`w-10 h-5 rounded-full p-0.5 cursor-pointer transition-all ${(activeSlide as any)?.vignette ? 'bg-cyan-400' : 'bg-slate-700'}`}
                           onClick={() => activeSlide && updateSlide(editingSlideIndex, { vignette: !(activeSlide as any).vignette } as any)}>
                           <div className={`w-4 h-4 rounded-full bg-white shadow-md transition-all ${(activeSlide as any)?.vignette ? 'translate-x-5' : 'translate-x-0'}`} />
                         </div>
                       </div>
-                      <p className="text-[9px] text-slate-600">Dark edges for cinematic look</p>
+                      <p className="text-[9px] text-slate-600">{t('ss.vignetteHint')}</p>
                     </div>
 
                     {/* Brightness */}
                     <div className="p-3 rounded-xl border border-slate-800 bg-slate-950/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-300 font-medium">Brightness</span>
+                        <span className="text-xs text-slate-300 font-medium">{t('ss.brightness')}</span>
                         <span className="text-[10px] font-mono text-slate-500">{(activeSlide as any)?.brightness ?? 100}%</span>
                       </div>
                       <input type="range" min="50" max="150" value={(activeSlide as any)?.brightness ?? 100}
@@ -424,7 +438,7 @@ export const SlideshowStudio: React.FC = () => {
                     {/* Contrast */}
                     <div className="p-3 rounded-xl border border-slate-800 bg-slate-950/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-300 font-medium">Contrast</span>
+                        <span className="text-xs text-slate-300 font-medium">{t('ss.contrast')}</span>
                         <span className="text-[10px] font-mono text-slate-500">{(activeSlide as any)?.contrast ?? 100}%</span>
                       </div>
                       <input type="range" min="50" max="150" value={(activeSlide as any)?.contrast ?? 100}
@@ -435,7 +449,7 @@ export const SlideshowStudio: React.FC = () => {
                     {/* Saturation */}
                     <div className="p-3 rounded-xl border border-slate-800 bg-slate-950/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-300 font-medium">Saturation</span>
+                        <span className="text-xs text-slate-300 font-medium">{t('ss.saturation')}</span>
                         <span className="text-[10px] font-mono text-slate-500">{(activeSlide as any)?.saturation ?? 100}%</span>
                       </div>
                       <input type="range" min="0" max="200" value={(activeSlide as any)?.saturation ?? 100}
@@ -446,7 +460,7 @@ export const SlideshowStudio: React.FC = () => {
                     {/* Blur */}
                     <div className="p-3 rounded-xl border border-slate-800 bg-slate-950/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-300 font-medium">Blur</span>
+                        <span className="text-xs text-slate-300 font-medium">{t('ss.blur')}</span>
                         <span className="text-[10px] font-mono text-slate-500">{(activeSlide as any)?.blur ?? 0}px</span>
                       </div>
                       <input type="range" min="0" max="20" value={(activeSlide as any)?.blur ?? 0}
@@ -458,10 +472,10 @@ export const SlideshowStudio: React.FC = () => {
                   {/* Overlay Control */}
                   {activeSlide && (
                     <div className="pt-2 border-t border-slate-800">
-                      <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">Overlay</span>
+                      <span className="text-[9px] text-slate-500 uppercase tracking-wider font-bold">{t('ss.overlay')}</span>
                       <div className="p-3 rounded-xl border border-slate-800 bg-slate-950/40 space-y-1.5 mt-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-slate-300 font-medium">Darkness</span>
+                          <span className="text-xs text-slate-300 font-medium">{t('ss.darkness')}</span>
                           <span className="text-[10px] font-mono text-slate-500">{activeSlide.overlayOpacity}%</span>
                         </div>
                         <input type="range" min="0" max="80" value={activeSlide.overlayOpacity}
@@ -475,15 +489,15 @@ export const SlideshowStudio: React.FC = () => {
 
               {activeTab === 'layout' && (
                 <div className="space-y-3">
-                  <div><label className="text-[10px] text-slate-500">Slide Duration (s)</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.slideDuration')}</label>
                     <input type="number" min="3" max="60" value={activeSlideshow.slideDuration} onChange={(e) => updateSlideshow({ slideDuration: Number(e.target.value) })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono mt-0.5" /></div>
-                  <div><label className="text-[10px] text-slate-500">Transition</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.transition')}</label>
                     <select value={activeSlideshow.transition} onChange={(e) => updateSlideshow({ transition: e.target.value })}
                       className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white mt-0.5">
-                      <option value="fade">Fade</option><option value="slide">Slide</option><option value="zoom">Zoom</option><option value="kenburns">Ken Burns</option><option value="none">None</option>
+                      <option value="fade">{t('ss.transitionFade')}</option><option value="slide">{t('ss.transitionSlide')}</option><option value="zoom">{t('ss.transitionZoom')}</option><option value="kenburns">{t('ss.transitionKenBurns')}</option><option value="none">{t('ss.transitionNone')}</option>
                     </select></div>
-                  <div><label className="text-[10px] text-slate-500">Accent Color</label>
+                  <div><label className="text-[10px] text-slate-500">{t('ss.accentColor')}</label>
                     <input type="color" value={activeSlideshow.accentColor} onChange={(e) => updateSlideshow({ accentColor: e.target.value })}
                       className="w-full h-8 rounded-lg border border-slate-700 bg-slate-950 cursor-pointer mt-0.5" /></div>
                 </div>
@@ -535,25 +549,25 @@ export const SlideshowStudio: React.FC = () => {
                     </div>
                     {/* Resolution badge */}
                     <div className="absolute top-3 right-3 bg-black/60 backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-[10px] font-semibold text-slate-300 border border-white/10">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> 16:9 HD
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> {t('ss.hdBadge')}
                     </div>
 
                     {/* Image actions — top left */}
                     <div className="absolute top-3 left-3 flex gap-1.5">
                       <button onClick={() => setIsMediaPickerOpen(true)}
                         className="bg-black/70 backdrop-blur px-2.5 py-1.5 rounded-lg text-[10px] text-white font-semibold border border-white/20 hover:border-cyan-400 hover:text-cyan-400 flex items-center gap-1">
-                        <ImageIcon className="h-3 w-3" /> Library
+                        <ImageIcon className="h-3 w-3" /> {t('ss.library')}
                       </button>
                       <button onClick={() => setIsAiImagePromptOpen(true)}
                         className="bg-purple-600/80 backdrop-blur px-2.5 py-1.5 rounded-lg text-[10px] text-white font-semibold border border-purple-400/30 hover:bg-purple-500 flex items-center gap-1 disabled:opacity-50">
-                        <Wand2 className="h-3 w-3" /> AI Image
+                        <Wand2 className="h-3 w-3" /> {t('ss.aiImage')}
                       </button>
                     </div>
                   </>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
                     <Presentation className="h-12 w-12 mb-3 opacity-30" />
-                    <p className="text-sm">Add slides to see preview</p>
+                    <p className="text-sm">{t('ss.emptyPreview')}</p>
                   </div>
                 )}
               </div>
@@ -572,7 +586,7 @@ export const SlideshowStudio: React.FC = () => {
               </div>
               {/* Track */}
               <div className="flex items-center gap-2">
-                <span className="shrink-0 w-16 text-[9px] text-slate-500 font-semibold">Media</span>
+                <span className="shrink-0 w-16 text-[9px] text-slate-500 font-semibold">{t('ss.media')}</span>
                 <div className="flex-1 flex gap-0.5 h-8 bg-slate-950 rounded-lg border border-slate-800 overflow-hidden relative">
                   {activeSlideshow?.slides.map((slide, idx) => {
                     const width = 100 / Math.max(activeSlideshow.slides.length, 1);
@@ -582,7 +596,7 @@ export const SlideshowStudio: React.FC = () => {
                           editingSlideIndex === idx ? 'ring-2 ring-amber-400 z-10' : 'hover:brightness-125'
                         }`}
                         style={{ width: `${width}%`, backgroundColor: editingSlideIndex === idx ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.2)', borderLeft: '1px solid rgba(99,102,241,0.3)' }}>
-                        <span className="text-[8px] text-white/70 truncate px-1">{slide.headlineText || `Slide ${idx+1}`}</span>
+                        <span className="text-[8px] text-white/70 truncate px-1">{slide.headlineText || t('ss.slideN', { n: idx + 1 })}</span>
                       </div>
                     );
                   })}
@@ -600,8 +614,8 @@ export const SlideshowStudio: React.FC = () => {
           {/* ═══ RIGHT PANEL — Theme Gallery ═══════════════════ */}
           <aside className="w-72 bg-slate-900/80 border-l border-white/10 flex flex-col shrink-0 overflow-hidden">
             <div className="p-4 border-b border-white/10">
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">Theme System <Sparkles className="w-3.5 h-3.5 text-amber-400" /></h2>
-              <p className="text-[10px] text-amber-300 font-semibold mt-0.5">Browse Premium Styles</p>
+              <h2 className="text-sm font-bold text-white flex items-center gap-2">{t('ss.themeSystem')}<Sparkles className="w-3.5 h-3.5 text-amber-400" /></h2>
+              <p className="text-[10px] text-amber-300 font-semibold mt-0.5">{t('ss.browseStyles')}</p>
             </div>
             {/* Category Tabs */}
             <div className="flex gap-1 px-3 pt-3 pb-2">
@@ -609,7 +623,7 @@ export const SlideshowStudio: React.FC = () => {
                 <button key={cat} onClick={() => setThemeCategory(cat)}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
                     themeCategory === cat ? 'bg-amber-400 text-slate-950 shadow' : 'text-slate-400 hover:text-white bg-slate-950'
-                  }`}>{cat}</button>
+                  }`}>{cat === 'All' ? t('ss.catAll') : cat === 'Luxury' ? t('ss.catLuxury') : cat === 'Corporate' ? t('ss.catCorporate') : t('ss.catVibrant')}</button>
               ))}
             </div>
             {/* Theme Cards */}
@@ -624,11 +638,11 @@ export const SlideshowStudio: React.FC = () => {
                     <div className="h-24 w-full relative overflow-hidden">
                       <img src={theme.previewImage} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80" />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-                      <span className="absolute bottom-2 left-3 font-bold text-xs text-white drop-shadow" style={{ fontFamily: theme.titleFont }}>{theme.name}</span>
+                      <span className="absolute bottom-2 left-3 font-bold text-xs text-white drop-shadow" style={{ fontFamily: theme.titleFont }}>{t((THEME_NAME_KEYS[theme.id] ?? theme.name) as TranslationKey)}</span>
                       {isActive && <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center"><Check className="h-3 w-3 text-slate-950" /></div>}
                     </div>
                     <div className="p-2 bg-slate-900/90 flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400">{theme.description}</span>
+                      <span className="text-[10px] text-slate-400">{t((THEME_DESC_KEYS[theme.id] ?? theme.description) as TranslationKey)}</span>
                       <div className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: theme.accentColor }} />
                     </div>
                   </div>
@@ -644,11 +658,11 @@ export const SlideshowStudio: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[80vh]">
             <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="font-bold text-white">Select Media for Slide</h3>
+              <h3 className="font-bold text-white">{t('ss.selectMedia')}</h3>
               <button onClick={() => setIsMediaPickerOpen(false)} className="text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
             <div className="p-3"><div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-              <input type="text" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder="Search images..." autoFocus
+              <input type="text" value={pickerSearch} onChange={(e) => setPickerSearch(e.target.value)} placeholder={t('ss.searchImages')} autoFocus
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:border-amber-500 focus:outline-none" /></div></div>
             <div className="flex-1 overflow-y-auto p-3 grid grid-cols-3 gap-2">
               {filteredPickerMedia.map(m => (
@@ -680,14 +694,14 @@ export const SlideshowStudio: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Wand2 className="h-5 w-5 text-purple-400" />
-                <h3 className="font-bold text-white">AI Image Generator</h3>
+                <h3 className="font-bold text-white">{t('ss.aiImage')}</h3>
               </div>
               <button onClick={() => setIsAiImagePromptOpen(false)} className="text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 block mb-1 font-medium">Describe the image you want</label>
+                <label className="text-slate-300 block mb-1 font-medium">{t('ss.aiImagePrompt')}</label>
                 <textarea rows={3} value={aiImagePrompt}
                   onChange={(e) => setAiImagePrompt(e.target.value)}
                   placeholder="e.g. ภาพแฮมเบอร์เกอร์สดใหม่บนจานไม้ พื้นหลังร้านอาหารอบอุ่น ไม่มีตัวอักษร"
@@ -746,7 +760,7 @@ export const SlideshowStudio: React.FC = () => {
                 setIsAiGenerating(false);
               }} disabled={isAiGenerating || !aiImagePrompt.trim()}
                 className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                {isAiGenerating ? <><Clock className="h-4 w-4 animate-spin" /> Generating...</> : <><Sparkles className="h-4 w-4" /> Generate Image</>}
+                {isAiGenerating ? <><Clock className="h-4 w-4 animate-spin" /> {t('ss.generating')}</> : <><Sparkles className="h-4 w-4" /> {t('ss.generateImage')}</>}
               </button>
             </div>
           </div>
@@ -760,14 +774,14 @@ export const SlideshowStudio: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Wand2 className="h-5 w-5 text-purple-400" />
-                <h3 className="font-bold text-white">AI Slide Writer</h3>
+                <h3 className="font-bold text-white">{t('ss.aiWriter')}</h3>
               </div>
               <button onClick={() => { setIsAiSlideOpen(false); setAiSlideResult(null); }} className="text-slate-400 hover:text-white"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-300 block mb-1">Describe your slideshow content</label>
+                <label className="text-slate-300 block mb-1">{t('ss.aiWriterPrompt')}</label>
                 <textarea rows={3} value={aiSlidePrompt} onChange={(e) => setAiSlidePrompt(e.target.value)}
                   placeholder="e.g. ประชาสัมพันธ์กิจกรรมกีฬาสีประจำปี 2026 สำหรับโรงเรียน มี 4 slides ภาษาไทย"
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-white placeholder-slate-500" />
@@ -786,12 +800,12 @@ export const SlideshowStudio: React.FC = () => {
                 setIsAiGenerating(false);
               }} disabled={isAiGenerating || !aiSlidePrompt.trim()}
                 className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold rounded-xl flex items-center justify-center gap-2">
-                {isAiGenerating ? <><Clock className="h-3.5 w-3.5 animate-spin" /> Generating...</> : <><Wand2 className="h-3.5 w-3.5" /> Generate Slide Content</>}
+                {isAiGenerating ? <><Clock className="h-3.5 w-3.5 animate-spin" /> {t('ss.generating')}</> : <><Wand2 className="h-3.5 w-3.5" /> {t('ss.generateSlideContent')}</>}
               </button>
 
               {aiSlideResult && (
                 <div className="space-y-2">
-                  <span className="text-[10px] text-purple-400 font-bold">AI Generated Slides:</span>
+                  <span className="text-[10px] text-purple-400 font-bold">{t('ss.aiGenerated')}</span>
                   <pre className="text-[10px] text-slate-300 bg-slate-950 p-2 rounded-lg max-h-40 overflow-y-auto whitespace-pre-wrap">{aiSlideResult}</pre>
                   <button onClick={() => {
                     try {
@@ -821,7 +835,7 @@ export const SlideshowStudio: React.FC = () => {
                     } catch {}
                     setIsAiSlideOpen(false); setAiSlideResult(null); setAiSlidePrompt('');
                   }} className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">
-                    ✅ Apply to Slideshow ({(() => { try { const m = aiSlideResult.match(/\[[\s\S]*\]/); return m ? JSON.parse(m[0]).length : 0; } catch { return 0; } })()} slides)
+                    {t('ss.applySlideshow', { count: (() => { try { const m = aiSlideResult.match(/\[[\s\S]*\]/); return m ? JSON.parse(m[0]).length : 0; } catch { return 0; } })() })}
                   </button>
                 </div>
               )}
@@ -839,6 +853,7 @@ export const SlideshowStudio: React.FC = () => {
 
 // ─── Cinematic Preview Modal ─────────────────────────────────
 const SlideshowPreviewModal: React.FC<{ slideshow: SlideshowData; onClose: () => void }> = ({ slideshow, onClose }) => {
+  const { t } = useTranslation();
   const { mediaItems } = useSignageStore();
   const [idx, setIdx] = useState(0);
   const [time, setTime] = useState('');
@@ -870,7 +885,7 @@ const SlideshowPreviewModal: React.FC<{ slideshow: SlideshowData; onClose: () =>
       <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3 bg-black/60 backdrop-blur-2xl px-4 py-2 rounded-full border border-white/10 text-xs font-bold text-white">
           <Play className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-          <span>4K Live Preview</span>
+          <span>{t('ss.livePreview')}</span>
           <span className="text-amber-400 font-mono">({idx + 1}/{slideshow.slides.length})</span>
         </div>
         <button onClick={onClose} className="p-2 rounded-full bg-black/60 backdrop-blur border border-white/10 text-white hover:bg-rose-600"><X className="w-5 h-5" /></button>
@@ -891,7 +906,7 @@ const SlideshowPreviewModal: React.FC<{ slideshow: SlideshowData; onClose: () =>
 
             {/* Branding top */}
             <div className="absolute top-16 left-8 right-8 flex items-center justify-between z-30">
-              <span className="text-xl font-bold tracking-tighter" style={{ color: slideshow.accentColor, fontFamily: slideshow.titleFont }}>SIGNAGE STUDIO</span>
+              <span className="text-xl font-bold tracking-tighter" style={{ color: slideshow.accentColor, fontFamily: slideshow.titleFont }}>{t('ss.studio')}</span>
               <span className="text-lg font-bold font-mono" style={{ color: slideshow.accentColor }}><Clock className="w-4 h-4 inline mr-1" />{time}</span>
             </div>
 

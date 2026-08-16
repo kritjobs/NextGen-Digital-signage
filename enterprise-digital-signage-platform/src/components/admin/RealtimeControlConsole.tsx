@@ -13,8 +13,10 @@ import {
   AlertOctagon 
 } from 'lucide-react';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const RealtimeControlConsole: React.FC = () => {
+  const { t } = useTranslation();
   const { screens, layouts, sendCommandToScreen, telemetryLogs } = useSignageStore();
 
   const [selectedScreenId, setSelectedScreenId] = useState<string>('all');
@@ -41,14 +43,14 @@ export const RealtimeControlConsole: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white flex items-center space-x-2">
             <Radio className="h-5 w-5 text-indigo-400" />
-            <span>Realtime Screen Control Console</span>
+            <span>{t('rt.title')}</span>
           </h2>
-          <p className="text-xs text-slate-400">Direct WebSocket remote control hub for instant commands and telemetry</p>
+          <p className="text-xs text-slate-400">{t('rt.subtitle')}</p>
         </div>
 
         <div className="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border border-slate-800 text-xs">
           <Wifi className="h-4 w-4 text-emerald-400" />
-          <span className="font-mono font-bold text-slate-200">WebSocket Port: 3000</span>
+          <span className="font-mono font-bold text-slate-200">{t('rt.wsPort')}</span>
         </div>
       </div>
 
@@ -58,18 +60,18 @@ export const RealtimeControlConsole: React.FC = () => {
         <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
           <h3 className="text-sm font-bold text-white flex items-center space-x-2 border-b border-slate-800 pb-3">
             <Send className="h-4 w-4 text-cyan-400" />
-            <span>Send Remote WebSocket Command</span>
+            <span>{t('rt.sendCommand')}</span>
           </h3>
 
           <div className="space-y-4 text-xs">
             <div>
-              <label className="text-slate-400 block mb-1">Target Display Selection</label>
+              <label className="text-slate-400 block mb-1">{t('rt.targetSelection')}</label>
               <select
                 value={selectedScreenId}
                 onChange={(e) => setSelectedScreenId(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-semibold"
               >
-                <option value="all">🌐 ALL Enterprise Screens ({screens.length})</option>
+                <option value="all">{t('emergency.allDisplays', { count: screens.length })}</option>
                 {screens.map((scr) => (
                   <option key={scr.id} value={scr.id}>📺 {scr.name} ({scr.pairingCode})</option>
                 ))}
@@ -78,7 +80,7 @@ export const RealtimeControlConsole: React.FC = () => {
 
             {/* Quick Command Buttons */}
             <div className="space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">1-Click Actions</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">{t('rt.oneClick')}</span>
               
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -86,7 +88,7 @@ export const RealtimeControlConsole: React.FC = () => {
                   className="flex items-center justify-center space-x-2 p-3 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-xl text-slate-200 font-bold transition-all"
                 >
                   <RefreshCw className="h-4 w-4 text-cyan-400" />
-                  <span>Reboot Engine</span>
+                  <span>{t('rt.reboot')}</span>
                 </button>
 
                 <button
@@ -94,7 +96,7 @@ export const RealtimeControlConsole: React.FC = () => {
                   className="flex items-center justify-center space-x-2 p-3 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-xl text-slate-200 font-bold transition-all"
                 >
                   <Camera className="h-4 w-4 text-indigo-400" />
-                  <span>Take Screenshot</span>
+                  <span>{t('rt.screenshot')}</span>
                 </button>
 
                 <button
@@ -102,14 +104,14 @@ export const RealtimeControlConsole: React.FC = () => {
                   className="flex items-center justify-center space-x-2 p-3 bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-xl text-slate-200 font-bold transition-all col-span-2"
                 >
                   <HardDrive className="h-4 w-4 text-amber-400" />
-                  <span>Purge Local Media Cache Buffer</span>
+                  <span>{t('rt.purgeCache')}</span>
                 </button>
               </div>
             </div>
 
             {/* Change Layout Command */}
             <div className="pt-2 border-t border-slate-800 space-y-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Instant Layout Override</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase">{t('rt.layoutOverride')}</span>
               <div className="flex space-x-2">
                 <select
                   value={selectedLayoutId}
@@ -124,7 +126,7 @@ export const RealtimeControlConsole: React.FC = () => {
                   onClick={() => handleCommand('SET_LAYOUT')}
                   className="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 font-bold text-white rounded-xl"
                 >
-                  Apply
+                  {t('sm.apply')}
                 </button>
               </div>
             </div>
@@ -132,7 +134,7 @@ export const RealtimeControlConsole: React.FC = () => {
             {/* Set Volume Command */}
             <div className="pt-2 border-t border-slate-800 space-y-2">
               <div className="flex justify-between text-slate-300">
-                <span className="text-[11px] font-bold text-slate-400 uppercase">Set Audio Volume</span>
+                <span className="text-[11px] font-bold text-slate-400 uppercase">{t('rt.audioVolume')}</span>
                 <span className="font-mono text-cyan-400">{volume}%</span>
               </div>
               <div className="flex items-center space-x-3">
@@ -162,9 +164,9 @@ export const RealtimeControlConsole: React.FC = () => {
             <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-xs">
               <span className="flex items-center space-x-2 text-cyan-400 font-bold">
                 <Terminal className="h-4 w-4" />
-                <span>Live Realtime Telemetry Terminal Logs</span>
+                <span>{t('rt.telemetry')}</span>
               </span>
-              <span className="text-[10px] text-slate-500">Auto-scrolling stream</span>
+              <span className="text-[10px] text-slate-500">{t('rt.autoScroll')}</span>
             </div>
 
             <div className="mt-3 space-y-2 max-h-[340px] overflow-y-auto no-scrollbar pr-1 text-[11px]">
@@ -181,8 +183,8 @@ export const RealtimeControlConsole: React.FC = () => {
           </div>
 
           <div className="pt-2 border-t border-slate-800/80 text-[10px] text-slate-500 flex justify-between">
-            <span>WebSocket Status: Connected</span>
-            <span>Channel: /ws</span>
+            <span>{t('rt.wsConnected')}</span>
+            <span>{t('rt.channel')}</span>
           </div>
         </div>
 

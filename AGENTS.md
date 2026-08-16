@@ -65,6 +65,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-16 — 🤖 โดย Freebuff (**แปล UI ครบทุกหน้า 3 ภาษา — EN/ไทย/中文**)
+- แปลทั้ง 14 หน้า: ScreensManager (status badge + heartbeat), SmartLayoutBuilder (widget catalog + zone inspector), MediaLibrary/MediaUploadModal, PlaylistEditor, SchedulerEngine (priority + วันย่อ + hint), CampaignManager, RealtimeControlConsole, AnalyticsTelemetry (summary + audit filter + severity), BackupManager, AISettings, BrandingSettings, SlideshowStudio (theme presets 8 ธีม), DualSimulator, PlayerApp chrome
+- เทคนิคที่ใช้: dynamic-key maps (`PRIORITY_T_KEY`/`THEME_NAME_KEYS`/`STATUS_T_KEY` typed เป็น `TranslationKey`) + แก้ตัวแปร `t` ชนกับ translation hook ใน PlaylistEditor
+- **ข้อจำกัด:** event log ใน Realtime Control มาจาก server.ts (ภาษาเดิม) — ต้อง server-side i18n แยก; เนื้อหา DB เป็นข้อมูล ไม่แปล
+- typecheck 0 + build ผ่าน + integration 16/16 + ยืนยันทุกหน้าเป็นไทยใน preview — ดู `CHANGELOG.md` [0.4.15]
+
 ### 2026-08-16 — 🤖 โดย Freebuff (**i18n หลายภาษา — EN core + ไทย + จีน + ขยายได้**)
 - **สถาปัตยกรรม:** `src/i18n/` (types/registry + translations/en·th·zh) + `useLanguageStore` (persist `signage_language` + `<html lang>`) + `useTranslation` hook (`t(key, {vars})` — fallback en → key ไม่ crash) + `LanguageSwitcher` ใน Navbar/LoginPage
 - **en = แกนหลัก** (source of truth ของคีย์) — th/zh typed เป็น `Messages` → **compiler บังคับคีย์ครบ** — เพิ่มภาษาใหม่ 4 ขั้นตอน (คู่มือ `src/i18n/README.md`)

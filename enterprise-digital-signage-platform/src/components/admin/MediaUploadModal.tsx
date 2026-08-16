@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { getAccessToken } from '../../services/api';
 import { useSignageStore } from '../../store/useSignageStore';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface UploadFile {
   id: string;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export const MediaUploadModal: React.FC<Props> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation();
   const { loadAllData } = useSignageStore();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -237,7 +239,7 @@ export const MediaUploadModal: React.FC<Props> = ({ isOpen, onClose }) => {
             {(isUploading || successCount > 0) && (
               <div className="mb-3">
                 <div className="flex justify-between text-xs text-slate-400 mb-1">
-                  <span>Overall Progress</span>
+                  <span>{t('mu.overallProgress')}</span>
                   <span>{successCount}/{files.length} completed</span>
                 </div>
                 <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
@@ -284,7 +286,7 @@ export const MediaUploadModal: React.FC<Props> = ({ isOpen, onClose }) => {
                     {f.status === 'success' && (
                       <div className="flex items-center gap-1 mt-1">
                         <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                        <span className="text-[10px] text-emerald-400">Uploaded successfully</span>
+                        <span className="text-[10px] text-emerald-400">{t('mu.uploaded')}</span>
                       </div>
                     )}
                     {f.status === 'error' && (
@@ -294,7 +296,7 @@ export const MediaUploadModal: React.FC<Props> = ({ isOpen, onClose }) => {
                       </div>
                     )}
                     {f.status === 'pending' && (
-                      <span className="text-[10px] text-slate-500 mt-0.5 block">Waiting...</span>
+                      <span className="text-[10px] text-slate-500 mt-0.5 block">{t('mu.waiting')}</span>
                     )}
                   </div>
 

@@ -13,6 +13,8 @@ export const playlists = pgTable('playlists', {
   tags:          text('tags').array().notNull().default([]),
   status:        varchar('status', { length: 20 }).notNull().default('published'), // draft | published | archived
   approvalStatus: varchar('approval_status', { length: 20 }).notNull().default('pending'), // pending | approved | rejected (Content Approval Workflow)
+  // สีประจำเพลย์ลิสต์ (hex) — กำหนดเองได้ใน Scheduler legend (ถ้าไม่ตั้ง → ใช้จานสีอัตโนมัติ)
+  color:         varchar('color', { length: 20 }).notNull().default(''),
   createdAt:     timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:     timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -193,6 +195,15 @@ export const quickPosts = pgTable('quick_posts', {
   isActive:        boolean('is_active').notNull().default(true),
   createdAt:       timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   expiresAt:       timestamp('expires_at', { withTimezone: true }),
+});
+
+// ─── 8d2. scheduler_snapshots (restore points ข้ามเครื่อง — เก็บใน DB แทน localStorage) ──
+export const schedulerSnapshots = pgTable('scheduler_snapshots', {
+  id:        varchar('id', { length: 50 }).primaryKey(),
+  name:      varchar('name', { length: 200 }).notNull(),
+  data:      jsonb('data').notNull(), // full scheduler-backup payload (schedules + playlists color + history)
+  createdBy: varchar('created_by', { length: 100 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // ─── 8d. layout_versions (version history for rollback) ─────

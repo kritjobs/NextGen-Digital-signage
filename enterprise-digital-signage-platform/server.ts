@@ -13,6 +13,7 @@ import {
   screens, mediaItems, layouts, layoutZones,
   playlists, playlistItems, schedules, campaigns,
   emergencyAlerts, telemetryLogs, proofOfPlayLogs, layoutVersions, auditLogs,
+  schedulerSnapshots,
 } from './src/db/schema.js';
 import { eq, desc, asc, sql, and } from 'drizzle-orm';
 import { priorityLevelOf, priorityRankOf } from './src/types/signage.js';
@@ -1808,6 +1809,43 @@ async function startServer() {
           .offset(page * limit);
         const [cnt] = await db.select({ n: sql<number>`count(*)::int` }).from(auditLogs).where(where);
         res.json({ data: rows, total: cnt?.n ?? rows.length, limit, page });
+      } catch (e) { next(e); }
+    });
+
+  // ─── Scheduler Restore Points (สแนปชอตใน DB — ซิงก์ข้ามแท็บ/เครื่อง) ──
+  app.get('/api/scheduler-snapshots',
+    authenticate as any, requirePermission('read:schedules') as any,
+    async (_req, res, next) => {
+      try {
+        const rows = await db.select().from(schedulerSnapshots).orderBy(desc(schedulerSnapshots.createdAt));
+        res.json({ data: rows, total: rows.length });
+      } catch (e) { next(e); }
+    });
+
+  app.post('/api/scheduler-snapshots',
+    authenticate as any, requirePermission('write:schedules') as any,
+    writeLimiter,
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        const { id, name, data } = req.body ?? {};
+        if (!name || !data) return res.status(400).json({ error: 'name and data are required' });
+        const snapId = String(id ?? `snap-${Date.now()}`).slice(0, 50);
+        const [row] = await db.insert(schedulerSnapshots).values({
+          id: snapId, name: String(name).slice(0, 200), data,
+          createdBy: (req as any).user?.email ?? null,
+        }).onConflictDoNothing().returning();
+        await logAudit(req, 'create', 'scheduler_snapshot', snapId, { name });
+        res.status(201).json(row ?? { id: snapId, name, data });
+      } catch (e) { next(e); }
+    });
+
+  app.delete('/api/scheduler-snapshots/:id',
+    authenticate as any, requirePermission('write:schedules') as any,
+    async (req: AuthenticatedRequest, res, next) => {
+      try {
+        await db.delete(schedulerSnapshots).where(eq(schedulerSnapshots.id, req.params.id));
+        await logAudit(req, 'delete', 'scheduler_snapshot', req.params.id, {}, 'warning');
+        res.json({ success: true, id: req.params.id });
       } catch (e) { next(e); }
     });
 

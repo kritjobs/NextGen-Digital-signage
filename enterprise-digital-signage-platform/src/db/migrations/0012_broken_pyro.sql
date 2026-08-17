@@ -1,0 +1,1 @@
+ALTER TABLE "playlists" ADD COLUMN "color" varchar(20) DEFAULT '' NOT NULL;

@@ -85,6 +85,20 @@
       "when": 1786804567813,
       "tag": "0011_regular_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786857911813,
+      "tag": "0012_broken_pyro",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1786898057696,
+      "tag": "0013_faulty_marvel_apes",
+      "breakpoints": true
     }
   ]
 }

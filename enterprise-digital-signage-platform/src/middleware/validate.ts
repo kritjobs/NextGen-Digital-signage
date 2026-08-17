@@ -110,6 +110,7 @@ export const CreatePlaylistSchema = z.object({
   totalDuration: z.number().int().optional(),
   status:        z.enum(['draft', 'published', 'archived']).optional(),
   approvalStatus: z.enum(['pending', 'approved', 'rejected']).optional(),
+  color:         z.string().max(20).optional(), // สี hex ของเพลย์ลิสต์ (Scheduler legend)
   items:       z.array(z.object({
     id:         z.string().max(50).optional(),
     mediaId:    z.string().min(1).max(50),
@@ -126,6 +127,7 @@ export const UpdatePlaylistSchema = z.object({
   totalDuration: z.number().optional(),
   status:        z.enum(['draft', 'published', 'archived']).optional(),
   approvalStatus: z.enum(['pending', 'approved', 'rejected']).optional(),
+  color:         z.string().max(20).optional(), // สี hex ของเพลย์ลิสต์ (Scheduler legend)
   items:       z.array(z.object({
     id:         z.string().max(50).optional(),
     mediaId:    z.string().min(1).max(50),

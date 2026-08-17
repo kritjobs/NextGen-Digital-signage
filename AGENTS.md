@@ -53,6 +53,7 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 | `check-deploy.bat` | prod | วินิจฉัยว่า container รันโค้ดใหม่หรือเก่า |
 | `rollback.bat snapshot/restore` | prod | เซฟ/ย้อนกลับโค้ดก่อน deploy |
 | `sync-to-prod.ps1` | dev | sync โค้ด dev → prod ผ่าน SMB (เทียบ SHA-256) |
+| `verify-prod-fix.ps1` | dev | ตรวจหลัง redeploy ว่าขึ้นจริง (uptime/build-log/marker/X-Frame-Options) — ดู `docs/redeploy-verification.md` |
 | `docs/deploy-security-guide.md` | ทั้งคู่ | คู่มือ deploy + checklist + rollback |
 
 ### กฎเหล็ก (ห้ามละเมิดเด็ดขาด)

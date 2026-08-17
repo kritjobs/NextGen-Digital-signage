@@ -632,12 +632,29 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
     });
   },
   updateScreen: (id, partial) => {
+    // Optimistic UI …แต่ rollback ถ้า PATCH ล้ม — กัน "ค่าใหม่หลอกตา" (UI โชว์ใหม่ แต่ DB ยังเก่า)
+    const prev = get().screens.find((s) => s.id === id) ?? null;
     set((state) => ({ screens: state.screens.map((s) => s.id === id ? { ...s, ...partial } : s) }));
-    screenApi.update(id, partial).catch(console.error);
+    screenApi.update(id, partial).catch((err) => {
+      if (prev) set((state) => ({ screens: state.screens.map((s) => s.id === id ? prev : s) }));
+      console.error('[screens] update failed — rolled back optimistic change:', err);
+    });
   },
   deleteScreen: (id) => {
+    // Optimistic UI …แต่ restore ถ้า DELETE ล้ม — กัน "หายหลอกตา" (UI ลบแล้ว แต่ DB ยังมี)
+    const prev = get().screens.find((s) => s.id === id) ?? null;
+    const prevIndex = get().screens.findIndex((s) => s.id === id);
     set((state) => ({ screens: state.screens.filter((s) => s.id !== id) }));
-    screenApi.delete(id).catch(console.error);
+    screenApi.delete(id).catch((err) => {
+      if (prev) {
+        set((state) => {
+          const arr = [...state.screens];
+          arr.splice(Math.min(prevIndex, arr.length), 0, prev);
+          return { screens: arr };
+        });
+      }
+      console.error('[screens] delete failed — restored entry:', err);
+    });
   },
   // REQ-008: monitoring poll — ดึงสถานะจอล่าสุดจาก server โดยไม่รบกวน state อื่น
   refreshScreens: async () => {

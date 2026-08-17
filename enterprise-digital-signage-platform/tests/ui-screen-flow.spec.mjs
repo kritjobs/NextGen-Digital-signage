@@ -77,16 +77,22 @@ function uiScreenPayload(name = '[TEST] UI Flow Screen') {
 }
 
 // ─── Setup ───────────────────────────────────────────────────
-let realCreate;
+let realCreate, realUpdate, realDelete;
 beforeEach(() => {
-  // คืน create ตัวจริงก่อนทุกเทสต์ (กัน stub ของเทสต์ก่อนหน้าตกค้าง)
+  // คืน action ตัวจริงก่อนทุกเทสต์ (กัน stub ของเทสต์ก่อนหน้าตกค้าง)
   if (!realCreate) realCreate = screenApi.create;
+  if (!realUpdate) realUpdate = screenApi.update;
+  if (!realDelete) realDelete = screenApi.delete;
   screenApi.create = realCreate;
+  screenApi.update = realUpdate;
+  screenApi.delete = realDelete;
   useSignageStore.setState({ screens: [] }); // reset state กันเทสต์ก่อนหน้า
 });
 
 after(() => {
   screenApi.create = realCreate; // คืน stub เสมอ (เผื่อสุดท้าย)
+  screenApi.update = realUpdate;
+  screenApi.delete = realDelete;
   useSignageStore.setState({ screens: [] });
 });
 
@@ -130,6 +136,128 @@ test('UI-2. addScreen ล้มเหลว — จอ phantom ต้องถ�
 
   const inStore = useSignageStore.getState().screens.some((s) => s.id === screen.id);
   assert.ok(!inStore, 'FAIL: จอ phantom ต้องถูกถอดออก (rollback) — ห้ามค้างในเมทริกซ์');
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 4) updateScreen failure — ค่า optimistic ต้อง ROLLBACK กลับค่าเดิม (กัน "ค่าใหม่หลอกตา")
+// ═══════════════════════════════════════════════════════════════
+test('UI-4. updateScreen ล้มเหลว — ค่า optimistic ต้อง rollback กลับเป็นค่าเดิม', async () => {
+  const screen = uiScreenPayload('[TEST] UI Update Fail');
+  useSignageStore.setState({ screens: [screen] });
+
+  // จำลอง PATCH ล้ม (เหมือน POST 500 เดิมที่เคยทำให้ addScreen หลอกตา)
+  screenApi.update = async () => { throw new Error('PATCH /api/screens/:id → 500 (จำลอง)'); };
+
+  useSignageStore.getState().updateScreen(screen.id, { name: '[TEST] UI Update Fail EDITED', volume: 42 });
+
+  // optimistic: ค่าใหม่ขึ้นทันที (ก่อนรู้ผล)
+  const optimistic = useSignageStore.getState().screens.find((s) => s.id === screen.id);
+  assert.equal(optimistic.name, '[TEST] UI Update Fail EDITED', 'optimistic: ค่าใหม่ขึ้นทันที');
+  assert.equal(optimistic.volume, 42, 'optimistic: volume ใหม่ขึ้นทันที');
+
+  // รอ PATCH reject + rollback เสร็จ
+  await waitFor(() => {
+    const s = useSignageStore.getState().screens.find((x) => x.id === screen.id);
+    return s && s.name === screen.name && s.volume === screen.volume;
+  });
+
+  const after = useSignageStore.getState().screens.find((s) => s.id === screen.id);
+  assert.ok(after, 'จอต้องยังอยู่ใน store');
+  assert.equal(after.name, screen.name, 'FAIL: ต้อง rollback ชื่อกลับค่าเดิม — ห้ามโชว์ค่าใหม่หลอกตา');
+  assert.equal(after.volume, screen.volume, 'FAIL: ต้อง rollback volume กลับค่าเดิม');
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 5) deleteScreen failure — จอที่ลบ optimistic ต้อง RESTORE กลับ (กัน "หายหลอกตา")
+// ═══════════════════════════════════════════════════════════════
+test('UI-5. deleteScreen ล้มเหลว — จอที่ถูกลบ optimistic ต้องกลับมา', async () => {
+  const screen = uiScreenPayload('[TEST] UI Delete Fail');
+  useSignageStore.setState({ screens: [screen] });
+
+  // จำลอง DELETE ล้ม
+  screenApi.delete = async () => { throw new Error('DELETE /api/screens/:id → 500 (จำลอง)'); };
+
+  useSignageStore.getState().deleteScreen(screen.id);
+
+  // optimistic: จอหายจาก store ทันที (ก่อนรู้ผล)
+  const optimistic = !useSignageStore.getState().screens.some((s) => s.id === screen.id);
+  assert.ok(optimistic, 'optimistic: จอหายจาก store ทันที');
+
+  // รอ DELETE reject + restore เสร็จ
+  await waitFor(() => useSignageStore.getState().screens.some((s) => s.id === screen.id));
+
+  const restored = useSignageStore.getState().screens.some((s) => s.id === screen.id);
+  assert.ok(restored, 'FAIL: จอต้องกลับมา (restore) — ห้ามหายหลอกตา');
+  const s = useSignageStore.getState().screens.find((x) => x.id === screen.id);
+  assert.equal(s.name, screen.name, 'restore ต้องได้ค่าเดิมครบ');
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 6) Full loop — updateScreen → PATCH จริง → เมทริกซ์ได้ค่าใหม่ (ต้องมี dev server)
+// ═══════════════════════════════════════════════════════════════
+test('UI-6. full loop กับ dev server — updateScreen → PATCH 200 → refreshScreens โชว์ค่าใหม่ (ไม่ rollback)', async () => {
+  const PASSWORD = process.env.TEST_ADMIN_PASSWORD || '';
+  if (!PASSWORD) {
+    console.warn('⚠️ TEST_ADMIN_PASSWORD ไม่ได้ตั้งใน .env — ข้ามเทสต์นี้ (ต้อง login กับ dev server)');
+    return;
+  }
+
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (url, opts) => realFetch(url.startsWith('/') ? BASE + url : url, opts);
+  try {
+    const lr = await realFetch(`${BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'admin@signage.local', password: PASSWORD }),
+    });
+    const lj = await lr.json();
+    if (!lj.accessToken) throw new Error(`login failed: ${JSON.stringify(lj)}`);
+    setTokens(lj.accessToken, lj.refreshToken || '');
+
+    // setup: สร้างจอทดสอบผ่าน store (POST จริง)
+    const screen = uiScreenPayload('[TEST] UI Update E2E');
+    useSignageStore.getState().addScreen(screen);
+    const created = await waitFor(async () => {
+      const r = await realFetch(`${BASE}/api/screens`, { headers: { Authorization: `Bearer ${lj.accessToken}` } });
+      if (!r.ok) return false;
+      const j = await r.json();
+      return (j.data ?? []).some((s) => s.id === screen.id);
+    }, 6000);
+    assert.ok(created, 'setup: server ต้องบันทึกจอทดสอบก่อน');
+
+    // ── updateScreen ผ่าน store จริง → PATCH จริง ──
+    const NEW_NAME = '[TEST] UI Update E2E ★EDITED';
+    useSignageStore.getState().updateScreen(screen.id, { name: NEW_NAME, volume: 42 });
+    const persisted = await waitFor(async () => {
+      const r = await realFetch(`${BASE}/api/screens`, { headers: { Authorization: `Bearer ${lj.accessToken}` } });
+      if (!r.ok) return false;
+      const j = await r.json();
+      const s = (j.data ?? []).find((x) => x.id === screen.id);
+      return s && s.name === NEW_NAME && s.volume === 42;
+    }, 6000);
+    assert.ok(persisted, 'PATCH ต้องบันทึกค่าใหม่จริงบน server');
+
+    // ── refreshScreens → เมทริกซ์ได้ค่าใหม่ (success → ไม่ rollback) ──
+    await useSignageStore.getState().refreshScreens();
+    const inMatrix = useSignageStore.getState().screens.find((s) => s.id === screen.id);
+    assert.equal(inMatrix?.name, NEW_NAME, 'เมทริกซ์ต้องโชว์ค่าใหม่ (success path ไม่ rollback)');
+    assert.equal(inMatrix?.volume, 42, 'เมทริกซ์ต้องได้ volume ใหม่');
+
+    // ── cleanup: ลบจอทดสอบ ──
+    useSignageStore.getState().deleteScreen(screen.id);
+    const gone = await waitFor(async () => {
+      const r = await realFetch(`${BASE}/api/screens`, { headers: { Authorization: `Bearer ${lj.accessToken}` } });
+      if (!r.ok) return false;
+      const j = await r.json();
+      return !(j.data ?? []).some((s) => s.id === screen.id);
+    }, 6000);
+    assert.ok(gone, 'cleanup: จอทดสอบต้องหายจาก dev server');
+
+    await useSignageStore.getState().refreshScreens();
+    assert.ok(!useSignageStore.getState().screens.some((s) => s.id === screen.id), 'เมทริกซ์ต้องไม่มีจอที่ลบไปแล้ว');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
 
 // ═══════════════════════════════════════════════════════════════

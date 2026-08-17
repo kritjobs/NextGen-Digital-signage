@@ -893,3 +893,67 @@ test('17. Scheduler Restore Points — CRUD /api/scheduler-snapshots + auth + au
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// 18) Screens CRUD regression — payload เดียวกับ UI (fix 500)
+//     UI ส่ง bufferCachedItemsCount (DB ใช้ชื่อ bufferCachedItems) +
+//     lastHeartbeat เป็น ISO string → เคย 500 (column ไม่มี /
+//     value.toISOString is not a function) → ต้อง 201/200 + map ถูก
+//     กันบั๊ก "เพิ่มจอใหม่ ขึ้น UI แต่ไม่บันทึก" กลับมา
+// ═══════════════════════════════════════════════════════════════
+test('18. Screens UI payload — POST/PATCH ด้วย bufferCachedItemsCount + lastHeartbeat ISO ต้องไม่ 500', async () => {
+  const scId = tid('scr-ui');
+  const pairing = `UP${Date.now().toString(36).slice(-6).toUpperCase()}`;
+  const hbISO = new Date(Date.now() - 60_000).toISOString(); // ISO string อย่าง UI ส่ง
+
+  try {
+    // ── POST: payload เหมือน form "เพิ่มจอใหม่" ใน Admin UI ──
+    const create = await api.screens.create(token, {
+      id: scId,                        // id เจาะจง เพื่อค้นหา/cleanup ที่แน่นอน (UI ไม่ส่ง → server สร้างเอง)
+      name: '[TEST] UI Payload Screen',
+      group: '[TEST] Integration',
+      location: 'Test bench',
+      orientation: 'landscape',
+      pairingCode: pairing,
+      bufferCachedItemsCount: 0,      // ← UI field (ไม่ใช่คอลัมน์จริง)
+      lastHeartbeat: hbISO,            // ← ISO string (คอลัมน์ต้องการ Date)
+    });
+    assert.equal(create.status, 201, `POST ควร 201 (regression: เคย 500): ${JSON.stringify(create.json)}`);
+
+    // bufferCachedItemsCount ต้องถูก map ไป bufferCachedItems (ไม่เหลือ field ปลอมใน DB)
+    assert.equal(create.json?.bufferCachedItems, 0, 'bufferCachedItems ควร = bufferCachedItemsCount ที่ส่ง (0)');
+    assert.equal(create.json?.bufferCachedItemsCount, undefined, 'bufferCachedItemsCount ต้องไม่ถูกบันทึก (field ปลอม)');
+
+    // lastHeartbeat เก็บเป็น Date → serialized กลับเป็น ISO string ที่ถูกต้อง
+    assert.equal(create.json?.lastHeartbeat, hbISO, 'lastHeartbeat ควร roundtrip ค่าเดิม (ISO ถูกแปลงเป็น Date ตอนเก็บ)');
+
+    // ── GET roundtrip: ค่าครบ + อยู่ใน DB จริง ──
+    const get = await api.screens.list(token);
+    const row = (get.json?.data ?? []).find((s) => s.id === scId);
+    assert.ok(row, 'ควรเจอจอที่เพิ่งสร้างใน list');
+    assert.equal(row.bufferCachedItems, 0, 'GET ควรเห็น bufferCachedItems=0');
+    assert.equal(row.lastHeartbeat, hbISO, 'GET ควรเห็น lastHeartbeat เดิม');
+
+    // ── PATCH: payload เดียวกับ form แก้ไขจอ (rename + ค่าใหม่) ──
+    const newISO = new Date().toISOString();
+    const patch = await api.screens.update(token, scId, {
+      name: '[TEST] UI Payload Screen (renamed)',
+      group: '[TEST] Integration',
+      location: 'Moved',
+      bufferCachedItemsCount: 7,      // ← UI ส่ง field เดิมตอนแก้ด้วย
+      lastHeartbeat: newISO,           // ← UI ส่ง heartbeat ใหม่เป็น ISO
+    });
+    assert.equal(patch.status, 200, `PATCH ควร 200 (regression: เคย 500): ${JSON.stringify(patch.json)}`);
+    assert.equal(patch.json?.name, '[TEST] UI Payload Screen (renamed)', 'name ควรอัปเดต');
+    assert.equal(patch.json?.location, 'Moved', 'location ควรอัปเดต');
+    assert.equal(patch.json?.bufferCachedItems, 7, 'PATCH bufferCachedItems ควร = 7 (map bufferCachedItemsCount)');
+    assert.equal(patch.json?.bufferCachedItemsCount, undefined, 'PATCH ก็ต้องไม่เก็บ field ปลอม');
+    assert.equal(patch.json?.lastHeartbeat, newISO, 'PATCH lastHeartbeat ควร roundtrip ค่าใหม่');
+
+    // ── auth: ไม่มี token → 401 (guard ยังทำงาน) ──
+    assert.equal((await raw('POST', '/screens', { body: { name: 'x', pairingCode: 'XX' } })).status, 401, 'POST ไม่มี token ควร 401');
+    assert.equal((await raw('PATCH', `/screens/${scId}`, { body: { name: 'x' } })).status, 401, 'PATCH ไม่มี token ควร 401');
+  } finally {
+    await api.screens.remove(token, scId).catch(() => {});
+  }
+});
+

@@ -48,6 +48,7 @@ export const api = {
   screens: {
     list: (t) => raw('GET', '/screens', { token: t }),
     create: (t, body) => raw('POST', '/screens', { token: t, body }),
+    update: (t, id, body) => raw('PATCH', `/screens/${id}`, { token: t, body }),
     remove: (t, id) => raw('DELETE', `/screens/${id}`, { token: t }),
   },
   layouts: {

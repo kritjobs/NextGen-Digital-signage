@@ -623,8 +623,13 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
 
   // ─── CRUD: Screens ────────────────────────────────────────
   addScreen: (screen) => {
+    // Optimistic UI: ขึ้นเมทริกซ์ทันที …แต่ต้อง rollback ถ้า server ปฏิเสธ
+    // (เคยเป็นบั๊ก: 500 → จอ "หลอกตา" ค้างในเมทริกซ์ ทั้งที่ DB ไม่มี)
     set((state) => ({ screens: [screen, ...state.screens] }));
-    screenApi.create(screen).catch(console.error);
+    screenApi.create(screen).catch((err) => {
+      set((state) => ({ screens: state.screens.filter((s) => s.id !== screen.id) }));
+      console.error('[screens] create failed — rolled back optimistic entry:', err);
+    });
   },
   updateScreen: (id, partial) => {
     set((state) => ({ screens: state.screens.map((s) => s.id === id ? { ...s, ...partial } : s) }));

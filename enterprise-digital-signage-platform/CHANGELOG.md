@@ -5,6 +5,276 @@ Versioning ตาม [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [0.4.30] — 2026-08-16  🤖 โดย Freebuff (Scheduler: ปุ่มขั้นตอนใหญ่แสดงจำนวนรายการ + คลิกขวาเลือกย้อน/ทำซ้ำเฉพาะบางรายการในกลุ่ม ✅)
+
+### Added / Changed
+- **ปุ่มขั้นตอนใหญ่แสดงจำนวนการแก้ไขที่จะย้อน/ทำซ้ำ:**
+  - tooltip อัปเดตสดเป็น "ย้อนขั้นตอนใหญ่ — ย้อน N รายการพร้อมกัน · คลิกขวาเพื่อเลือก" (และ redo) · **badge ตัวเลขบนปุ่ม** (cyan) แสดงขนาดกลุ่มเมื่อ > 1
+  - refactor: `groupOf()` (กลุ่ม = รายการต่อจากบนสุดที่มี `grp` เดียวกัน) + `applyUndoEntries`/`applyRedoEntries` — ใช้ร่วมระหว่างปุ่ม, tooltip และเมนู — ยกเลิกการกลับลำดับภายใน helper (caller ส่งลำดับ apply ชัดเจน)
+- **คลิกขวาบนปุ่มขั้นตอนใหญ่ = เมนูเลือกรายการ** — รายการในกลุ่ม (ใหม่สุดบนสุด) พร้อม **checkbox** + label/เวลา/detail · สรุป "ย้อน N จาก M รายการบนสุด" คำนวณสดจากที่ติ๊ก · ปุ่ม **ย้อนที่เลือก (N)** / **ทำซ้ำที่เลือก (N)**
+  - **ย้อนเฉพาะบางรายการ**: เลือกต่อเนื่องจากบนสุดเท่านั้น (ก่อน/หลังเป็น snapshot เต็ม — รายการใต้ช่องว่างไม่ถูกย้อน) — เลือก 2 จาก 3 → ย้อน 2 รายการล่าสุด, รายการแรกยังอยู่ใน stack
+  - เปิดเมนูอันหนึ่งปิดอีกอัน (ปิด history dropdown ด้วย) · คลิกนอกเมนูปิด
+- i18n 3 ภาษา: `sch.undoStepCount` / `sch.redoStepCount` / `sch.stepPickTitle` / `sch.stepPickRedoTitle` / `sch.stepPickHint` / `sch.stepPickRedoHint` / `sch.stepPickApply` / `sch.stepPickRedoApply`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **Tooltip/badge จริง:** ปิดกฎ 3 ข้อต่อเนื่อง → ปุ่ม SkipBack tooltip "ย้อน 3 รายการพร้อมกัน · คลิกขวาเพื่อเลือก" + badge "3"
+- **เลือกเฉพาะบางรายการ จริง:** คลิกขวา → เมนู 3 รายการ (ติ๊กครบ) "ย้อน 3 จาก 3 รายการบนสุด" → ยกติ๊กรายการเก่าสุด → สรุปเปลี่ยน "ย้อน 2 จาก 3" + ปุ่ม "ย้อนที่เลือก (2)" → ยืนยัน → **DB: Elevator+Lobby กลับ active, Dining ยัง off** (รายการที่ยกติ๊กไม่ถูกแตะ) · คลิกขวา SkipForward → เมนู redo "ทำซ้ำ 2 จาก 2" → ทำซ้ำที่เลือก → DB ทั้งคู่กลับ off
+- **🐛 ระหว่างเทส:** hint ในเมนู redo โชว์คำว่า "ย้อน" (ใช้ key เดียว) — แยก `sch.stepPickRedoHint` · **คืน dev data เรียบร้อย** (sch-001/002 = จ-ศ 07:00–19:00 / 11:00–20:00, sch-003 = ทุกวัน 06:00–22:00, สีเพลย์ลิสต์ว่าง, ไม่มีกฎเทส, snapshots ว่าง)
+
+---
+
+## [0.4.29] — 2026-08-16  🤖 โดย Freebuff (Scheduler: restore point ลง DB ซิงก์ข้ามเครื่อง · ลาก/วางไฟล์ JSON ทั้งหน้า · ย้อน/ทำซ้ำขั้นตอนใหญ่ (group undo) · sandbox visual diff ✅)
+
+### Added / Changed
+- **Restore Points เก็บใน DB — ซิงก์ข้ามแท็บ/เครื่อง** (แทน localStorage เฉพาะ):
+  - ตารางใหม่ `scheduler_snapshots` (id/name/data jsonb/createdAt) + migration `0013` · API ใหม่ `/api/scheduler-snapshots` GET/POST/DELETE (auth + permission เดียวกับ schedules + audit log)
+  - `schedulerSnapshotApi` ใน client — `loadSnapshots` ดึงจาก API (localStorage เดิมเป็น fallback เมื่อ offline) — บันทึก/ลบ/auto-snapshot ของ sandbox เขียน DB จริง → **เปิดจากแท็บ/เครื่องอื่นเห็นสแนปชอตเดียวกัน** · กู้คืนใช้กลไกเดียวกับ import (`applySchedulerBackup`)
+- **ลาก/วางไฟล์ JSON ลงบนหน้าทั้งหมด = เปิด diff preview** — drop zone ทั่วทั้งหน้า (dragenter/dragover/drop บน root — เช็ค `dataTransfer.types` มี Files) → overlay "ปล่อยเพื่อนำเข้า" + ปล่อยไฟล์ = `importSchedulerData` เปิด modal diff ทันที (ไม่ต้องคลิกเลือกไฟล์)
+- **ย้อน/ทำซ้ำขั้นตอนใหญ่ (group undo)** — `HistoryEntry.grp`: การแก้ไขต่อเนื่อง (< 60 วิ) อยู่กลุ่มเดียวกัน → ปุ่ม **SkipBack/SkipForward** ใหม่ใน header ย้อน/ทำซ้ำทั้งกลุ่มทีเดียว — serialize ทีละ entry (await PATCH) → **DB เรียงตามลำดับไม่สลับ** · pop stack ก่อน apply กัน double-click
+- **โหมดทดลอง: visual diff** — เทียบสถานะปัจจุบันกับสแนปชอตเริ่มต้นแบบสด: แถบแสดงสรุป (เปลี่ยน X · เพิ่ม Y · ลบ Z · สีเพลย์ลิสต์ W) + รายการก่อน→หลัง (ชื่อกฎ + เวลา/วัน/เปิด-ปิด) · **ไฮไลต์กฎที่เปลี่ยน**: การ์ดใน List (ring เขียว + badge "เปลี่ยน") + ชิปใน Month (ring เขียว) — หายเองเมื่อ revert/commit
+- i18n 3 ภาษา: `sch.dropFileTitle` / `sch.dropFileHint` / `sch.undoStep` / `sch.redoStep` / `sch.sandboxDiffTitle` / `sch.sandboxDiffChanged` / `sch.sandboxDiffAdded` / `sch.sandboxDiffRemoved` / `sch.sandboxDiffColors` / `sch.sandboxDiffNone` / `sch.sandboxChangedBadge`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **DB snapshot จริง:** บันทึกสแนปชอต → ตรวจ `scheduler_snapshots` มีแถว (data 3 กฎ) → **reload หน้าใหม่ (จำลองเครื่องอื่น)** → เปิด Restore Points เห็นสแนปชอต (โหลดจาก API) → ปิด Dining → กู้คืน → DB `is_active=true` → ลบ → ตารางว่าง
+- **Drop จริง:** จำลอง dragenter/วางไฟล์ JSON ลงหน้า → overlay ขึ้น + diff preview เปิด → ยืนยัน → DB สร้างกฎ (09:00–13:00 [2,4]) → Ctrl+Z ลบออก
+- **Group undo จริง:** ล้างประวัติ → ปิดกฎ 3 ข้อต่อเนื่อง (กลุ่มเดียว) → **SkipBack ครั้งเดียว → DB ทั้ง 3 กลับ active** → SkipForward → ทั้ง 3 กลับ off → SkipBack → baseline · **redo กลุ่มคืนลำดับถูกต้อง** (entry สุดท้ายอยู่บนสุด)
+- **Sandbox diff จริง:** กด "ทดลอง" → แถบ "ยังไม่มีการเปลี่ยนแปลง" → ปิด Dining → แถบ "เปลี่ยน 1" + รายละเอียด "Dining Hall Lunch Hours Menu: ● เปิด → ○ ปิด" + การ์ด ring เขียว + badge "เปลี่ยน" + ชิป Month 30 จุด ring เขียว → revert → หายหมด
+- **🐛 เจอ/แก้:** import/กู้คืนที่**เพิ่มกฎล้วน ๆ** ไม่สร้าง history entry — `sectionChanged` ตรวจเฉพาะ id ใน `before` (id ใหม่ใน `after` ถูกละ) → แก้: เพิ่มเงื่อนไขตรวจจับ id ใหม่ → Ctrl+Z หลัง import เพิ่มล้วน ๆ ลบกฎที่สร้างจริง · **PATCH เรียงสลับ** ตอนย้อน/ทำซ้ำหลายขั้นตอน (store คืน Promise แล้ว serialize ใน `upsertSchedules`/`applyUndo`/`applyRedo` — DB ได้ค่าสุดท้ายถูกต้อง) · **คืน dev data เรียบร้อย** (sch-001/002 = จ-ศ 07:00–19:00 / 11:00–20:00, sch-003 = ทุกวัน 06:00–22:00, สีเพลย์ลิสต์ว่าง, ไม่มีกฎเทส, snapshots ว่าง)
+
+---
+
+## [0.4.28] — 2026-08-16  🤖 โดย Freebuff (Scheduler: undo/redo ระดับระบบสำหรับ import/กู้คืน · โหมดทดลอง (sandbox) auto-snapshot + undo ไม่จำกัด + commit/revert · diff preview ค้นหา + ติ๊กเลือกเฉพาะกฎ · ซิงก์ลากสดรวม resize + วางบน legend ✅)
+
+### Added / Changed
+- **Undo/Redo ระดับระบบสำหรับ import / กู้คืนสแนปชอต / revert sandbox** — `applySchedulerBackup` บันทึก **1 history entry ก้อนเดียว** (สถานะก่อน/หลัง ของกฎทั้งหมด + สีเพลย์ลิสต์) ก่อนเขียน → **Ctrl+Z หลัง import = ย้อนกลับทุกอย่าง** (ลบกฎที่สร้าง, คืนเวลากฎที่ถูกเขียนทับ) · redo ทำซ้ำทั้งก้อน · สร้างโดยอัตโนมัติ ไม่ต้องกดบันทึก
+- **โหมดทดลอง (sandbox):**
+  - ปุ่ม "ทดลอง" ใน header → **บันทึกสแนปชอตอัตโนมัติ** (localStorage, ชื่อ "Auto-snapshot <เวลา>") + แถบโหมดทดลองสีเขียว → แก้ไข/ลากได้ตามปกติ แต่ **undo ไม่จำกัด** (ปิดการตัด history 50 entry ใน `commitHistory` ระหว่าง sandbox)
+  - จบด้วย **บันทึกผล** (commit: เก็บผลลัพธ์ + ลบสแนปชอตอัตโนมัติ) หรือ **คืนค่า** (revert: กู้คืนสแนปชอต + ลบ) — ทั้งคู่ปลอดภัยต่อการลองผิดลองถูก
+- **Diff preview นำเข้า: ค้นหา + ติ๊กเลือกเฉพาะกฎ** — ช่องค้นหา (ชื่อ/id) + ปุ่ม เลือกทั้งหมด / ไม่เลือก + checkbox ทุกรายการ → ป้ายสรุป (ใหม่/อัปเดต/ไม่เปลี่ยน/**เลือก X/Y**) คำนวณจากที่ติ๊กสดๆ → ยืนยันนำเข้าเฉพาะรายการที่เลือก (ยกเลิกการเลือกบางรายการได้ก่อนเขียน)
+- **ซิงก์ลากสดข้ามแท็บครบทุกรูปแบบ** — ขยาย `scheduler-drag-sync` payload ด้วย `mode/edge/plDrop`:
+  - **resize**: แท็บอื่นเห็นบล็อกขยาย/ย่อตามขอบที่ลาก (ความสูงเปลี่ยน, top คงเดิม — เหมือนลากในเครื่อง) + ring เฉพาะคอลัมน์เป้า
+  - **วางบน legend**: แท็บอื่นเห็นไฮไลต์เพลย์ลิสต์เป้าหมาย (ring ขาว) ระหว่างลากกฎ
+  - `end` ล้าง ghost + ไฮไลต์ทั้งหมด
+- i18n 3 ภาษา: `sch.histImport` / `sch.histRestore` / `sch.histRevert` / `sch.importSearch` / `sch.importSearchEmpty` / `sch.importSelectAll` / `sch.importSelectNone` / `sch.importSelected` / `sch.sandboxTitle` / `sch.sandboxSnapName` / `sch.sandboxBanner` / `sch.sandboxCommit` / `sch.sandboxRevert` / `sch.sandboxCommitted` / `sch.sandboxReverted`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **Sandbox จริง:** กด "ทดลอง" → แถบโหมดทดลอง + snapshot อัตโนมัติใน localStorage (1) · ปิด Dining → DB `is_active=false` → **คืนค่า** → DB กลับ `true` + snapshot ถูกลบ (0) + แถบหาย · **Ctrl+Z หลังคืนค่า** → Dining กลับ `false` (undo ระดับระบบ) → redo → `true` (baseline) · **Commit** → เก็บผล (Dining ยัง off) + ลบ snapshot
+- **Import ติ๊กเลือก จริง:** import ไฟล์ foreign 4 กฎ (ใหม่ 2 · อัปเดต 2) → ค้นหา "sch-9" → เหลือ 2 แถว · ยกเลิกติ๊ก sch-901 → สรุปเปลี่ยนเป็น **"ใหม่ 1 · เลือก 3/4"** สดๆ → ยืนยัน → DB มี sch-900 แต่ **ไม่มี sch-901** + sch-001 end 20:00 → **Ctrl+Z → sch-900 ถูกลบ + sch-001 กลับ 19:00** (undo ก้อนเดียวคืนทุกอย่าง)
+- **Remote resize/legend จริง:** จำลองแท็บอื่นส่ง `{mode:'resize', edge:'bottom', curMin:660}` → บล็อก sch-001 ทั้ง 5 คอลัมน์สูง 160px (4ชม.) top คงเดิม 40px + ring เฉพาะคอลัมน์ จ. · ส่ง `plDrop:'pl-corporate-main'` → legend ไฮไลต์ ring ขาวเฉพาะรายการนั้น · `end` → ล้างหมด (คืน 480px)
+- **🐛 เจอ/แก้:** remote resize ghost ใช้ `curMin` เป็น top (บล็อกกระโดดไปที่ตำแหน่ง cursor) — แก้: ใช้ curMin เฉพาะโหมด move, resize ยึด top เดิม · **คืน dev data เรียบร้อย** (sch-001/002 = จ-ศ 07:00–19:00 / 11:00–20:00, sch-003 = ทุกวัน 06:00–22:00, สีเพลย์ลิสต์ว่าง, ไม่มีกฎเทส, ลบ snapshot ทดสอบ)
+
+---
+
+## [0.4.27] — 2026-08-16  🤖 โดย Freebuff (Scheduler: Shift snap ชั่วโมงเต็มใน week strip · ซิงก์ลากสดข้ามแท็บ (ghost) · import ไฟล์ต่างระบบพร้อม schema mapping + diff preview · restore point สแนปชอต ✅)
+
+### Added / Changed
+- **Shift snap ชั่วโมงเต็มใน week strip** — กด Shift ค้างตอนลากชิป/บล็อกมาวางบน strip → snap เป๊ะที่ชั่วโมง (00 นาที) แทน 15 นาที (`snapMinRef` ตามคีย์ Shift — ระหว่างลากกด/ปล่อย Shift ได้ทันที) · เพิ่ม hint "Shift = snap ชั่วโมงเต็ม" ใน strip
+- **ซิงก์ลากสดข้ามแท็บ (live drag ghost):**
+  - ทุกการลาก (grid + month) broadcast `scheduler-drag-sync` (start/move/end, throttle ~10/s) — **แท็บอื่นเห็น ghost อีเวนต์ตามตำแหน่งลากจริง**: บล็อกในกริดเลื่อนตาม curMin/curDay (ring + shadow) · ชิปใน Month dim — ปล่อย/ยกเลิก → ghost ล้างทันที (`remoteDrag` ใน store)
+  - เปิด/ปิดกฎ (toggle) ก็ซิงก์อยู่แล้วผ่าน history-sync → refetch อัตโนมัติ
+- **Import ไฟล์ต่างระบบ + diff preview (ยังไม่เขียน DB):**
+  - รองรับไฟล์ที่**ไม่ใช่** `scheduler-backup`: array ธรรมดา / `{schedules:[]}` / `{rules:[]}` — **schema mapping อัตโนมัติ** (`name|title|label`, `startTime|start_time|start|timeStart`, `daysOfWeek|days_of_week|weekdays|days`, `isActive|is_active|enabled`, snake_case ทุกฟิลด์ ฯลฯ) — id ไม่มี → generate ใหม่
+  - **แสดง diff ก่อนเขียน**: modal "ตัวอย่างการนำเข้า" — จำนวน ใหม่/อัปเดต/ไม่เปลี่ยน + รายการ (ชื่อ + id) + ป้าย "รูปแบบไฟล์ภายนอก — แปลงฟิลด์อัตโนมัติ" → **ยืนยันนำเข้า** = เขียนจริง / ยกเลิก = ไม่แตะ DB · ไม่มีการเปลี่ยนแปลง → alert แจ้ง ไม่เปิด modal
+- **Restore Points (สแนปชอต — กู้คืน 1 คลิก):**
+  - ปุ่ม "จุดคืนค่า" ใน header → modal: **บันทึกสแนปชอต** (สถานะ Scheduler ทั้งหมด: กฎ + สีเพลย์ลิสต์ + undo/redo stacks — เก็บใน **localStorage** อยู่รอด reload) + รายการสแนปชอตพร้อม **กู้คืน** / **ลบ** — ใช้ก่อนการทดลอง แล้วกู้กลับได้ทันที (ใช้กลไกเดียวกับ export/import: `applySchedulerBackup`)
+- i18n 3 ภาษา: `sch.shiftSnapHint` / `sch.importPreview` / `sch.importForeign` / `sch.importNew` / `sch.importChanged` / `sch.importSame` / `sch.confirmImport` / `sch.noImportChanges` / `sch.snapshotsTitle` / `sch.saveSnapshot` / `sch.snapshotSaved` / `sch.snapshotRestored` / `sch.restore` / `sch.snapshotsEmpty` / `sch.rules`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **Shift snap จริง:** ลากบล็อก Dining ไป strip ที่ ~10:22 → กด Shift = marker **"10:00"** · ปล่อย Shift = marker **"10:15"** — drop แบบ Shift → DB `start_time 10:00:00` เป๊ะ + days `[2,3,4,5]` → Ctrl+Z คืน baseline
+- **ลากสดข้ามแท็บ จริง:** จำลองแท็บอื่นส่ง `scheduler-drag-sync move {sch-001, curMin:540, curDay:1}` → บล็อก Lobby ในคอลัมน์ จ. เลื่อนมาที่ 09:00 + ring/shadow (คอลัมน์อื่นปกติ) · Month: ชิป Lobby 30 จุด dim → `end` → ล้างหมด (0)
+- **Import ต่างระบบ จริง:** ไฟล์ array foreign (`title`/`weekdays`/`start`/`end`) → modal "ใหม่ 2 · อัปเดต 0" + ป้าย foreign → ยืนยัน → DB สร้าง 2 กฎจริง (`sch-import-…-0` weekdays [1,3,5] 08:30–12:00 priority 60, `…-1` [0,6] 11:00–20:00) → ลบออกแล้ว
+- **Restore point จริง:** บันทึกสแนปชอต (localStorage=1) → ปิด Dining (○ ปิด) → กู้คืน → **DB ทุกกฎกลับ is_active=true** + alert "สร้าง 0 / อัปเดต 3" — เคลียร์ snapshot ทดสอบแล้ว · **คืน dev data เรียบร้อย** (sch-001/002 = จ-ศ, sch-003 = ทุกวัน 06:00–22:00, สีเพลย์ลิสต์ว่าง, ไม่มีกฎเทส)
+
+---
+
+## [0.4.26] — 2026-08-16  🤖 โดย Freebuff (Scheduler: week strip กรองตามวัน + ย่อ/ขยาย · ลากบล็อก strip ขึ้นกริดเดือน (2 ทิศทาง) · ซิงก์ view/วันที่/การเลือกข้ามแท็บ · Export/Import กฎ JSON รวมประวัติ ✅)
+
+### Added / Changed
+- **Week strip ใต้กริดเดือน: กรองตามวันที่ + ย่อ/ขยายความสูง**
+  - **คลิกคอลัมน์วันที่ใน strip = แสดงเฉพาะกฎของวันนั้น** (คอลัมน์อื่น dim 30% + header ไฮไลต์ cyan + chip "วัน ✕" ให้เคลียร์) — คลิกอีกครั้ง = เคลียร์
+  - **ปุ่มย่อ/ขยาย** (ไอคอน ▾/▴): ความสูง 150px ↔ 420px — แกนเวลา/เส้นชั่วโมง/บล็อกปรับตาม
+  - drop calc ใช้ rect ของกริดจริง (`data-strip-grid`) → ความสูงที่เปลี่ยนไม่มีผลต่อการคำนวณเวลา
+- **ลากบล็อกใน week strip ขึ้นไปวางบนกริดเดือน = เปลี่ยนวัน (ลากได้ 2 ทิศทาง เหมือน Google Calendar):**
+  - `beginChipDrag` ใช้ร่วมระหว่างชิปเดือน + บล็อก strip — ลากจาก strip ขึ้นไปวางบนเซลล์เดือน → `daysOfWeek` เอาวันต้นออก+เพิ่มวันเป้า (dedupe) · วางบนเดือนอื่น → view กระโดดตาม · Alt+ลาก = คัดลอก · คลิกบล็อก = แก้ไข · Ctrl+คลิก = เลือกกลุ่ม
+  - ลากจาก strip ใช้โซน auto-scroll แบบ viewport (ไม่ขยายแถวเดือน — strip อยู่ชิดขอบล่างกริดพอดี กัน auto-scroll ผิดทิศ)
+- **ซิงก์ view/วันที่/การเลือกข้ามแท็บ (BroadcastChannel):**
+  - `viewMode`/`viewDate` ย้ายไปเก็บใน **store** (`schedulerViewMode`/`schedulerViewDate`/`setSchedulerView`) — แท็บหนึ่งสลับ Day/Week/Month/List หรือ ◀▶/วันนี้ → **อีกแท็บตามทันที** (message `scheduler-view-sync`)
+  - การเลือกหลายอีเวนต์ก็ซิงก์ด้วย (`selection-sync`) — เลือกในแท็บหนึ่ง อีกแท็บเห็น ring เหมือนกัน
+- **Export / Import กฎ Scheduler เป็น JSON (รวมประวัติการแก้ไข):**
+  - **ส่งออก** (ปุ่มใหม่ใน header): ดาวน์โหลด `scheduler-backup-<date>.json` — schedules (เต็ม), playlists (id/name/color), **undo/redo stacks** + version/exportedAt
+  - **นำเข้า**: เลือกไฟล์ JSON → upsert กฎ (id ซ้ำ = อัปเดต, ใหม่ = สร้าง — normalize เวลา HH:MM) + กู้สีเพลย์ลิสต์ + **คืน undo/redo stacks** → alert สรุป (สร้าง X / อัปเดต Y) — ใช้ย้าย/สำรองระหว่างระบบได้
+- i18n 3 ภาษา: `sch.stripFilterHint` / `sch.stripFilterClear` / `sch.stripExpand` / `sch.stripCollapse` / `sch.export` / `sch.import` / `sch.importDone` / `sch.importFail`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **Strip filter/ย่อ-ขยาย จริง:** คลิก "จ 17" → คอลัมน์อื่น opacity 0.3 + chip "จ ✕" + header cyan · ขยาย 150→420 → ย่อกลับ 150
+- **ลาก strip → กริดเดือน จริง:** ลากบล็อก Dining (จ.17) ขึ้นวาง 2026-09-01 (อ.) → highlight เซลล์ตรงเป้า + ปล่อย → DB `[2,3,4,5]` (เวลาเดิม) + view กระโดด "ก.ย. 2026" → **Ctrl+Z คืน `[1,2,3,4,5]`**
+- **ซิงก์ข้ามแท็บ จริง:** จำลองแท็บอื่นส่ง `scheduler-view-sync {week, 2026-07-20}` → หน้าเปลี่ยนเป็น Week "19–25 ก.ค. 2026" ทันที · `selection-sync ['sch-001']` → แถบ "เลือก 1 รายการ" ขึ้น
+- **Export/Import จริง:** ดัก blob export → `{type:'scheduler-backup', version:1, schedules:3, playlists:11, history}` · import ไฟล์ที่แก้ sch-002 → [0,6] + pl-lunch-menu สี `#f43f5e` → DB เขียนจริง + alert "สร้าง 0 / อัปเดต 3" + history dropdown แสดง entry จากไฟล์
+- regression: คลิกชิป (ไม่ลาก) ยังเปิด modal แก้ไข prefilled · **คืน dev data แล้ว** (sch-001/002 = จ-ศ, sch-003 = ทุกวัน 06:00–22:00, สีเพลย์ลิสต์ว่าง)
+
+---
+
+## [0.4.25] — 2026-08-16  🤖 โดย Freebuff (Scheduler: history dropdown แสดงรายละเอียดก่อน→หลัง + คลิก jump ไปกฎ · undo/redo ซิงก์ข้ามแท็บผ่าน BroadcastChannel · multi-select อยู่รอดข้าม view + ลากชิป Month ลง Week strip ตั้งวัน+เวลา · ปุ่มคัดลอก/ลบกฎใน modal พร้อม confirm ✅)
+
+### Added / Changed
+- **History dropdown แสดงตัวอย่างการเปลี่ยนแปลง (ไม่ใช่ label เฉยๆ) + คลิก jump ไปกฎ:**
+  - ทุก history entry เก็บ `detail` (สร้างตอน push): ชื่อกฎ + ก่อน→หลังของ **เวลา** (`11:00–20:00 → 10:00–19:00`) / **วัน** (`จ,อ,พ → อ,พ,พฤ` — ใช้ชื่อวันตามภาษา) / **เพลย์ลิสต์** / **เปิด→ปิด** / **เปลี่ยนชื่อ** — และ `+ ชื่อ` / `− ชื่อ` สำหรับสร้าง/ลบ · สีเพลย์ลิสต์: `#abc → #def`
+  - **คลิกที่รายการ → กระโดดไปกฎนั้น** (เปิด modal แก้ไข prefilled) หรือเปิดตัวเลือกสีของเพลย์ลิสต์ — dropdown กว้างขึ้น (w-80) รองรับ 2 บรรทัดต่อรายการ
+- **Undo/Redo ซิงก์ข้ามแท็บ (BroadcastChannel):**
+  - `setUndoStack` / `setRedoStack` / `clearHistory` ใน store broadcast `{type:'history-sync', stacks}` ไปช่อง `signage-history-sync` — **แท็บอื่นรับแล้วซิงก์ stacks + ดึง schedules/playlists ล่าสุดจาก server** (`refreshSchedulesAndPlaylists` ใหม่) → กด Ctrl+Z ในแท็บหนึ่ง อีกแท็บอัปเดตทันที (รับเฉพาะ stacks — ไม่ broadcast กลับ → ไม่วนลูป)
+  - หน่วง + debounce (~150ms) กัน race กับ PATCH ที่ยังไม่จบ (refetch ไปโดนค่าก่อนแก้)
+- **Multi-select อยู่รอดข้าม view (เลือกใน Month → สลับไป Week แล้วลากกลุ่มได้):**
+  - `selectedScheduleIds` ย้ายไปเก็บใน **store** (เดิมเป็น state ของ component ที่ถูกล้างตอนสลับ view) — เลือกชิปใน Month → สลับไป Week/Day → บล็อกยังมี ring + ลากตัวใดตัวหนึ่ง = ย้ายทั้งกลุ่ม · กลับ Month ก็ยังเห็น selection · Esc ล้าง
+  - **Week strip ใต้กริดเดือน (ลากข้าม view: Month → Week โดยตรง):** แถบเส้นเวลา 7 วัน × 06:00–22:00 แสดงบล็อกกฎปัจจุบัน — **ลากชิปจากกริดเดือนมาวาง** = เปลี่ยน **วัน (คอลัมน์) + เวลา (ตำแหน่ง y)** ของทั้งกลุ่ม (delta เท่ากัน เหมือนลากในกริด) — ไฮไลต์คอลัมน์เป้าหมาย + เส้นเวลาปลายทาง (พร้อม label เวลา) · สนับสนุน Alt+ลาก = คัดลอก · auto-scroll ถูกระงับระหว่าง hover บน strip
+- **ปุ่มใน modal แก้ไข: "คัดลอกกฎ" + "ลบกฎ" (กันลบโดยไม่ตั้งใจ):**
+  - **คัดลอกกฎ** = สร้างสำเนาจากค่าปัจจุบันในฟอร์มทันที (id ใหม่) — บันทึกเป็น history "Duplicate" (undo = ลบ) · **ลบกฎ** = `window.confirm` ก่อนลบ (มีใน modal + ปุ่มถังขยะใน List ด้วย) — บันทึกเป็น history "Delete" (undo = สร้างกลับ)
+- i18n 3 ภาษา: `sch.historyJump` / `sch.duplicateRule` / `sch.duplicateHint` / `sch.deleteRule` / `sch.confirmDelete` / `sch.weekStripTitle` / `sch.monthToWeekHint`
+
+### Fixed
+- **undo/redo คืนกฎที่ถูกลบไปแล้วล้มเหลว (400) สำหรับกฎที่โหลดจาก DB**: store แมป `startTime` เป็น `'HH:MM:SS'` (คอลัมน์ time) แต่ `CreateScheduleSchema` ต้องการ `HH:MM` — `upsertSchedules` ส่ง item ดิบไป `addSchedule` → 400 → กฎไม่ถูกสร้างใน DB (บั๊กแฝงที่ซ่อนอยู่ — ตรวจพบตอนเทสลบกฎใน modal แล้ว undo) — แก้: normalize `slice(0,5)` ตอนสร้างใหม่ใน `upsertSchedules` (และ `handleDuplicate`)
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **History dropdown จริง:** toggle Dining (เปิด→ปิด) → entry แสดง "Dining Hall Lunch Hours Menu: ● เปิด → ○ ปิด" · คลิก entry → modal เปิด prefilled Dining
+- **Modal จริง:** คัดลอก Dining → สร้าง `sch-…` (11:00–20:00, จ-ศ) → **Ctrl+Z ลบ** · ลบ Dining ผ่าน modal (confirm) → **Ctrl+Z คืนกฎใน DB** (11:00–20:00 ถูกต้อง — หลัง fix)
+- **Cross-view selection จริง:** Ctrl+คลิกชิป Dining ใน Month → สลับ Week → บล็อก ring + แถบ "เลือก 1 รายการ" → กลับ Month ring ยังอยู่ → Esc ล้าง
+- **Week strip drop จริง:** ลากชิป Dining (จ.17) → วางบน strip (อ.18 ~09:00) → DB กลายเป็น `[2,3,4,5]` + 09:00–18:00 → **Ctrl+Z คืน `[1,2,3,4,5]` 11:00–20:00** · ไฮไลต์ "อ 18" + marker เวลาขึ้นระหว่างลาก
+- **Cross-tab sync จริง:** จำลองแท็บอื่นส่ง message ผ่าน `BroadcastChannel('signage-history-sync')` → undo ปุ่มเปิดใช้งาน + dropdown แสดง entry จากแท็บอื่น · BroadcastChannel ส่งถึงแท็บที่โพสต์ด้วย → ทุกการแก้ในเซสชันทดสอบนี้พิสูจน์ send+receive ครบวงจร (เห็น GET schedules/playlists ตามหลังทุก PATCH — refetch อัตโนมัติ)
+
+---
+
+## [0.4.24] — 2026-08-16  🤖 โดย Freebuff (Scheduler: Undo/Redo ครอบคลุมฟอร์ม+สีเพลย์ลิสต์ เก็บใน store + เลือกหลายบล็อกใน Week/Day ลากพร้อมกัน + Alt+ลากคัดลอก + ปุ่มประวัติ ✅)
+
+### Added / Changed
+- **Undo/Redo ครอบคลุมการแก้ไขทุกแบบ (เดิมมีแค่การลาก):**
+  - **สร้าง/แก้ไข/ลบกฎผ่านฟอร์ม**, สลับ on/off ใน List, และ **เปลี่ยนสีเพลย์ลิสต์** — ทุกอย่างย้อนกลับได้ด้วย Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y (undo/redo เขียนกลับ DB จริง — สร้างกฎที่ถูกลบกลับคืน, ลบกฎที่ถูก undo สร้าง ฯลฯ)
+  - **ประวัติเก็บใน store (ไม่ใช่ state ของ component) → อยู่รอดข้ามการสลับแท็บ** — `undoStack`/`redoStack`/`clearHistory` ใน `useSignageStore` · 50 รายการ · entry บันทึก label + timestamp + before/after
+  - **ปุ่มประวัติ (ไอคอน History) ถัดจาก undo/redo**: dropdown แสดง **รายการแก้ไขล่าสุด 10 รายการ** (label + เวลา) + ปุ่ม **ล้างประวัติ** — ยัง undo ได้จากปุ่ม/คีย์ลัดตามปกติ
+- **เลือกหลายอีเวนต์ใน Week/Day view + ลากพร้อมกัน (เหมือน Month view):**
+  - Ctrl/Shift/⌘ + คลิกบล็อก = เลือก/ยกเลิก (ring ขาว 2px + แถบ "เลือก N รายการ" + Esc ล้าง) — คลิกธรรมดายังเปิด modal แก้ไข
+  - ลากบล็อกที่ถูกเลือก → **ย้ายทุกกฎพร้อมกัน** (ทุกกฎได้ delta เท่ากัน — ย้ายเวลา/ข้ามวัน) · drop บน legend = เปลี่ยนเพลย์ลิสต์ทั้งกลุ่ม · เลือกจะถูกเคลียร์หลังปล่อย (เหมือน month)
+- **Alt+ลาก = คัดลอกกฎใหม่ (แทนการย้าย) — ต้นฉบับคงเดิม:**
+  - Week/Day: Alt+ลากบล็อก → สร้างกฎใหม่ (id ใหม่) ที่วัน/เวลาเป้าหมาย — บันทึกเป็น history "Duplicate rule" (undo = ลบกฎที่คัดลอก)
+  - Month: Alt+ลากชิปข้ามวัน → สร้างกฎใหม่ที่วันเป้าหมาย (dedupe วัน) — รองรับลากเป็นกลุ่ม (คัดลอกทุกกฎที่เลือก)
+- i18n 3 ภาษา: `sch.copyHint` / `sch.historyTitle` / `sch.historyEmpty` / `sch.historyClear` / `sch.histMove` / `sch.histResize` / `sch.histDay` / `sch.histPlaylist` / `sch.histCreate` / `sch.histEdit` / `sch.histDelete` / `sch.histDuplicate` / `sch.histColor`
+
+### Fixed
+- **undo เปลี่ยนสีเพลย์ลิสต์ไม่คืนค่า**: `mapPlaylist` แมป `color: p.color || undefined` → ค่าว่างกลายเป็น `undefined` → `JSON.stringify` ทิ้ง key → PUT ของ undo ไม่มี field `color` → DB ไม่ถูกเคลียร์ — แก้โดยส่ง `{ color: item.color ?? '' }` ใน undo/redo (และไม่ส่งทั้งออบเจกต์ → ไม่ลบ/สร้าง `playlistItems` ซ้ำ)
+- **Alt+ลากชิปใน Month 400 Validation failed**: store แมป `startTime` เป็น `'HH:MM:SS'` (จากคอลัมน์ time ของ DB) แต่ `CreateScheduleSchema` ต้องการ `HH:MM` (strict) — แก้โดย normalize `startTime/endTime.slice(0,5)` ตอนคัดลอก
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **ฟอร์ม/สี → undo/redo จริง:** สร้างกฎ (POST 201) → **Ctrl+Z ลบออกจาก DB** → redo กลับมา · แก้ไขชื่อ (PATCH) → undo คืนชื่อเดิม · ลบกฎ (DELETE) → undo สร้างกลับ · เปลี่ยนสี Executive → `#10b981` → **Ctrl+Z → DB กลับ `''`** (เทสซ้ำหลัง fix — ก่อน fix DB ค้างค่าเดิม)
+- **Week/Day multi-select จริง:** Ctrl+คลิก sch-001 + sch-002 → แถบ "เลือก 2 รายการ" + ring 2 บล็อก → ลากลง 2 ชม. → **ทั้ง 2 กฎเลื่อน +2:15 เท่ากัน (07:00→09:15, 11:00→13:15)** → **Ctrl+Z คืนทั้งคู่**
+- **Alt+ลากคัดลอกจริง:** Week — Alt+ลาก Lobby → สร้าง `sch-...-0` (08:30–20:30) ต้นฉบับไม่เปลี่ยน → undo ลบ · Month — Alt+ลาก Dining จ.17→อ.18 → สร้างกฎใหม่ days `[2,3,4,5]` (dedupe) ต้นฉบับ `[1,2,3,4,5]` คงเดิม → undo ลบ
+- **Dropdown ประวัติ:** แสดง "แก้ไขกฎ" + เวลา → กด **ล้างประวัติ** → stack ว่าง (undo disabled + "ยังไม่มีการเปลี่ยนแปลง") — **คืน dev data เรียบร้อย** (sch-001/002 = จ-ศ, sch-003 = ทุกวัน 06:00–22:00, สีเพลย์ลิสต์ว่างหมด, ลบกฎเทส) — ยังไม่ commit / sync prod
+
+---
+
+## [0.4.23] — 2026-08-16  🤖 โดย Freebuff (Scheduler: ลากชิปข้ามเดือนไกล (grid ขยายอัตโนมัติ) + เลือกหลายอีเวนต์ลากพร้อมกัน + Undo/Redo ทุกการลาก ✅)
+
+### Added / Changed
+- **ลากชิป Month ข้ามเดือนไกลได้จริง (ไม่ต้องกด ◀▶):**
+  - ชี้ค้างที่**ขอบบน/ล่างของกริด** → กริดขยายแถวเดือนก่อน/ถัดไป**อัตโนมัติ** (สูงสุด 14 แถว/ทิศ ≈ 3 เดือนครึ่ง) — วางบนวันที่ไกลได้ (เช่น ย้ายจาก ส.ค. ไป ธ.ค.) แล้ว `viewDate` กระโดดไปเดือนนั้นก่อนวาง
+  - **2 เฟส:** เฟส 1 — ยังไม่ถึงขอบกริด (ขอบอยู่นอกจอ) → เลื่อนหน้าตามปกติ · เฟส 2 — ชี้ใกล้ขอบกริดที่มองเห็น (clamp กับ viewport) → **ขยาย 1 แถว/300ms + เลื่อนหน้าตาม 1 แถว** (แถวใหม่โผล่ที่ขอบพอดี — flow ควบคุมได้ ไม่ไหลผ่าน) — highlight/วันเป้าหมายอัปเดตตามทุกเฟรม (`elementFromPoint`)
+  - `monthCells` คำนวณแบบ dynamic (`6 + top + bottom` สัปดาห์, offset -top×7) — reset เมื่อปล่อย/cancel/สลับ view
+- **เลือกหลายอีเวนต์ใน Month view + ลากพร้อมกัน (Ctrl/Shift+คลิก):**
+  - Ctrl/Shift/⌘ + คลิกชิป = เลือก/ยกเลิกการเลือก (ring ขาว 2px + แถบสถานะ "เลือก N รายการ" พร้อมปุ่มยกเลิก) · Esc ล้างการเลือก · คลิกธรรมดา = แก้ไขกฎเหมือนเดิม
+  - ลากชิปที่ถูกเลือก → **ย้ายทุกกฎพร้อมกัน** (เอาวันต้นทางออก + เพิ่มวันปลายทาง — dedupe ต่อกฎ) — บันทึก `PATCH` ต่อกฎ + undo ได้เป็นกลุ่ม
+- **Undo/Redo สำหรับการลากอีเวนต์ทุกแบบ (Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y):**
+  - บันทึก before/after ของกฎที่ถูกลาก → **ย้าย/ขยาย/เปลี่ยนวัน (ชิปเดือน)/เปลี่ยนเพลย์ลิสต์ (drop บน legend)/ย้ายกลุ่ม** — ย้อนกลับได้ทันที ไม่ต้องกดบันทึก (undo/redo เขียนกลับผ่าน `updateSchedule` → บันทึก DB จริง)
+  - ปุ่ม Undo2/Redo2 ใน header (disabled เมื่อ stack ว่าง) + คีย์ลัด — stack สูงสุด 50 รายการ · drop ที่ไม่เปลี่ยนอะไร (no-op) ไม่สร้าง history
+- i18n 3 ภาษา: `sch.selectHint` / `sch.monthExpandHint` / `sch.selectedCount` / `sch.undo` / `sch.redo`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **ขยายเดือนจริง (simulate pointer):** จับชิป → ชี้ขอบล่างค้าง → แถวเพิ่มทีละแถว (highlight ไล่ 11-17→11-24→12-08 จนถึง cap ธ.ค.) → ปล่อย → **header กระโดด "ธ.ค. 2026"** + DB `[1,2,3,4,5,6]` → **Ctrl+Z คืน `[0..6]`** · ทิศขึ้น: ชี้เหนือขอบบนกริด → กริดขยายย้อนไปถึง **เม.ย.** + highlight ไล่ย้อน (05-19→04-21) → ปล่อยบน 04-21 → view ไป "เม.ย. 2026" + DB เปลี่ยนถูกกฎ → Ctrl+Z คืนค่า
+- **Multi-select จริง:** Ctrl+คลิก Dining+Lobby (เซลล์ จ.17) → ring 2 ชิป + แถบ "เลือก 2 รายการ" → ลาก Dining ไป อ.18 → **ทั้ง 2 กฎกลายเป็น `[2,3,4,5]` พร้อมกัน** → **Ctrl+Z คืนทั้ง 2 กฎ** — หมายเหตุ: sch-001 = Lobby / sch-002 = Dining (ตาม seed — ยืนยัน id mapping ระหว่างเทส)
+- **Undo/Redo ครบทุกแบบ:** ย้ายบล็อกใน week (06:00→08:00 → undo คืน) · resize ขอบล่าง (22:00→21:00 → undo คืน) · drop บน legend (playlist → pl-lunch-menu → undo คืน pl-executive-briefing) · redo (Ctrl+Shift+Z) re-apply · ปุ่ม undo/redo สลับ disabled ถูกต้องตาม stack
+- regression: คลิกชิป (ไม่ลาก) ยังเปิด modal prefilled ถูกกฎ · คลิกเซลล์ยังไป Day view — **คืน dev data เรียบร้อย** (sch-001/002 = จ-ศ, sch-003 = ทุกวัน 06:00–22:00 pl-executive-briefing) — ยังไม่ commit / sync prod
+
+---
+
+## [0.4.22] — 2026-08-16  🤖 โดย Freebuff (Scheduler: ซ่อน/แสดงเพลย์ลิสต์ + เลือกสีเองบันทึกลง DB + ลากชิปข้ามวัน/ข้ามเดือน + Auto-scroll ครบทุก view ✅)
+
+### Added / Changed
+- **คลิกชื่อเพลย์ลิสต์ใน legend = ซ่อน/แสดงอีเวนต์ของเพลย์ลิสต์นั้นในทุกมุมมอง** (Google Calendar toggle calendar):
+  - ชื่อที่ซ่อนจะ **ขีดฆ่า + จาง + ไอคอน EyeOff** — คลิกอีกครั้งเพื่อแสดงกลับ
+  - มีผลทุกมุมมอง: **Day / Week / Month / List** — กริด/ชิป/รายการ/จำนวนหัวข้อวัน (badge count) กรองตามเพลย์ลิสต์ที่ซ่อน (`visibleSchedules` = schedules − hiddenPlaylists) — จำนวนกฎใน List ก็ใช้ค่านี้
+  - legend ถูกแยกเป็น block ใช้ร่วม (render เดียวกัน) ในทุกมุมมองรวมถึง List view (ซ่อน/แสดงได้จากทุกที่)
+- **เลือกสีเพลย์ลิสต์เองได้ + บันทึกลง DB:**
+  - คลิกวงกลมสีใน legend → modal **เลือกสีเพลย์ลิสต์**: จาน 12 สีสำเร็จรูป (grid 6×2) + **custom color** (`<input type=color>` + hex text field) + preview swatch → **บันทึกสี**
+  - `Playlist.color` (hex) ใหม่ — **DB migration `0012` เพิ่มคอลัมน์ `color` (varchar 20)** + `Create/UpdatePlaylistSchema` + `mapPlaylist` (store) + seed ใส่สีเริ่มต้น — บันทึกผ่าน `updatePlaylist` → `PUT /api/playlists/:id` (เขียนจริงใน Postgres)
+  - สี custom render ด้วย **inline style** (`plBarStyle`/`plDotStyle` — hex→rgba 55%) เพราะ Tailwind ไม่มี class ไดนามิก — เพลย์ลิสต์ที่ยังไม่ตั้งสี → fallback จานอัตโนมัติ 12 สีเดิม (sorted-id)
+- **ลากชิปอีเวนต์ข้ามวันใน Month view = เปลี่ยนวันของกฎ:**
+  - pointerdown/pointermove/pointerup + capture บนชิป — **highlight เซลล์เป้าหมาย** (ring cyan 2px) · ชิปที่ลากจาง + ring ขาว
+  - ปล่อยบนวันอื่น → `updateSchedule({ daysOfWeek })` = **เอาวันต้นออก + เพิ่มวันเป้าหมาย (dedupe — วันเป้าหมายอาจอยู่ในกฎอยู่แล้ว)** → `PATCH /api/schedules/:id` (บันทึกจริง) — คลิกชิป (ไม่ลาก) ยังเปิด modal แก้ไขเหมือนเดิม · คลิกเซลล์ (ไม่ใช่ชิป) ยังไป Day view
+  - เพิ่ม hint "ลากชิปไปวางบนวันอื่นเพื่อเปลี่ยนวันของกฎ" + `data-month-cell`/`data-month-day` บนเซลล์
+  - **Auto-scroll ขณะลาก:** เลื่อนหน้า (แนวตั้ง) + เลื่อนกริด (แนวนอน, `overflow-x-auto`) **ต่อเนื่อง** ผ่าน `requestAnimationFrame` เมื่อชี้ใกล้ขอบ viewport/กริด (โซน 72px, ความเร็ว 6–28px/เฟรม ตามความลึก) — เซลล์ใหม่ที่เลื่อนเข้ามาใต้ cursor อัปเดต highlight/วันเป้าหมายเองทุกเฟรม (แม้ pointer นิ่ง) — หยุดทันทีเมื่อลากออกจากขอบ / ปล่อย / cancel / unmount (`findVerticalScroller` หา scroll container จริง — รองรับ main content แบบมี overflow ของตัวเองด้วย)
+- **Auto-scroll แบบเดียวกันกับ week/day view** — ลากอีเวนต์ในกริดเวลาแล้วชี้ใกล้ขอบบน/ล่างของ viewport → เลื่อนหน้าเองต่อเนื่อง (`requestAnimationFrame`, โซน 72px, ความเร็ว 6–28px/เฟรม ตามความลึก) + แนวนอนผ่านการ์ด `overflow-x-auto` (`weekCardRef`) — ตำแหน่งลาก (curMin/curDay) + drop target บน legend คำนวณใหม่ทุกเฟรมผ่าน tick (`scrollTickUpdaterRef` — updater ร่วมกับ month view) — หยุดเมื่อออกจากขอบ / ปล่อย / cancel / unmount
+- **ลากชิป Month ข้ามเดือนได้จริง** — ตอนนี้ชิปจำวันที่ต้นทาง/ปลายทาง (`origYmd`/`curYmd` ใน monthDrag):
+  - ปล่อยบนวันที่อยู่นอกเดือนปัจจุบัน → **`viewDate` ขยับไปเดือนนั้นก่อนวาง** (เห็นผลทันทีในกริดใหม่ — เดิมวางบนเซลล์เดือนถัดไป/เดือนก่อนที่จางๆ แล้วไม่มีอะไรเกิดขึ้นเพราะ weekday ซ้ำ หรือสลับวันแบบไม่เห็น view)
+  - เปลี่ยนวันของกฎตาม **วันที่** ที่วาง (เอาวันต้นทางออก + เพิ่มวันปลายทาง — dedupe) — เหมือนเดิมภายในเดือน + ใหม่ข้ามเดือน
+- i18n 3 ภาษา: `sch.togglePlaylist` / `sch.playlistColorTitle` / `sch.presetColors` / `sch.customColor` / `sch.saveColor` / `sch.monthDragHint`
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18** · migration 0012 ผ่าน (column `color` มีใน DB จริง)
+- **ซ่อน/แสดง:** คลิกชื่อ Executive ใน List → การ์ดหาย (3→2) + ชื่อขีดฆ่า+EyeOff · ใน Week → กริดเหลือ 2 กฎ/วันทำงาน + วันหยุดว่าง · คลิกอีกครั้งคืนสภาพ
+- **สีเพลย์ลิสต์:** เลือก preset #8b5cf6 → swatch/บล็อกม่วง · พิมพ์ custom #16a34a → บันทึก → **DB `color='#16a34a'` จริง** (PUT 200) + บล็อก bg `rgba(22,163,74,0.55)` border เต็ม · reload แล้วสียังอยู่ (อ่านจาก DB) — **หมายเหตุ: ต้อง restart dev server** หลัง migration เพราะ tsx จำ schema เก่า (drizzle drop คีย์ไม่รู้จักเงียบๆ) — รีสตาร์ทแล้ว PUT เขียนสีลง DB ได้จริง
+- **ลากชิป Month:** ลาก Elevator 26→27 ก.ค. → **วันอาทิตย์ทั้ง 6 เซลล์ไม่มีชิป Elevator** + DB `days_of_week=[1,2,3,4,5,6]` (ไม่มีซ้ำ — เจอบั๊ก duplicate ระหว่างเทสแล้วแก้) · คลิกชิป Dining → modal prefilled ถูกกฎ
+- **Auto-scroll จริง:** จับชิป Monday → ชี้ขอบล่าง (y=640) ค้าง → scrollTop **400→444→576→636** (เพิ่มต่อเนื่อง) + highlight ตามเซลล์ที่เลื่อนเข้ามา (**08-31**) · ย้ายกลับกลางจอ → scroll หยุดนิ่ง + highlight ตาม Monday · ชี้ขอบบน (y=60) → scroll ขึ้น **636→0** (ขอบบนมี navbar คงที่บัง — highlight เลยว่างตรงนั้น แต่ scroll ทำงาน) · ปล่อย → loop หยุด + **ข้อมูลไม่เปลี่ยน** (sch-003 = ทุกวันเท่าเดิม)
+- **Auto-scroll week grid จริง (simulate pointer events):** จับบล็อก sch-003 → ลากลงขอบล่าง (y=645) → scrollTop **0→808** ต่อเนื่อง + ghost ตาม scroll · ย้ายกลับกลางจอ → **scroll หยุดนิ่ง** · ชี้ขอบบน (y=60) → scroll ขึ้น **808→532→0** · ปล่อยที่ตำแหน่งเดิม → **ข้อมูลไม่เปลี่ยน** (06:00–22:00, ทุกวัน)
+- **ลากชิปข้ามเดือนจริง:** ลากชิป Elevator 8 ก.ย. → วาง 6 ต.ค. (นอกเดือน) → **header กระโดดเป็น "ต.ค. 2026"** (กริด 27 ก.ย.–7 พ.ย.) + highlight เซลล์เป้าหมายขึ้นระหว่างลาก (inset cyan ที่ 2026-10-06) + weekday เดิม → `[1,2,3,4,5,6]` · ลาก 16 ส.ค. → วาง 1 ก.ย. (อา→อ) → view ไป "ก.ย. 2026" + DB `[1,2,3,4,5,6]` (เอาอาทิตย์ออก เพิ่มอังคาร) · regression: คลิกชิป (ไม่ลาก) ยังเปิด modal "แก้ไขกฎตารางเวลา" prefilled 06:00–22:00 — **คืน dev data เรียบร้อย** (sch-003 = ทุกวัน `[0..6]` · pl-executive-briefing color='') — ยังไม่ commit / sync prod
+
+---
+
+## [0.4.20] — 2026-08-16  🤖 โดย Freebuff (Scheduler ปฏิทินครบ 3 มุมมอง — Day / Week / Month เหมือน Google Calendar ✅)
+
+### Added / Changed
+- **SchedulerEngine เพิ่มมุมมองวันเดียว (Day) + รายเดือน (Month)** — สลับ view ได้ 4 แบบ (วัน/สัปดาห์/เดือน/รายการ) แบบ Google Calendar:
+  - **Day View** — กริดแกนเวลา 1 วันเดียว (06:00–24:00) ใช้ drag engine เดียวกับ week view (ลากย้าย/ขยาย/สร้างใหม่ได้ครบ) + header แสดง วัน-เดือน-ปี เต็ม + เส้นเวลาปัจจุบัน
+  - **Month View** — กริด 6 สัปดาห์ × 7 วัน: ชิปอีเวนต์สีตาม **6-Level Priority** (แสดงสูงสุด 3 + "+N รายการ") · วันนอกเดือนจาง · วันนี้ไฮไลต์วงกลม · **คลิกวันที่ = ข้ามไปมุมมองวันเดียว** · **คลิกชิป = เปิด modal แก้ไขกฎ**
+  - **Navigation** — ปุ่ม **วันนี้** + ◀ ▶ (วันละ 1 วัน / สัปดาห์ละ 7 วัน / เดือนละ 1 เดือน) + ป้ายช่วงวันที่ (เช่น "16 – 22 ส.ค. 2026") + คลิกวันที่ใน header ของ week/day = ข้ามไป Day view — **วันนี้ ใน week view กลับมาที่สัปดาห์ปัจจุบัน** (เทสแล้ว: 30 ส.ค.–5 ก.ย. → วันนี้ → 16–22 ส.ค.)
+  - **กรองตามวันที่จริง** (`isActiveOnDate` = dayOfWeek + ช่วง startDate–endDate) ในทุกมุมมอง — เดิม week view กรองแค่วันในสัปดาห์ ละเลยช่วงวันที่ ตอนนี้ตรงกับความเป็นจริง
+  - **Month view ไฮไลต์สัปดาห์ปัจจุบัน** — เซลล์วันที่ 7 วันของสัปดาห์ที่มีวันนี้ (อา–ส) ใส่กรอบ ring สีฟ้า + พื้นหลังจาง เพื่อให้เห็นสัปดาห์ปัจจุบันชัดเจน
+- i18n 3 ภาษา: `sch.viewDay/viewWeek/viewMonth/today/dayCalendar/monthCalendar/moreEvents/month0-11` — เก็บคีย์ `sch.viewCalendar` ไว้ (ไม่ใช้แล้ว) เหมือน `sch.viewTimeline`
+
+### Verified
+- typecheck 0 · build ผ่าน
+- **ยืนยันใน preview:** สลับ view ครบ 4 แบบ · week header แสดงวันที่ + ปุ่มนำทาง · day view แสดงเฉพาะกฎที่ทำงานวันนั้นจริง (อา 16 = เฉพาะ Elevator, จ 17 = ครบ 3 กฎ) + next เปลี่ยนวัน · month view 6×7 + ชิปอีเวนต์ + คลิกวันที่ 18 → day view · คลิกชิป → modal prefilled · สลับภาษา EN ครบ (Day/Week/Month/Today/Aug 2026) — คืนภาษาไทยแล้ว
+
+---
+
+## [0.4.21] — 2026-08-16  🤖 โดย Freebuff (แยกสีเพลย์ลิสต์ + ลากวางเปลี่ยนเพลย์ลิสต์ + เส้นเวลาสด ✅)
+
+### Added / Changed
+- **สีหลักของบล็อก/ชิปอีเวนต์ = สีประจำเพลย์ลิสต์** (เหมือน Google Calendar แยกสีแต่ละปฏิทิน) — จัดสรร 12 สีตามลำดับ id ที่เรียง (คงที่ ไม่ชนกันเมื่อมีเพลย์ลิสต์ ≤ 12; เปลี่ยน hash → sorted-index เพราะ hash ชนกัน 3/6 ใน demo data):
+  - **Day/Week view** — บล็อกสีตามเพลย์ลิสต์ + **แถบซ้ายบาง 4px สีระดับความสำคัญ** (ย้าย cue ของ 6-Level Priority มาเป็นแถบข้าง — ไม่เสียข้อมูล priority)
+  - **Month view** — ชิปสีตามเพลย์ลิสต์ + จุดเล็กสี priority หน้าชื่อ
+  - **List view** — จุดสีเพลย์ลิสต์ข้างชื่อเพลย์ลิสต์
+  - กฎที่ไม่มีเพลย์ลิสต์ (เช่น emergency) → fallback สี priority เดิม
+- **Legend ใหม่** ใน week/day/month view: กลุ่ม **"สีเพลย์ลิสต์"** (swatch + ชื่อทุกเพลย์ลิสต์) คั่นด้วยเส้น แล้วตามด้วย 6 ระดับ priority + conflict เดิม
+- i18n 3 ภาษา: `sch.playlistLegend` + `sch.dragToPlaylist` (EN: Playlist Colors / Drag a rule here… / ไทย: สีเพลย์ลิสต์ / ลากกฎมาวางเพื่อเปลี่ยนเพลย์ลิสต์ / 中文: 播放列表颜色 / 拖动规则到此以更改播放列表)
+
+### Added (ต่อจากสีเพลย์ลิสต์)
+- **ลากอีเวนต์ไปวางบน legend เพลย์ลิสต์ = เปลี่ยนเพลย์ลิสต์ของกฎนั้น** (Google Calendar style):
+  - ขณะลาก (move) — กลุ่ม legend ไฮไลต์ cyan + รายการเพลย์ลิสต์ที่ชี้อยู่ ring ขาว (`data-pl-drop` + `elementFromPoint` ตรวจจับ drop target ตอน pointermove/up)
+  - ปล่อยบนเพลย์ลิสต์อื่น → `updateSchedule({ playlistId })` — **คงเวลา/วันเดิม** (ลากไป legend ไม่นับเป็นการย้ายเวลา) · ปล่อยบนเพลย์ลิสต์เดิม/นอก legend → พฤติกรรมลากย้ายเดิม
+- **เส้นเวลาปัจจุบันใน Day/Week view เคลื่อนแบบเรียลไทม์ทุกนาที** — `nowDate` เปลี่ยนจาก `new Date()` ตอน render → state + `useEffect` setTimeout ตรงขอบนาที (60_000 − Date.now()%60_000) re-schedule วน — ไฮไลต์วันนี้/สัปดาห์ปัจจุบันใน month view ก็อัปเดตตามด้วย (ข้ามเที่ยงคืนเอง)
+
+### Verified
+- typecheck 0 · build ผ่าน · integration **18/18**
+- **ยืนยันใน preview:** week view — 3 กฎสีต่างกันชัดเจน (sky/rose/cyan) + แถบ priority cyan (scheduled ทั้ง 3) · month view — ชิปสีตรงกับเพลย์ลิสต์ + จุด priority · legend แสดง 11 เพลย์ลิสต์ 11 สีไม่ซ้ำ + 6 ระดับ
+- **ลากวางจริง (simulate pointer events):** ลาก Elevator → legend "Cafeteria Lunch Specials" → บล็อกเปลี่ยนเป็น indigo ทันที + list view โชว์เพลย์ลิสต์ใหม่ — **คืนข้อมูล dev แล้ว** (Elevator = Executive Elevator Reel / Portrait Elevator Kiosk / 06:00–22:00)
+- **เส้นเวลาสดจริง:** 11:44 → 229.333px → 11:45 → 230px (ขยับเอง +0.667px/นาที ไม่ต้อง reload) — ยังไม่ sync prod
+
+---
+
 ## [0.4.18] — 2026-08-16  🤖 โดย Freebuff (Live Screen Preview — เห็นสิ่งที่จอแสดงอยู่แบบเรียลไทม์จาก Admin ✅)
 
 ### Added

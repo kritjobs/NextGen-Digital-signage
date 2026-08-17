@@ -115,6 +115,14 @@ async function startServer() {
     origin: true,   // อนุญาตทุก origin (สำหรับ internal network)
     credentials: true,
   }));
+  // webOS player (webos-player/) ฝังหน้า /display + /pair ใน iframe เต็มจอ
+  // helmet ตั้ง X-Frame-Options: SAMEORIGIN โดย default → ต้องยกออกเฉพาะ 2 เส้นทางนี้
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/display') || req.path.startsWith('/pair')) {
+      res.removeHeader('X-Frame-Options');
+    }
+    next();
+  });
   app.use(express.json({ limit: '2mb' }));
   app.use(morgan(IS_PROD ? 'combined' : 'dev'));
   if (IS_PROD) app.use(generalLimiter); // Disabled in dev for convenience

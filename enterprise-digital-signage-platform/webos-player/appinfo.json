@@ -1,0 +1,17 @@
+{
+  "id": "com.nextgen.webos-player",
+  "version": "1.0.0",
+  "vendor": "NextGen Digital Signage",
+  "type": "web",
+  "main": "index.html",
+  "title": "NextGen Signage Player",
+  "appDescription": "Kiosk player สำหรับแสดงผล Digital Signage จาก NextGen Platform บน LG webOS TV",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "uiRevision": 2,
+  "resolution": "1920x1080",
+  "supportPortraitMode": true,
+  "supportDualScreen": false,
+  "disableBackHistoryAPI": true,
+  "transparent": false
+}

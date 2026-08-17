@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NextGen Signage Player</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════ View: Settings (first run / change server) ═══════════ -->
+  <section id="view-settings" class="view active">
+    <div class="card">
+      <div class="brand">
+        <div class="brand-icon">▶</div>
+        <h1>NextGen Signage Player</h1>
+        <p class="sub">webOS Kiosk — กรอกที่อยู่ของ server เพื่อเริ่มต้น</p>
+      </div>
+
+      <form id="settings-form" autocomplete="off">
+        <label for="server-url">Server URL</label>
+        <input id="server-url" type="text" placeholder="http://192.168.1.100:3100" spellcheck="false" />
+
+        <div class="row">
+          <button type="button" id="btn-test" class="btn secondary">ทดสอบการเชื่อมต่อ</button>
+          <button type="submit" class="btn primary">บันทึกและไปต่อ</button>
+        </div>
+        <p id="settings-status" class="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ═══════════ View: Pairing ═══════════ -->
+  <section id="view-pair" class="view">
+    <div class="card">
+      <div class="brand">
+        <div class="brand-icon">▶</div>
+        <h1>จับคู่จอ (Pair Display)</h1>
+        <p class="sub">Server: <span id="pair-server"></span></p>
+      </div>
+
+      <form id="pair-form" autocomplete="off">
+        <label for="pair-code">Pairing Code</label>
+        <input id="pair-code" type="text" placeholder="เช่น LOBBY-88" maxlength="20" spellcheck="false" />
+
+        <button type="submit" class="btn primary" id="btn-pair">เชื่อมต่อจอ</button>
+        <p id="pair-status" class="status"></p>
+      </form>
+
+      <p class="hint">
+        หา Pairing Code ได้ที่ Admin panel → Screens → เลือกจอ
+        <button type="button" id="btn-change-server" class="link">เปลี่ยน server</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════ View: Kiosk ═══════════ -->
+  <section id="view-kiosk" class="view kiosk">
+    <!-- หน้า display จาก server (ต้องแก้ server.ts ให้เปิด iframe ได้ — ดู README) -->
+    <!-- allow attribute ครอบคลุม fullscreen อยู่แล้ว (allowfullscreen แยกจะทำให้ browser warning) -->
+    <iframe id="kiosk-frame"
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
+
+    <!-- Key catcher: div โปร่งใสเต็มจอ รับ key จากรีโมท (kiosk ห้าม user ออกจากหน้า) -->
+    <div id="key-catcher" tabindex="0"></div>
+
+    <!-- Status badge (มุมขวาบน) -->
+    <div id="status-badge" class="badge online" hidden>
+      <span id="status-dot" class="dot"></span><span id="status-text">ออนไลน์</span>
+    </div>
+
+    <!-- Menu overlay (กดปุ่มสีแดง/Back ค้างเพื่อเปิด) -->
+    <div id="menu-overlay" class="menu-overlay" hidden>
+      <div class="menu card">
+        <h2>เมนู Kiosk</h2>
+        <button type="button" class="menu-item" data-action="reload">🔄 รีโหลดหน้าแสดงผล</button>
+        <button type="button" class="menu-item" data-action="unpair">🔁 จับคู่กับจอใหม่</button>
+        <button type="button" class="menu-item" data-action="server">⚙️ เปลี่ยน Server</button>
+        <button type="button" class="menu-item" data-action="exit">⏻ ออกจากแอป</button>
+        <p class="hint">กดปุ่มสีแดง หรือ Back เพื่อปิดเมนู</p>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/webos.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

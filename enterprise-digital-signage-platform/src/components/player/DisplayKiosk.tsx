@@ -22,7 +22,10 @@ export const DisplayKiosk: React.FC = () => {
   const [data, setData] = useState<DisplayData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  // webOS player (webos-player/) เปิดหน้านี้ใน iframe พร้อม ?kiosk=1 → ข้าม overlay "Click to enter fullscreen"
+  // (shell เป็น kiosk เต็มจออยู่แล้ว + key-catcher กัน input ไม่ให้ถึง iframe — วิดีโอ muted autoplay เล่นได้ทันที)
+  const isKioskEmbed = new URLSearchParams(window.location.search).get('kiosk') === '1';
+  const [audioUnlocked, setAudioUnlocked] = useState(isKioskEmbed);
   const [quickPost, setQuickPost] = useState<any>(null);
   // Emergency: alert ที่ target จอนี้ (จาก WS + catch-up จาก display data)
   const [emergency, setEmergency] = useState<any>(null);
@@ -97,8 +100,9 @@ export const DisplayKiosk: React.FC = () => {
     }
   };
 
-  // Unlock audio on first user interaction
+  // Unlock audio on first user interaction (ข้ามในโหมด kiosk embed — ไม่มี gesture ถึง iframe ได้)
   useEffect(() => {
+    if (isKioskEmbed) return;
     const unlockAudio = () => {
       // Unmute all video elements on the page
       document.querySelectorAll('video').forEach(v => {

@@ -63,6 +63,12 @@ npm run dev         # dev server (port 3100 — 3000 ถูก thaihua-auth-serv
 
 ---## 4. บันทึกการทำงานล่าสุด (Work Log)
 
+### 2026-08-17 — 🤖 โดย Freebuff (**เทส /api/scheduler-snapshots #17 + แก้ flaky จอเทสชน group seed + sync ขึ้น prod (ยังไม่ redeploy)**)
+- **เทส #17** — CRUD /api/scheduler-snapshots + auth (401) + body ผิด (400) + audit create/delete + delete idempotent — **19/19 ผ่าน** (typecheck 0)
+- **🐛 แก้ flaky จริง (เจอตอนรันเทส):** จอเทสใช้ group `'HQ Reception'`/`'R&D Labs'` ซึ่งตรงกับ `screen_group_ids` ของ seed (sch-001 = ['HQ Reception','R&D Labs']) → seed schedule แมทช์จอเทสผ่าน group → เทส 4/5/6/11/12 พังเฉพาะช่วงกฎทำงาน (จ-ศ 07:00–19:00) + cascade (schedule/แคมเปญค้างจากเทสที่ abort) — เปลี่ยนเป็น group เฉพาะเทส `'[TEST] Integration'` → deterministic ทุกช่วงเวลา
+- ✅ **sync-to-prod.ps1 รันสำเร็จ (Z:\ ผ่าน SMB):** ตรวจ 190 ไฟล์ → คัดลอก **19 ไฟล์** (SchedulerEngine/server/schema/migrations 0012+0013/i18n/tests…) hash ตรงครบ — commit `be79415` `f648b12` `094e8c9` `02a11c2`
+- ⏳ **ยังไม่ redeploy** — ขั้นถัดไปบนเครื่อง prod: `cd C:\signage && redeploy.bat` (build no-cache + migrate 0012/0013 อัตโนมัติ) แล้วตรวจตาม `docs/Prod-Sync-Checklist.md`
+
 ### 2026-08-17 — 🤖 โดย Freebuff (**commit งาน Scheduler 0.4.20–0.4.30 ทั้งชุด + เอกสารสรุป/checklist**)
 - commit งานทั้งหมดที่ค้างเป็น **ชุด 3 commits**: ① `feat(scheduler)` frontend (SchedulerEngine + store + types + i18n) ② `feat(scheduler)` server/DB (schema + migrations 0012/0013 + API `/api/scheduler-snapshots` + seed/validate) ③ `docs` (CHANGELOG + Work Log + tasks + สรุปงาน)
 - เพิ่ม **`docs/Scheduler-Team-Summary.md`** — สรุปงาน 6 กลุ่ม + บั๊กที่แก้ + การเปลี่ยนแปลง DB/API สำหรับแชร์ทีม · เพิ่ม **`docs/Prod-Sync-Checklist.md`** — checklist sync prod (typecheck/build/test/migration 0013/backup .env/sync/deploy/post-deploy/rollback)

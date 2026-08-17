@@ -17,9 +17,24 @@
 # ตรวจมาตรฐาน (marker เริ่มต้น = pickScreenFields — ฟิกซ์เพิ่มจอใหม่)
 powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1
 
-# ตรวจ fix อื่น — ส่งชื่อ marker ที่จะค้นใน Z:\server.ts
+# ตรวจ fix ฝั่ง server — ส่งชื่อ marker ที่จะค้นใน Z:\server.ts
 powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1 -Marker ชื่อฟังก์ชัน/ตัวแปรของฟิกซ์
+
+# ตรวจ fix ฝั่ง frontend — marker ใน bundle ที่ prod เสิร์ฟจริง
+# (โหลด index.html → ดึง asset JS → grep ข้อความที่รอด minification เช่น console.error ในฟิกซ์)
+powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1 -BundleMarker "rolled back optimistic change"
 ```
+
+**เลือกโหมดให้ตรงกับฝั่งของฟิกซ์:**
+
+| ฟิกซ์อยู่ฝั่ง | ใช้พารามิเตอร์ | ตรวจที่ไหน |
+|---|---|---|
+| Server (`server.ts`) | `-Marker` (default) | ไฟล์ `Z:\server.ts` ที่ sync ขึ้นแล้ว |
+| Frontend (bundle/UI) | `-BundleMarker` | JS bundle ที่ prod **เสิร์ฟจริง** (ผ่าน HTTP — พิสูจน์ว่า build ใหม่มีฟิกซ์ ไม่ใช่แค่ source ตรง) |
+
+> 💡 ฟิกซ์ฝั่ง UI แนะนำ marker เป็น **ข้อความที่รอด minification** แน่นอน เช่น console.error ใน store
+> (`[screens] update failed — rolled back optimistic change`, `delete failed — restored entry`)
+> — ชื่อฟังก์ชันอาจถูกมังเกิลใน bundle ได้
 
 **ข้อกำหนดก่อนรัน:**
 - `Z:` ต้องแมปไปที่ `\\10.70.0.1\c\signage` (เดียวกับที่ `sync-to-prod.ps1` ใช้ — รันตอนรัน sync ผ่านแล้วก็ได้)
@@ -31,7 +46,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1 -Marker 
 |---|---|---|---|
 | 1 | `/api/health` | uptime < 300s, `connectedClients` กลับครบ, `db=connected` | ยังไม่ redeploy / container ตาย / DB ไม่ขึ้น |
 | 2 | `Z:\build-log.txt` | timestamp ใหม่, ไม่มี error/failed, ลงท้าย `Image ... Built` | build พัง (ดู error ใน log) หรือยังไม่รัน redeploy |
-| 3 | Marker ใน `Z:\server.ts` | พบ marker ที่ระบุ (ค่าเริ่มต้น `pickScreenFields`) | sync ไม่ทัน / ไฟล์ไม่ตรง |
+| 3 | Marker — โหมด `-Marker`: ใน `Z:\server.ts` / โหมด `-BundleMarker`: ใน bundle ที่ prod เสิร์ฟ | พบ marker ที่ระบุ (ค่าเริ่มต้น `pickScreenFields`) | sync ไม่ทัน / ยังไม่ redeploy / bundle เก่า |
 | 4 | Header `X-Frame-Options` บน `/display` | **ต้องไม่มี** header นี้ (webOS kiosk ฝังหน้าใน iframe) | ตัวแก้ server.ts ยังไม่ขึ้น / ยังไม่ redeploy |
 
 **Exit code:** `0` = ผ่านทุกเช็ค, `1` = มีเช็คล้มเหลว (ดูข้อความ FAIL ข้างบน)
@@ -52,6 +67,16 @@ HTTP: HTTP/1.1 200 OK
 OK: X-Frame-Options absent
 ALL CHECKS PASSED - redeploy verified.
 ```
+
+ตัวอย่างโหมด frontend (`-BundleMarker`):
+
+```
+=== 3) MARKER 'rolled back optimistic change' in served JS bundle (frontend fix - compiled by Vite) ===
+bundle: assets/index-BeeoTckg.js  <- served by prod
+OK: marker 'rolled back optimistic change' found in served bundle
+```
+
+> หาก bundle hash ยังเป็นตัวเดิม (ไม่เปลี่ยนชื่อไฟล์) + marker ไม่เจอ → ยังไม่ redeploy หรือ redeploy ไม่สำเร็จ
 
 ## เทสต์ functional เพิ่มเติม (optional — ต้องมี admin creds ของ prod)
 

@@ -4,6 +4,7 @@
 # USAGE:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1
 #   powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1 -Marker pickScreenFields
+#   powershell -NoProfile -ExecutionPolicy Bypass -File verify-prod-fix.ps1 -BundleMarker "rolled back optimistic change"
 #
 # Prereqs:
 #   - Z:\ mapped to \\10.70.0.1\c\signage (same as sync-to-prod.ps1)
@@ -12,12 +13,14 @@
 # Checks:
 #   1. /api/health  - uptime should be < 300s (just redeployed), clients reconnected, db connected
 #   2. build-log.txt - fresh timestamp, no error/failed lines, image built OK
-#   3. Marker in Z:\server.ts - proves the synced source contains the expected fix
+#   3. Marker check - default: marker in Z:\server.ts (server-side fix)
+#      With -BundleMarker: marker in the JS bundle served by prod (frontend fix compiled by Vite)
 #   4. X-Frame-Options header on /display - must be ABSENT (webOS kiosk embeds the page)
 #
 # Exit code 0 = all checks OK, 1 = one or more checks failed/missing.
 param(
-  [string]$Marker = 'pickScreenFields'
+  [string]$Marker = 'pickScreenFields',
+  [string]$BundleMarker = ''
 )
 $ErrorActionPreference = 'Continue'
 $fail = 0
@@ -59,17 +62,46 @@ if (Test-Path $log) {
 }
 
 Write-Host ""
-Write-Host "=== 3) MARKER '$Marker' in Z:\server.ts (synced source) ==="
-$srv = 'Z:\server.ts'
-if (Test-Path $srv) {
-  $m = Select-String -Path $srv -Pattern $Marker
-  if ($m) {
-    Write-Host ("OK: found {0} reference(s), first at line {1}" -f $m.Count, $m[0].LineNumber)
+if ($BundleMarker) {
+  # ─── Frontend mode: grep marker in the JS bundle prod actually serves ───
+  Write-Host "=== 3) MARKER '$BundleMarker' in served JS bundle (frontend fix - compiled by Vite) ==="
+  $html = & curl.exe -s -m 10 "$base/"
+  if (-not $html) {
+    Check-Fail "index.html unreachable from $base"
   } else {
-    Check-Fail "marker '$Marker' not found in Z:\server.ts"
+    $asset = [regex]::Match(($html -join "`n"), 'assets/index-[A-Za-z0-9_-]+\.js')
+    if (-not $asset.Success) {
+      Check-Fail "asset JS url not found in index.html (bundle filename pattern changed?)"
+    } else {
+      $bundleUrl = "$base/" + $asset.Value
+      Write-Host ("bundle: " + $asset.Value + "  <- served by prod")
+      $js = & curl.exe -s -m 30 $bundleUrl
+      if (-not $js) {
+        Check-Fail "bundle download failed: $bundleUrl"
+      } else {
+        $joined = $js -join "`n"
+        if ($joined -match [regex]::Escape($BundleMarker)) {
+          Write-Host "OK: marker '$BundleMarker' found in served bundle"
+        } else {
+          Check-Fail "marker '$BundleMarker' NOT found in served bundle (bundle stale - redeploy again?)"
+        }
+      }
+    }
   }
 } else {
-  Check-Fail "Z:\server.ts not found"
+  # ─── Source mode: grep marker in the synced server.ts (server-side fix) ───
+  Write-Host "=== 3) MARKER '$Marker' in Z:\server.ts (synced source) ==="
+  $srv = 'Z:\server.ts'
+  if (Test-Path $srv) {
+    $m = Select-String -Path $srv -Pattern $Marker
+    if ($m) {
+      Write-Host ("OK: found {0} reference(s), first at line {1}" -f $m.Count, $m[0].LineNumber)
+    } else {
+      Check-Fail "marker '$Marker' not found in Z:\server.ts"
+    }
+  } else {
+    Check-Fail "Z:\server.ts not found"
+  }
 }
 
 Write-Host ""

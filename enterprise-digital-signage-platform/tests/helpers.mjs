@@ -104,6 +104,11 @@ export const api = {
     trigger: (t, body) => raw('POST', '/emergency/trigger', { token: t, body }),
     clear:   (t, body) => raw('POST', '/emergency/clear', { token: t, body }),
   },
+  schedulerSnapshots: {
+    list:   (t) => raw('GET', '/scheduler-snapshots', { token: t }),
+    create: (t, body) => raw('POST', '/scheduler-snapshots', { token: t, body }),
+    remove: (t, id) => raw('DELETE', `/scheduler-snapshots/${encodeURIComponent(id)}`, { token: t }),
+  },
 };
 
 // ─── WebSocket helpers ────────────────────────────────────────

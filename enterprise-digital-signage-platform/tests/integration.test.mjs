@@ -48,9 +48,12 @@ before(async () => {
   // สร้างจอเทสเฉพาะ (ลบตอนจบ)
   testScreenId = tid('scr-test');
   testScreenPairing = `TP${Date.now().toString(36).slice(-6).toUpperCase()}`;
+  // ⚠️ group ต้องเป็นค่าเฉพาะของเทส — seed schedules กำหนด screen_group_ids ไว้
+  // (sch-001 = ['HQ Reception','R&D Labs'], sch-002 = ['Dining & Refreshments'], sch-003 = ['Executive Tower'])
+  // ถ้าใช้ group เดียวกับ seed → จอเทสจะโดน schedule ของ seed แมทช์ผ่าน group (ผูกกับเวลาทำงานของกฎ)
   const s = await api.screens.create(token, {
     id: testScreenId, pairingCode: testScreenPairing,
-    name: '[TEST] REQ-009 Integration', group: 'HQ Reception',
+    name: '[TEST] REQ-009 Integration', group: '[TEST] Integration',
     location: 'Test bench', orientation: 'landscape',
   });
   assert.equal(s.status, 201, `create screen: ${JSON.stringify(s.json)}`);
@@ -184,7 +187,7 @@ test('4. REQ-003 Scheduler — schedule ที่ตรงเงื่อนไ�
   // จอที่ไม่มี schedule → ไม่มี schedule
   const idleScreen = await api.screens.create(token, {
     id: tid('scr-idle'), pairingCode: `TR${Date.now().toString(36).slice(-6).toUpperCase()}`,
-    name: '[TEST] Idle Screen', group: 'R&D Labs', location: '',
+    name: '[TEST] Idle Screen', group: '[TEST] Integration', location: '',
   });
   created.screens.push(idleScreen.json.id);
   const resIdle = await api.schedules.resolve(token, idleScreen.json.id);
@@ -827,6 +830,66 @@ test('16. Live Screen Preview — SCREEN_STATE → broadcast + live endpoint + �
     adminWs.ws.close();
     displayWs.ws.close();
     anonWs.ws.close();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// 17) Scheduler Restore Points (0.4.29) — API /api/scheduler-snapshots
+//     CRUD + auth (401) + body ผิด 400 + audit บันทึก create/delete
+// ═══════════════════════════════════════════════════════════════
+test('17. Scheduler Restore Points — CRUD /api/scheduler-snapshots + auth + audit', async () => {
+  const snapId = tid('snap-test');
+  const snapName = `[TEST] Snapshot ${Date.now().toString(36)}`;
+  const snapData = {
+    type: 'scheduler-backup', version: 1,
+    schedules: [{ id: 'sch-001', name: '[TEST] Rule', startTime: '07:00', endTime: '19:00' }],
+    playlists: [{ id: 'pl-001', name: '[TEST] Playlist', color: '#10b981' }],
+  };
+  try {
+    // ไม่มี token → 401 (GET + POST + DELETE)
+    assert.equal((await raw('GET', '/scheduler-snapshots')).status, 401, 'GET ไม่มี token ควร 401');
+    assert.equal((await raw('POST', '/scheduler-snapshots', { body: { name: 'x', data: {} } })).status, 401, 'POST ไม่มี token ควร 401');
+    assert.equal((await raw('DELETE', `/scheduler-snapshots/${snapId}`)).status, 401, 'DELETE ไม่มี token ควร 401');
+
+    // body ผิด (ขาด data) → 400
+    const badBody = await api.schedulerSnapshots.create(token, { name: snapName });
+    assert.equal(badBody.status, 400, `ไม่มี data ควร 400: ${JSON.stringify(badBody.json)}`);
+
+    // create → 201
+    const cr = await api.schedulerSnapshots.create(token, { id: snapId, name: snapName, data: snapData });
+    assert.equal(cr.status, 201, `create snapshot: ${JSON.stringify(cr.json)}`);
+    assert.equal(cr.json?.id, snapId, 'ควรได้ id ตามที่ส่ง');
+
+    // GET roundtrip — เจอ snapshot + data ครบ (jsonb roundtrip)
+    const list = await api.schedulerSnapshots.list(token);
+    assert.equal(list.status, 200, 'list ควร 200');
+    assert.ok(Array.isArray(list.json?.data), 'ควรมี data[]');
+    const row = (list.json?.data ?? []).find((s) => s.id === snapId);
+    assert.ok(row, 'ควรเจอ snapshot ที่เพิ่งสร้าง');
+    assert.equal(row.name, snapName, 'name ควรตรง');
+    assert.equal(row.data?.schedules?.[0]?.id, 'sch-001', 'data.schedules ควรครบ (jsonb roundtrip)');
+    assert.equal(row.data?.playlists?.[0]?.color, '#10b981', 'data.playlists ควรครบ');
+    assert.ok(Number.isInteger(list.json?.total), 'ควรมี total');
+
+    // audit — create ของ scheduler_snapshot ถูกบันทึก
+    const audit = await api.audit.logs(token, { resource: 'scheduler_snapshot', limit: 20 });
+    const acts = (audit.json?.data ?? []).map((l) => `${l.action}:${l.resourceId}`);
+    assert.ok(acts.includes(`create:${snapId}`), `audit ควรมี create:${snapId} (มี: ${acts})`);
+
+    // DELETE → 200 + หายจาก list + audit บันทึก delete
+    const del = await api.schedulerSnapshots.remove(token, snapId);
+    assert.equal(del.status, 200, `delete: ${JSON.stringify(del.json)}`);
+    const list2 = await api.schedulerSnapshots.list(token);
+    assert.ok(!(list2.json?.data ?? []).some((s) => s.id === snapId), 'snapshot ที่ลบไม่ควรอยู่ใน list');
+    const audit2 = await api.audit.logs(token, { resource: 'scheduler_snapshot', limit: 20 });
+    assert.ok((audit2.json?.data ?? []).some((l) => l.action === 'delete' && l.resourceId === snapId), 'audit ควรมี delete');
+
+    // DELETE id ที่ไม่มี → 200 (idempotent)
+    const delNf = await api.schedulerSnapshots.remove(token, tid('snap-nope'));
+    assert.equal(delNf.status, 200, 'ลบ id ที่ไม่มีควร 200 (idempotent)');
+  } finally {
+    // เคลียร์ให้เรียบร้อย (กันค้างใน DB ถ้าเทสกลางหลุด)
+    await api.schedulerSnapshots.remove(token, snapId).catch(() => {});
   }
 });
 

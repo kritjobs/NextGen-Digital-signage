@@ -1,5 +1,4 @@
-import { create } from 'zustand';
-import { 
+import { create } from 'zustand';import {
   DigitalScreen, 
   LayoutTemplate, 
   MediaItem, 
@@ -8,7 +7,8 @@ import {
   EmergencyAlert, 
   TelemetryLog, 
   ProofOfPlayLog,
-  RealtimeCommand
+  RealtimeCommand,
+  HistoryEntry
 } from '../types/signage';
 import {
   screenApi, mediaApi, layoutApi, playlistApi,
@@ -104,6 +104,30 @@ interface SignageStoreState {
   addSchedule: (schedule: ScheduleItem) => void;
   updateSchedule: (id: string, schedule: Partial<ScheduleItem>) => void;
   deleteSchedule: (id: string) => void;
+
+  // ─── Scheduler Undo/Redo — เก็บใน store เพื่ออยู่รอดข้ามการสลับแท็บ ──
+  undoStack: HistoryEntry[];
+  redoStack: HistoryEntry[];
+  setUndoStack: (updater: (prev: HistoryEntry[]) => HistoryEntry[]) => void;
+  setRedoStack: (updater: (prev: HistoryEntry[]) => HistoryEntry[]) => void;
+  clearHistory: () => void;
+
+  // ─── Scheduler multi-select — เก็บใน store เพื่ออยู่รอดข้ามมุมมอง (เลือกใน Month → สลับไป Week แล้วลากกลุ่ม) ──
+  selectedScheduleIds: Set<string>;
+  toggleSelectedSchedule: (id: string) => void;
+  clearSelectedSchedules: () => void;
+
+  // ─── Scheduler view (มุมมอง + วันที่) — เก็บใน store เพื่อซิงก์ข้ามแท็บ (BroadcastChannel) ──
+  schedulerViewMode: 'list' | 'day' | 'week' | 'month';
+  schedulerViewDate: string; // 'YYYY-MM-DD'
+  setSchedulerView: (mode: 'list' | 'day' | 'week' | 'month', date: string) => void;
+
+  // ─── ลากสดจากแท็บอื่น (BroadcastChannel) — แท็บอื่นเห็น ghost อีเวนต์ตามตำแหน่งลากจริง (move/resize/legend) ──
+  remoteDrag: { ids: string[]; curMin: number; curDay: number; mode?: 'move' | 'resize'; edge?: 'top' | 'bottom'; plDrop?: string | null } | null;
+  setRemoteDrag: (d: { ids: string[]; curMin: number; curDay: number; mode?: 'move' | 'resize'; edge?: 'top' | 'bottom'; plDrop?: string | null } | null) => void;
+
+  // ─── ข้ามแท็บ: ดึง schedules/playlists ล่าสุดจาก server (เรียกเมื่อรับ BroadcastChannel sync) ──
+  refreshSchedulesAndPlaylists: () => Promise<void>;
 
   // Remote Commands
   sendCommandToScreen: (screenId: string, command: RealtimeCommand['command'], payload?: any) => void;
@@ -214,6 +238,7 @@ function mapPlaylist(p: any): Playlist {
     tags: p.tags || [],
     status: p.status || 'published',
     approvalStatus: p.approvalStatus || 'approved',
+    color: p.color || undefined,
     updatedAt: p.updatedAt || p.updated_at || new Date().toISOString(),
   };
 }
@@ -254,6 +279,34 @@ function mapEmergency(e: any): EmergencyAlert {
 // timer ของ Quick Post auto-hide (module-level — reset เมื่อมี post ใหม่)
 let quickPostTimer: any = null;
 
+// ─── Cross-tab history sync (BroadcastChannel) — undo/redo/ประวัติซิงก์ข้ามแท็บ ──
+// เปิด Scheduler 2 แท็บ: กด Ctrl+Z ในแท็บหนึ่ง → อีกแท็บได้ stack เดียวกัน + ดึงข้อมูลล่าสุดจาก server
+const HISTORY_CHANNEL = 'signage-history-sync';
+let historyChannel: BroadcastChannel | null = null;
+try { if (typeof BroadcastChannel !== 'undefined') historyChannel = new BroadcastChannel(HISTORY_CHANNEL); } catch { historyChannel = null; }
+const broadcastHistorySync = () => {
+  if (!historyChannel) return;
+  try {
+    const st = useSignageStore.getState();
+    historyChannel.postMessage({ type: 'history-sync', undoStack: st.undoStack, redoStack: st.redoStack });
+  } catch { /* ignore */ }
+};
+// Scheduler view/selection sync — แท็บหนึ่งสลับ view/วันที่/เลือก → อีกแท็บตาม
+const broadcastViewSync = (mode: string, date: string) => {
+  if (!historyChannel) return;
+  try { historyChannel.postMessage({ type: 'scheduler-view-sync', viewMode: mode, viewDate: date }); } catch { /* ignore */ }
+};
+const broadcastSelectionSync = (ids: Set<string>) => {
+  if (!historyChannel) return;
+  try { historyChannel.postMessage({ type: 'selection-sync', ids: [...ids] }); } catch { /* ignore */ }
+};
+// ลากสด (drag animation) — broadcast ตำแหน่งลากจริงไปทุกแท็บ → อีกแท็บเห็น ghost อีเวนต์
+const broadcastDragSync = (action: 'start' | 'move' | 'end', payload?: { ids?: string[]; curMin?: number; curDay?: number; mode?: 'move' | 'resize'; edge?: 'top' | 'bottom'; plDrop?: string | null }) => {
+  if (!historyChannel) return;
+  try { historyChannel.postMessage({ type: 'scheduler-drag-sync', action, ...payload }); } catch { /* ignore */ }
+};
+export { broadcastDragSync };
+
 export const useSignageStore = create<SignageStoreState>((set, get) => ({
   viewMode: 'admin',
   setViewMode: (viewMode) => set({ viewMode }),
@@ -289,6 +342,29 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
   quickPost: null,
   telemetryLogs: [],
   proofOfPlayLogs: [],
+
+  undoStack: [],
+  redoStack: [],
+  // หลังเปลี่ยน stack → broadcast ไปทุกแท็บ (BroadcastChannel) — อีกแท็บซิงก์ stack + ดึงข้อมูลล่าสุด
+  setUndoStack: (updater) => { set((s) => ({ undoStack: updater(s.undoStack) })); broadcastHistorySync(); },
+  setRedoStack: (updater) => { set((s) => ({ redoStack: updater(s.redoStack) })); broadcastHistorySync(); },
+  clearHistory: () => { set({ undoStack: [], redoStack: [] }); broadcastHistorySync(); },
+
+  selectedScheduleIds: new Set(),
+  toggleSelectedSchedule: (id) => {
+    const next = new Set(useSignageStore.getState().selectedScheduleIds);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    set({ selectedScheduleIds: next });
+    broadcastSelectionSync(next);
+  },
+  clearSelectedSchedules: () => { set({ selectedScheduleIds: new Set() }); broadcastSelectionSync(new Set()); },
+
+  schedulerViewMode: 'list',
+  schedulerViewDate: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+  setSchedulerView: (mode, date) => { set({ schedulerViewMode: mode, schedulerViewDate: date }); broadcastViewSync(mode, date); },
+
+  remoteDrag: null,
+  setRemoteDrag: (d) => set({ remoteDrag: d }),
 
   selectedScreenId: null,
   setSelectedScreenId: (id) => set({ selectedScreenId: id }),
@@ -374,6 +450,20 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
       console.error('[Store] ❌ Failed to load data from API:', err.message);
       set({ isLoading: false, loadError: err.message });
     }
+  },
+
+  // ข้ามแท็บ sync (BroadcastChannel): ดึง schedules/playlists ล่าสุดจาก server — ใช้ตอนแท็บอื่น undo/redo/แก้กฎ
+  refreshSchedulesAndPlaylists: async () => {
+    const token = localStorage.getItem('signage_access_token');
+    if (token === 'guest-token-bypass') return;
+    try {
+      const [schedulesRes, playlistsRes] = await Promise.all([scheduleApi.getAll(), playlistApi.getAll()]);
+      set({
+        schedules: schedulesRes.data.map(mapSchedule),
+        playlists: playlistsRes.data.map(mapPlaylist),
+      });
+      get().resolveSchedules();
+    } catch { /* เงียบ — ครั้งถัดไปลองใหม่ */ }
   },
 
   // ─── 6-Level Content Priority Resolver ─────────────────────
@@ -587,25 +677,25 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
   },
   updatePlaylist: (id, partial) => {
     set((state) => ({ playlists: state.playlists.map((p) => p.id === id ? { ...p, ...partial } : p) }));
-    playlistApi.update(id, partial).catch(console.error);
+    return playlistApi.update(id, partial).catch(console.error) as Promise<unknown>;
   },
   deletePlaylist: (id) => {
     set((state) => ({ playlists: state.playlists.filter((p) => p.id !== id) }));
     playlistApi.delete(id).catch(console.error);
   },
 
-  // ─── CRUD: Schedules ──────────────────────────────────────
+  // ─── CRUD: Schedules — คืน Promise เพื่อให้ undo/redo กลุ่ม serialize การเขียน (กัน PATCH เรียงไม่ตรง) ──
   addSchedule: (schedule) => {
     set((state) => ({ schedules: [schedule, ...state.schedules] }));
-    scheduleApi.create(schedule).catch(console.error);
+    return scheduleApi.create(schedule).catch(console.error) as Promise<unknown>;
   },
   updateSchedule: (id, partial) => {
     set((state) => ({ schedules: state.schedules.map((s) => s.id === id ? { ...s, ...partial } : s) }));
-    scheduleApi.update(id, partial).catch(console.error);
+    return scheduleApi.update(id, partial).catch(console.error) as Promise<unknown>;
   },
   deleteSchedule: (id) => {
     set((state) => ({ schedules: state.schedules.filter((s) => s.id !== id) }));
-    scheduleApi.delete(id).catch(console.error);
+    return scheduleApi.delete(id).catch(console.error) as Promise<unknown>;
   },
 
   // ─── Remote Commands (via API) ────────────────────────────
@@ -655,3 +745,41 @@ export const useSignageStore = create<SignageStoreState>((set, get) => ({
     proofOfPlayLogs: [{ id: 'pop-' + Date.now() + Math.random(), ...pop }, ...state.proofOfPlayLogs.slice(0, 99)],
   })),
 }));
+
+// ฟัง message จากแท็บอื่น → ซิงก์ undo/redo stack + รีเฟรชข้อมูล (เฉพาะ stacks — ไม่ broadcast กลับ → ไม่วนลูป)
+// BroadcastChannel ส่งถึงแท็บที่โพสต์ด้วย (ตัวเอง) → message นี้ยังเป็นตัว trigger ให้แท็บเดียวกัน refetch เพื่อให้ข้อมูลตรงกับ PATCH ที่เพิ่งส่งไป
+// หน่วง ~150ms + debounce เพื่อกัน race กับ PATCH ที่ยังไม่จบ (refetch ไปโดนค่าก่อนแก้)
+let historySyncTimer: ReturnType<typeof setTimeout> | null = null;
+if (historyChannel) {
+  historyChannel.onmessage = (ev) => {
+    const msg = ev.data;
+    if (!msg) return;
+    if (msg.type === 'history-sync') {
+      useSignageStore.setState({
+        undoStack: Array.isArray(msg.undoStack) ? msg.undoStack : [],
+        redoStack: Array.isArray(msg.redoStack) ? msg.redoStack : [],
+      });
+      if (historySyncTimer) clearTimeout(historySyncTimer);
+      historySyncTimer = setTimeout(() => { useSignageStore.getState().refreshSchedulesAndPlaylists(); }, 150);
+    } else if (msg.type === 'scheduler-view-sync') {
+      if (msg.viewMode) useSignageStore.setState({
+        schedulerViewMode: msg.viewMode,
+        schedulerViewDate: msg.viewDate || useSignageStore.getState().schedulerViewDate,
+      });
+    } else if (msg.type === 'selection-sync') {
+      useSignageStore.setState({ selectedScheduleIds: new Set(Array.isArray(msg.ids) ? msg.ids : []) });
+    } else if (msg.type === 'scheduler-drag-sync') {
+      if (msg.action === 'end') useSignageStore.setState({ remoteDrag: null });
+      else useSignageStore.setState({
+        remoteDrag: {
+          ids: Array.isArray(msg.ids) ? msg.ids : [],
+          curMin: msg.curMin || 0,
+          curDay: msg.curDay || 0,
+          mode: msg.mode === 'resize' ? 'resize' : 'move',
+          edge: msg.edge === 'top' || msg.edge === 'bottom' ? msg.edge : undefined,
+          plDrop: msg.plDrop !== undefined ? msg.plDrop : null,
+        },
+      });
+    }
+  };
+}

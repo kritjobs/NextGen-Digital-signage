@@ -194,6 +194,13 @@ export const scheduleApi = {
   delete:  (id: string) => request<any>(`/schedules/${id}`, { method: 'DELETE' }),
 };
 
+// ─── Scheduler restore points (สแนปชอตใน DB — ซิงก์ข้ามแท็บ/เครื่อง) ──
+export const schedulerSnapshotApi = {
+  getAll:  () => request<{ data: any[]; total: number }>('/scheduler-snapshots'),
+  create:  (data: any) => request<any>('/scheduler-snapshots', { method: 'POST', body: JSON.stringify(data) }),
+  remove:  (id: string) => request<any>(`/scheduler-snapshots/${id}`, { method: 'DELETE' }),
+};
+
 // ─── Campaigns (REQ-011: ฝั่ง server แทน localStorage) ──────
 export const campaignApi = {
   getAll: () => request<{ data: any[]; total: number }>('/campaigns'),

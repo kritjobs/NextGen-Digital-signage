@@ -244,8 +244,23 @@ export interface Playlist {
   tags: string[];
   status?: 'draft' | 'published' | 'archived';
   approvalStatus?: 'pending' | 'approved' | 'rejected';
+  /** สี hex ที่ผู้ใช้กำหนดเอง (ถ้าไม่ตั้ง → จานสีอัตโนมัติใน Scheduler) */
+  color?: string;
   updatedAt: string;
 }
+
+// ── Scheduler Undo/Redo: หนึ่งรายการในประวัติการแก้ไข (ลาก/ฟอร์ม/สีเพลย์ลิสต์) ──
+// เก็บก่อน/หลังของกฎหรือเพลย์ลิสต์ที่ถูกแก้ไข — เก็บใน store เพื่ออยู่รอดข้ามการสลับแท็บ
+export type HistoryEntry = {
+  label: string;
+  time: number;
+  /** ตัวอย่างการเปลี่ยนแปลง (ชื่อกฎ + ก่อน→หลัง ของเวลา/วัน/เพลย์ลิสต์/สี) — สร้างตอน push เพื่อแสดงใน dropdown */
+  detail?: string;
+  /** กลุ่มของการแก้ไขต่อเนื่อง (< 60 วิ) — ใช้ย้อน/ทำซ้ำทั้งกลุ่ม ("ขั้นตอนใหญ่") */
+  grp?: number;
+  schedules?: { before: Record<string, ScheduleItem>; after: Record<string, ScheduleItem> };
+  playlists?: { before: Record<string, Playlist>; after: Record<string, Playlist> };
+};
 
 export interface ScheduleItem {
   id: string;

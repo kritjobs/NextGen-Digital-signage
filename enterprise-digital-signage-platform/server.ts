@@ -653,13 +653,41 @@ async function startServer() {
       } catch (e) { next(e); }
     });
 
+  // ─── Screen fields whitelist ─────────────────────────────────────
+  // ป้องกัน field ที่ UI ส่งมาแต่ไม่ใช่คอลัมน์จริงในตาราง (เช่น bufferCachedItemsCount —
+  // DB ใช้ชื่อ bufferCachedItems) → ถ้า insert/update ตรงๆ จะ 500 (column ไม่มี)
+  const SCREEN_COLUMN_FIELDS = [
+    'id', 'pairingCode', 'name', 'group', 'tags', 'location', 'orientation', 'resolution',
+    'status', 'lastHeartbeat', 'ipAddress', 'macAddress', 'storageUsageMb', 'storageTotalMb',
+    'bufferCachedItems', 'bufferCachedItemsCount', 'currentLayoutId', 'currentPlaylistId',
+    'fallbackLayoutId', 'activeEmergencyId', 'volume', 'isMuted', 'firmwareVersion', 'uptimeSeconds',
+    'lastScreenshotUrl',
+  ] as const;
+  const pickScreenFields = (body: any): any => {
+    const out: any = {};
+    for (const k of SCREEN_COLUMN_FIELDS) {
+      if (body?.[k] !== undefined) out[k] = body[k];
+    }
+    // DigitalScreen (UI) ส่ง bufferCachedItemsCount → map ไปคอลัมน์จริง bufferCachedItems
+    if (out.bufferCachedItemsCount !== undefined) {
+      out.bufferCachedItems = out.bufferCachedItemsCount;
+      delete out.bufferCachedItemsCount;
+    }
+    // Drizzle timestamp column ต้องการ Date — UI/Client บางตัวส่ง ISO string มา (value.toISOString is not a function)
+    if (typeof out.lastHeartbeat === 'string' && out.lastHeartbeat) {
+      out.lastHeartbeat = new Date(out.lastHeartbeat);
+    }
+    return out;
+  };
+
   app.post('/api/screens',
     authenticate as any, requirePermission('write:screens') as any,
     writeLimiter, validateBody(CreateScreenSchema),
     async (req: AuthenticatedRequest, res, next) => {
       try {
         const [row] = await db.insert(screens).values({
-          ...req.body, id: req.body.id ?? `scr-${Date.now()}`,
+          ...pickScreenFields(req.body),
+          id: req.body.id ?? `scr-${Date.now()}`,
           createdAt: new Date(), updatedAt: new Date(),
         }).returning();
         await logAudit(req, 'create', 'screen', row.id, { name: row.name });
@@ -674,7 +702,7 @@ async function startServer() {
     async (req: AuthenticatedRequest, res, next) => {
       try {
         const [row] = await db.update(screens)
-          .set({ ...req.body, updatedAt: new Date() })
+          .set({ ...pickScreenFields(req.body), updatedAt: new Date() })
           .where(eq(screens.id, req.params.id)).returning();
         if (!row) return res.status(404).json({ error: 'Screen not found' });
         await logAudit(req, 'update', 'screen', row.id, req.body);
